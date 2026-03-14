@@ -1,14 +1,14 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-14 13:21:27 UTC
+Generated: 2026-03-14 13:30:52 UTC
 
-Active vessels (30 min): 53
-Unique vessels (24h): 55
-Total position records: 1,251
+Active vessels (30 min): 54
+Unique vessels (24h): 56
+Total position records: 1,263
 
 ## By vessel type
-  Unknown: 43
-  Cargo: 7
-  Tanker: 3
+  Unknown: 49
+  Cargo: 4
+  Tanker: 1
 
 ## Top vessels by name
   AL JAMOH [Unknown] → RAK | 74.1 kn
@@ -22,7 +22,7 @@ Total position records: 1,251
   NAN LIN WAN [Tanker] → ROTTERDAM | 68.8 kn
   XIN ZI LANG 6 [Unknown] → -- | 98.3 kn
   PRABHU PARVATI [Unknown] → -- | 61.6 kn
-  ENEOS ENDEAVOR [Tanker] → AE_DAS | 99.4 kn
-  CSCL INDIAN OCEAN [Cargo] → MY PKG | 12.2 kn
   MERCURY HOPE [Unknown] → -- | 66.7 kn
-  NAVE ANDROMEDA [Tanker] → SGSIN | 100.0 kn
+  JASA MURNI [Cargo] → AE AUH OPL | 100.9 kn
+  AS CLEMENTINA [Cargo] → JEBEL ALI | 99.1 kn
+  GFS GENESIS [Unknown] → -- | 82.6 kn
