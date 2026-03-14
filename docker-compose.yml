@@ -9,3 +9,29 @@ services:
       - .env
     volumes:
       - ./data:/app/data
+      - .:/repo
+
+  snapshot-cron:
+    build: .
+    container_name: hormuz-snapshot
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y -qq git cron >/dev/null 2>&1
+        echo "0 0,6,12,18 * * * /bin/bash /app/src/auto_push.sh >> /var/log/snapshot.log 2>&1" | crontab -
+        echo "Snapshot cron installed — running every 6 hours"
+        # Run once immediately on container start
+        /bin/bash /app/src/auto_push.sh >> /var/log/snapshot.log 2>&1 || true
+        cron -f
+    env_file:
+      - .env
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO=${GITHUB_REPO:-yasumorishima/hormuz-ship-tracker}
+    volumes:
+      - ./data:/app/data
+      - .:/repo
+    depends_on:
+      - ais-collector

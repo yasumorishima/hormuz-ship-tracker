@@ -9,4 +9,6 @@ COPY src/ ./src/
 COPY static/ ./static/
 COPY templates/ ./templates/
 
+RUN chmod +x src/auto_push.sh 2>/dev/null || true
+
 CMD ["python", "src/main.py"]
