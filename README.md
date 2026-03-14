@@ -10,12 +10,14 @@ Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
 ## Architecture
 
 ```
-aisstream.io (WebSocket) → Raspberry Pi 5 → SQLite → FastAPI + Leaflet.js
-                                                   → matplotlib snapshot → GitHub (every 6h)
+aisstream.io (WebSocket) → Land Filter (Natural Earth 10m + Shapely)
+                              → SQLite → FastAPI + Leaflet.js
+                              → matplotlib snapshot → GitHub (every 6h)
 ```
 
 - **Data Source**: [aisstream.io](https://aisstream.io/) — free, real-time global AIS stream
 - **Collection**: Python WebSocket client, filtered to Strait of Hormuz bounding box
+- **Land Filter**: [Natural Earth](https://www.naturalearthdata.com/) 10m land polygons + Shapely — rejects AIS positions on land
 - **Storage**: SQLite (lightweight, no external DB needed)
 - **Visualization**: Leaflet.js dark map with vessel type color coding, track history, auto-refresh
 - **Auto Snapshot**: matplotlib generates a map image every 6 hours and pushes to this repo
@@ -27,6 +29,7 @@ aisstream.io (WebSocket) → Raspberry Pi 5 → SQLite → FastAPI + Leaflet.js
 - Click any vessel to see name, speed, course, destination, flag, and size
 - Track history visualization (6-hour trail per vessel)
 - Statistics dashboard (active vessels, total records, type breakdown)
+- Land mask filtering — positions on land (GPS drift, building-mounted AIS) are automatically excluded
 - Auto-reconnect on connection loss
 - Auto-snapshot pushed to GitHub every 6 hours (only if data changed)
 
@@ -74,6 +77,7 @@ The `snapshot-cron` container generates a map image every 6 hours and pushes it 
 - SQLite (aiosqlite)
 - Leaflet.js + CARTO dark tiles
 - matplotlib (auto-snapshot)
+- Shapely + [Natural Earth](https://www.naturalearthdata.com/) 10m (land filtering)
 - Docker on Raspberry Pi 5
 
 ## Data Source
