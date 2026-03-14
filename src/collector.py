@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 import aiosqlite
 import websockets
 
+from land_filter import is_on_land
+
 logger = logging.getLogger(__name__)
 
 API_KEY = os.environ["AISSTREAM_API_KEY"]
@@ -104,6 +106,9 @@ async def collect():
                             lat = pos.get("Latitude")
                             lon = pos.get("Longitude")
                             if lat is None or lon is None:
+                                continue
+
+                            if is_on_land(lat, lon):
                                 continue
 
                             static = static_cache.get(mmsi, {})

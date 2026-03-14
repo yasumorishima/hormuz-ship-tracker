@@ -6,6 +6,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from land_filter import is_on_land
+
 app = FastAPI(title="Hormuz Ship Tracker")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -58,6 +60,8 @@ async def latest_positions():
         """)
     vessels = []
     for r in rows:
+        if is_on_land(r["latitude"], r["longitude"]):
+            continue
         vessels.append({
             "mmsi": r["mmsi"],
             "lat": r["latitude"],
@@ -103,6 +107,7 @@ async def vessel_track(mmsi: int, hours: int = 6):
                 "ts": r["timestamp"],
             }
             for r in rows
+            if not is_on_land(r["latitude"], r["longitude"])
         ],
     }
 

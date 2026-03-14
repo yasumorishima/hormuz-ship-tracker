@@ -15,6 +15,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import matplotlib.patheffects as pe  # noqa: E402
 
+from land_filter import is_on_land  # noqa: E402
+
 DB_PATH = "/app/data/ais.db"
 OUTPUT_DIR = Path("/app/data")
 
@@ -127,6 +129,8 @@ def query_latest_positions(db_path: str) -> list[dict]:
         """).fetchall()
         vessels = []
         for r in rows:
+            if is_on_land(r["latitude"], r["longitude"]):
+                continue
             type_label = get_ship_type_label(r["ship_type"])
             vessels.append({
                 "mmsi": r["mmsi"],
