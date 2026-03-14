@@ -1,5 +1,5 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-14 13:10:58 UTC
+Generated: 2026-03-14 13:21:27 UTC
 
 Active vessels (30 min): 53
 Unique vessels (24h): 55
