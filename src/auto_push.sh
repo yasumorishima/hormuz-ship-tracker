@@ -45,6 +45,7 @@ cp "$SNAPSHOT" "$DEST_IMG"
 cp "$STATS" "$DEST_STATS"
 
 # 4. Configure git
+git config --global --add safe.directory /repo
 cd /repo
 git config user.name "hormuz-bot"
 git config user.email "hormuz-bot@users.noreply.github.com"
