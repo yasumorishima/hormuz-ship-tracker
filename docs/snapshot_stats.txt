@@ -1,0 +1,17 @@
+# Hormuz Ship Tracker — Snapshot Stats
+Generated: 2026-03-14 07:29:22 UTC
+
+Active vessels (30 min): 24
+Unique vessels (24h): 24
+Total position records: 179
+
+## By vessel type
+  Unknown: 23
+  Cargo: 1
+
+## Top vessels by name
+  AL JAMOH [Unknown] → RAK | 102.3 kn
+  CSCL INDIAN OCEAN [Cargo] → MY PKG | 102.3 kn
+  AS CLEMENTINA [Unknown] → -- | 84.0 kn
+  GFS GENESIS [Unknown] → -- | 99.3 kn
+  PLC-03 [Unknown] → -- | 102.2 kn
