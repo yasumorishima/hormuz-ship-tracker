@@ -1,17 +1,28 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-14 07:29:22 UTC
+Generated: 2026-03-14 13:10:58 UTC
 
-Active vessels (30 min): 24
-Unique vessels (24h): 24
-Total position records: 179
+Active vessels (30 min): 53
+Unique vessels (24h): 55
+Total position records: 1,251
 
 ## By vessel type
-  Unknown: 23
-  Cargo: 1
+  Unknown: 43
+  Cargo: 7
+  Tanker: 3
 
 ## Top vessels by name
-  AL JAMOH [Unknown] → RAK | 102.3 kn
-  CSCL INDIAN OCEAN [Cargo] → MY PKG | 102.3 kn
-  AS CLEMENTINA [Unknown] → -- | 84.0 kn
-  GFS GENESIS [Unknown] → -- | 99.3 kn
-  PLC-03 [Unknown] → -- | 102.2 kn
+  AL JAMOH [Unknown] → RAK | 74.1 kn
+  PLC 02 [Unknown] → -- | 102.2 kn
+  CRONUS [Unknown] → NAIA ISLAND | 102.2 kn
+  TUG GULF DOLPHIN [Unknown] → NAIAPR0JECT | 93.6 kn
+  PLC-03 [Unknown] → DUBAI | 102.2 kn
+  COASTAL BOXER [Unknown] → UMM SUQEIEM IS | 74.3 kn
+  SAFEEN POWER [Cargo] → KANDLA | 102.3 kn
+  W KITHIRA [Cargo] → LKCMB | 102.3 kn
+  NAN LIN WAN [Tanker] → ROTTERDAM | 68.8 kn
+  XIN ZI LANG 6 [Unknown] → -- | 98.3 kn
+  PRABHU PARVATI [Unknown] → -- | 61.6 kn
+  ENEOS ENDEAVOR [Tanker] → AE_DAS | 99.4 kn
+  CSCL INDIAN OCEAN [Cargo] → MY PKG | 12.2 kn
+  MERCURY HOPE [Unknown] → -- | 66.7 kn
+  NAVE ANDROMEDA [Tanker] → SGSIN | 100.0 kn
