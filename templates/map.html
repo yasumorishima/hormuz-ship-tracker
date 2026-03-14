@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strait of Hormuz — Live Ship Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a1a; color: #e0e0e0; }
+
+        #header {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a3a4a;
+        }
+        #header h1 { font-size: 18px; font-weight: 600; }
+        #header h1 span { color: #4fc3f7; }
+        #stats {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+        }
+        .stat-value { font-size: 20px; font-weight: 700; color: #4fc3f7; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+
+        #map { height: calc(100vh - 52px); width: 100%; }
+
+        .vessel-popup {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .vessel-popup .name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .vessel-popup .type-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .type-tanker { background: #e65100; color: #fff; }
+        .type-cargo { background: #1565c0; color: #fff; }
+        .type-passenger { background: #2e7d32; color: #fff; }
+        .type-fishing { background: #6a1b9a; color: #fff; }
+        .type-military { background: #b71c1c; color: #fff; }
+        .type-unknown { background: #424242; color: #fff; }
+        .track-btn {
+            margin-top: 6px;
+            padding: 4px 12px;
+            background: #1565c0;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .track-btn:hover { background: #1976d2; }
+
+        .legend {
+            background: rgba(10, 10, 26, 0.9);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.8;
+            border: 1px solid #2a3a4a;
+        }
+        .legend-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Strait of Hormuz <span>Live Ship Tracker</span></h1>
+        <div id="stats">
+            <div>
+                <div class="stat-value" id="vessel-count">--</div>
+                <div class="stat-label">Active Vessels</div>
+            </div>
+            <div>
+                <div class="stat-value" id="total-records">--</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+        </div>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const TYPE_COLORS = {
+            'Tanker': '#e65100',
+            'Cargo': '#1565c0',
+            'Passenger': '#2e7d32',
+            'Fishing/Towing/Dredging': '#6a1b9a',
+            'Military/Sailing/Pleasure': '#b71c1c',
+            'HSC': '#00838f',
+            'Unknown': '#616161',
+            'Other': '#455a64',
+            'WIG': '#f57f17',
+        };
+
+        function getColor(type) {
+            for (const [key, color] of Object.entries(TYPE_COLORS)) {
+                if (type && type.includes(key.split('/')[0])) return color;
+            }
+            return TYPE_COLORS['Unknown'];
+        }
+
+        function getTypeClass(type) {
+            if (!type) return 'type-unknown';
+            if (type.includes('Tanker')) return 'type-tanker';
+            if (type.includes('Cargo')) return 'type-cargo';
+            if (type.includes('Passenger')) return 'type-passenger';
+            if (type.includes('Fishing')) return 'type-fishing';
+            if (type.includes('Military')) return 'type-military';
+            return 'type-unknown';
+        }
+
+        // Center on Strait of Hormuz
+        const map = L.map('map', {
+            center: [26.0, 56.5],
+            zoom: 8,
+            zoomControl: true,
+        });
+
+        // Dark map tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function() {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<div class="legend-title">Vessel Types</div>';
+            for (const [type, color] of Object.entries(TYPE_COLORS)) {
+                if (type === 'WIG') continue;
+                div.innerHTML += `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span>${type}</div>`;
+            }
+            return div;
+        };
+        legend.addTo(map);
+
+        let markers = L.layerGroup().addTo(map);
+        let trackLayer = L.layerGroup().addTo(map);
+
+        async function loadVessels() {
+            try {
+                const res = await fetch('/api/latest');
+                const data = await res.json();
+
+                markers.clearLayers();
+                data.vessels.forEach(v => {
+                    const color = getColor(v.type);
+                    const marker = L.circleMarker([v.lat, v.lon], {
+                        radius: v.type && v.type.includes('Tanker') ? 6 : 5,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 1,
+                        fillOpacity: 0.85,
+                    });
+
+                    const speedKnots = v.speed ? v.speed.toFixed(1) : '--';
+                    const popup = `
+                        <div class="vessel-popup">
+                            <div class="name">${v.name}</div>
+                            <span class="type-badge ${getTypeClass(v.type)}">${v.type}</span>
+                            <br>
+                            <strong>Speed:</strong> ${speedKnots} kn &nbsp;
+                            <strong>Course:</strong> ${v.course ? v.course.toFixed(0) + '&deg;' : '--'}
+                            <br>
+                            <strong>Flag:</strong> ${v.flag || '--'} &nbsp;
+                            <strong>MMSI:</strong> ${v.mmsi}
+                            <br>
+                            <strong>Dest:</strong> ${v.destination || '--'}
+                            <br>
+                            <strong>Size:</strong> ${v.length ? v.length + 'm' : '--'} x ${v.width ? v.width + 'm' : '--'}
+                            <br>
+                            <button class="track-btn" onclick="showTrack(${v.mmsi})">Show Track (6h)</button>
+                        </div>
+                    `;
+                    marker.bindPopup(popup);
+                    markers.addLayer(marker);
+                });
+
+                document.getElementById('vessel-count').textContent = data.count;
+
+                // Stats
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                document.getElementById('total-records').textContent =
+                    stats.total_records > 1000 ? (stats.total_records / 1000).toFixed(1) + 'K' : stats.total_records;
+
+            } catch (e) {
+                console.error('Failed to load vessels:', e);
+            }
+        }
+
+        async function showTrack(mmsi) {
+            try {
+                trackLayer.clearLayers();
+                const res = await fetch(`/api/tracks/${mmsi}?hours=6`);
+                const data = await res.json();
+                if (data.points.length < 2) return;
+
+                const latlngs = data.points.map(p => [p.lat, p.lon]);
+                L.polyline(latlngs, {
+                    color: '#4fc3f7',
+                    weight: 2,
+                    opacity: 0.7,
+                    dashArray: '6 4',
+                }).addTo(trackLayer);
+
+                // Start marker
+                L.circleMarker(latlngs[0], {
+                    radius: 4, fillColor: '#81c784', color: '#fff',
+                    weight: 1, fillOpacity: 0.9,
+                }).bindTooltip('Start').addTo(trackLayer);
+
+            } catch (e) {
+                console.error('Failed to load track:', e);
+            }
+        }
+
+        // Initial load + auto-refresh every 30 seconds
+        loadVessels();
+        setInterval(loadVessels, 30000);
+    </script>
+</body>
+</html>
