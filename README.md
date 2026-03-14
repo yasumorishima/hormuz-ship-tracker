@@ -3,18 +3,22 @@
 Real-time vessel tracking in the Strait of Hormuz using AIS (Automatic Identification System) data.
 Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
 
-![Live Map](docs/screenshot.png)
+### Latest Snapshot (auto-updated every 6 hours)
+
+![Latest Snapshot](docs/snapshot_latest.png)
 
 ## Architecture
 
 ```
 aisstream.io (WebSocket) → Raspberry Pi 5 → SQLite → FastAPI + Leaflet.js
+                                                   → matplotlib snapshot → GitHub (every 6h)
 ```
 
 - **Data Source**: [aisstream.io](https://aisstream.io/) — free, real-time global AIS stream
 - **Collection**: Python WebSocket client, filtered to Strait of Hormuz bounding box
 - **Storage**: SQLite (lightweight, no external DB needed)
 - **Visualization**: Leaflet.js dark map with vessel type color coding, track history, auto-refresh
+- **Auto Snapshot**: matplotlib generates a map image every 6 hours and pushes to this repo
 
 ## Features
 
@@ -24,6 +28,7 @@ aisstream.io (WebSocket) → Raspberry Pi 5 → SQLite → FastAPI + Leaflet.js
 - Track history visualization (6-hour trail per vessel)
 - Statistics dashboard (active vessels, total records, type breakdown)
 - Auto-reconnect on connection loss
+- Auto-snapshot pushed to GitHub every 6 hours (only if data changed)
 
 ## Quick Start
 
@@ -42,6 +47,17 @@ docker-compose up -d --build
 # Open http://localhost:8002
 ```
 
+### Auto Snapshot (optional)
+
+To enable automatic snapshot generation and push to GitHub, add to `.env`:
+
+```
+GITHUB_TOKEN=your_personal_access_token
+GITHUB_REPO=your_username/hormuz-ship-tracker
+```
+
+The `snapshot-cron` container generates a map image every 6 hours and pushes it to the repo.
+
 ## API Endpoints
 
 | Endpoint | Description |
@@ -57,6 +73,7 @@ docker-compose up -d --build
 - WebSocket (aisstream.io)
 - SQLite (aiosqlite)
 - Leaflet.js + CARTO dark tiles
+- matplotlib (auto-snapshot)
 - Docker on Raspberry Pi 5
 
 ## Data Source
