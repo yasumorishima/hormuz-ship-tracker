@@ -87,6 +87,10 @@ The `snapshot-cron` container generates a map image every 6 hours and pushes it 
 Ship position data is provided by [aisstream.io](https://aisstream.io/) via their free WebSocket API.
 AIS (Automatic Identification System) is a maritime safety system that broadcasts vessel position, speed, course, and identification.
 
+## Related
+
+Part of the [Realtime Open Data](https://github.com/yasumorishima/realtime-open-data) project collection.
+
 ## License
 
 MIT
