@@ -24,7 +24,7 @@ NE_10M_URL = (
 )
 
 # Crop region: wider than the collector BBOX for full coverage
-CROP_BBOX = box(53.0, 22.5, 59.5, 28.5)
+CROP_BBOX = box(47.0, 21.0, 61.0, 31.5)
 
 # Minimum polygon area to keep (filters out tiny rock islets)
 MIN_AREA = 0.00005  # ~500m x 1km in degrees

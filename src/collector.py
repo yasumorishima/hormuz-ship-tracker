@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 import aiosqlite
@@ -15,10 +16,16 @@ logger = logging.getLogger(__name__)
 
 API_KEY = os.environ["AISSTREAM_API_KEY"]
 
-# Strait of Hormuz bounding box (wider area to capture approaching vessels)
-BBOX = [[23.5, 54.0], [27.5, 58.5]]
+# Persian Gulf + Gulf of Oman — full coverage
+BBOX = [[22.0, 48.0], [30.5, 60.0]]
 
 DB_PATH = "/app/data/ais.db"
+
+# Per-vessel throttle: store at most one position per MMSI per this many seconds
+POSITION_INTERVAL_SEC = 120
+
+# Batch flush interval (seconds)
+BATCH_FLUSH_SEC = 5
 
 
 async def init_db():
@@ -56,6 +63,22 @@ async def init_db():
     logger.info("Database initialized: %s", DB_PATH)
 
 
+async def flush_batch(batch: list[tuple]) -> int:
+    """Write a batch of position records to SQLite in a single transaction."""
+    if not batch:
+        return 0
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.executemany(
+            """INSERT INTO positions
+            (mmsi, timestamp, latitude, longitude, speed, course, heading,
+             ship_name, ship_type, destination, draught, length, width, flag, received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            batch,
+        )
+        await db.commit()
+    return len(batch)
+
+
 async def collect():
     """Connect to aisstream.io and store AIS messages."""
     await init_db()
@@ -69,11 +92,20 @@ async def collect():
     # In-memory cache for static data (ship name, type, etc.)
     static_cache: dict[int, dict] = {}
 
+    # Per-vessel throttle: last stored timestamp per MMSI
+    last_stored: dict[int, float] = {}
+
+    # Batch buffer
+    batch: list[tuple] = []
+    last_flush = time.monotonic()
+
     while True:
         try:
             async with websockets.connect("wss://stream.aisstream.io/v0/stream") as ws:
                 await ws.send(json.dumps(subscribe_msg))
-                logger.info("Connected to aisstream.io — collecting Strait of Hormuz")
+                logger.info(
+                    "Connected to aisstream.io — collecting Persian Gulf & Gulf of Oman"
+                )
 
                 async for raw in ws:
                     try:
@@ -111,44 +143,65 @@ async def collect():
                             if is_on_land(lat, lon):
                                 continue
 
+                            # Per-vessel throttle
+                            now_mono = time.monotonic()
+                            prev = last_stored.get(mmsi, 0)
+                            if now_mono - prev < POSITION_INTERVAL_SEC:
+                                continue
+                            last_stored[mmsi] = now_mono
+
                             static = static_cache.get(mmsi, {})
-                            ship_name = meta_data.get("ShipName", "").strip() or static.get("ship_name", "")
+                            ship_name = (
+                                meta_data.get("ShipName", "").strip()
+                                or static.get("ship_name", "")
+                            )
 
                             now = datetime.now(timezone.utc).isoformat()
                             ts = meta_data.get("time_utc", now)
 
-                            async with aiosqlite.connect(DB_PATH) as db:
-                                await db.execute(
-                                    """INSERT INTO positions
-                                    (mmsi, timestamp, latitude, longitude, speed, course, heading,
-                                     ship_name, ship_type, destination, draught, length, width, flag, received_at)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                    (
-                                        mmsi,
-                                        ts,
-                                        lat,
-                                        lon,
-                                        pos.get("Sog"),
-                                        pos.get("Cog"),
-                                        pos.get("TrueHeading"),
-                                        ship_name,
-                                        static.get("ship_type"),
-                                        static.get("destination", ""),
-                                        static.get("draught"),
-                                        static.get("length"),
-                                        static.get("width"),
-                                        meta_data.get("country_code", ""),
-                                        now,
-                                    ),
-                                )
-                                await db.commit()
+                            batch.append((
+                                mmsi,
+                                ts,
+                                lat,
+                                lon,
+                                pos.get("Sog"),
+                                pos.get("Cog"),
+                                pos.get("TrueHeading"),
+                                ship_name,
+                                static.get("ship_type"),
+                                static.get("destination", ""),
+                                static.get("draught"),
+                                static.get("length"),
+                                static.get("width"),
+                                meta_data.get("country_code", ""),
+                                now,
+                            ))
+
+                        # Flush batch periodically
+                        if time.monotonic() - last_flush >= BATCH_FLUSH_SEC:
+                            if batch:
+                                n = await flush_batch(batch)
+                                logger.debug("Flushed %d records", n)
+                                batch.clear()
+                            last_flush = time.monotonic()
 
                     except (json.JSONDecodeError, KeyError) as e:
                         logger.warning("Parse error: %s", e)
 
+                # Flush remaining on disconnect
+                if batch:
+                    await flush_batch(batch)
+                    batch.clear()
+
         except (websockets.exceptions.ConnectionClosed, OSError) as e:
             logger.warning("Connection lost: %s — reconnecting in 10s", e)
+            if batch:
+                await flush_batch(batch)
+                batch.clear()
             await asyncio.sleep(10)
         except Exception as e:
             logger.error("Unexpected error: %s — reconnecting in 30s", e)
+            if batch:
+                await flush_batch(batch)
+                batch.clear()
             await asyncio.sleep(30)

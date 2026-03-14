@@ -179,8 +179,8 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
     ax.set_facecolor("#0d1b2a")
 
     # Bounding box matching the collector's area with some padding
-    lon_min, lon_max = 49.5, 59.0
-    lat_min, lat_max = 23.0, 27.8
+    lon_min, lon_max = 47.5, 60.5
+    lat_min, lat_max = 21.5, 31.0
     ax.set_xlim(lon_min, lon_max)
     ax.set_ylim(lat_min, lat_max)
     ax.set_aspect("equal")
