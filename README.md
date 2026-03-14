@@ -3,6 +3,8 @@
 Real-time vessel tracking in the Strait of Hormuz using AIS (Automatic Identification System) data.
 Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
 
+![Live Map](docs/screenshot.png)
+
 ### Latest Snapshot (auto-updated every 6 hours)
 
 ![Latest Snapshot](docs/snapshot_latest.png)
