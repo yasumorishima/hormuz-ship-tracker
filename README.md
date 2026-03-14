@@ -1,6 +1,6 @@
-# Strait of Hormuz — Live Ship Tracker
+# Persian Gulf & Strait of Hormuz — Live Ship Tracker
 
-Real-time vessel tracking in the Strait of Hormuz using AIS (Automatic Identification System) data.
+Real-time vessel tracking across the Persian Gulf, Strait of Hormuz, and Gulf of Oman using AIS (Automatic Identification System) data.
 Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
 
 ![Live Map](docs/screenshot.png)
@@ -18,7 +18,7 @@ aisstream.io (WebSocket) → Land Filter (Natural Earth 10m + Shapely)
 ```
 
 - **Data Source**: [aisstream.io](https://aisstream.io/) — free, real-time global AIS stream
-- **Collection**: Python WebSocket client, filtered to Strait of Hormuz bounding box
+- **Collection**: Python WebSocket client, covering the full Persian Gulf + Gulf of Oman (batch insert + per-vessel throttle for efficiency)
 - **Land Filter**: [Natural Earth](https://www.naturalearthdata.com/) 10m land polygons + Shapely — rejects AIS positions on land
 - **Storage**: SQLite (lightweight, no external DB needed)
 - **Visualization**: Leaflet.js dark map with vessel type color coding, track history, auto-refresh
