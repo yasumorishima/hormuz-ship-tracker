@@ -1,32 +1,35 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-15 15:06:52 UTC
+Generated: 2026-03-15 23:28:28 UTC
 
-Active vessels (30 min): 236
-Unique vessels (24h): 265
-Total position records: 6,693
+Active vessels (30 min): 291
+Unique vessels (24h): 317
+Total position records: 12,951
+Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
-  Unknown: 131
-  Cargo: 42
-  Tanker: 40
-  Other: 9
-  Fishing/Towing/Dredging: 6
-  Military/Sailing/Pleasure: 6
-  Passenger: 2
+  Unknown: 140
+  Tanker: 63
+  Cargo: 51
+  Other: 12
+  Military/Sailing/Pleasure: 10
+  Fishing/Towing/Dredging: 9
+  Passenger: 4
+  WIG: 1
+  HSC: 1
 
 ## Top vessels by name
   MIRACLE HOPE [Unknown] → -- | 102.2 kn
   SSF VALENCE [Unknown] → -- | 99.1 kn
   DMS COURAGEOUS [Other] → FATEH FIELD UAE | 99.3 kn
-  HAI TUN ZUO [Tanker] → MERAK | 86.9 kn
-  HABRUT [Tanker] → XX XXX>AE DXB | 102.2 kn
-  PLC 02 [Unknown] → -- | 49.9 kn
-  SIENA [Tanker] → FOR ORDER | 99.7 kn
-  AL BAZM II [Cargo] → JEA | 99.1 kn
+  HAI TUN ZUO [Tanker] → Ras Al Khaimah | 86.9 kn
+  HABRUT [Tanker] → Dubai | 102.2 kn
+  AL BAZM II [Cargo] → Jebel Ali | 99.1 kn
   TRANSSHELF [Cargo] → -- | 90.0 kn
-  SHAHRAZAD [Tanker] → FOR ORDERS | 102.2 kn
-  CHARLES DARWIN [Fishing/Towing/Dredging] → DXB PJA | 99.2 kn
+  SHAHRAZAD [Tanker] → For Orders | 102.2 kn
   AMIRA MIRUNA [Cargo] → SAJUB | 48.7 kn
-  CSCL ARCTIC OCEAN [Cargo] → MYPKG | 98.9 kn
-  SADAH SILVER [Unknown] → -- | 102.3 kn
-  MONTE URBASA [Unknown] → -- | 79.5 kn
+  ONE MAJESTY [Unknown] → -- | 102.2 kn
+  BANASTAR [Cargo] → -- | 47.7 kn
+  PACIFIC PANDA [Unknown] → -- | --
+  ZAYA DIAMOND [Unknown] → -- | 0.3 kn
+  YE CHI [Unknown] → -- | 4.8 kn
+  PRUDENT WARRIOR [Unknown] → -- | 0.1 kn
