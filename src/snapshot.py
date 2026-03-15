@@ -4,6 +4,7 @@ Produces a dark-themed PNG image with vessel positions color-coded by type,
 plus a text stats summary. Designed to run inside the Docker container.
 """
 
+import json
 import sqlite3
 import sys
 from collections import Counter
@@ -13,12 +14,18 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.patches as mpatches  # noqa: E402
 import matplotlib.patheffects as pe  # noqa: E402
+from shapely.geometry import shape  # noqa: E402
 
 from land_filter import is_on_land  # noqa: E402
 
 DB_PATH = "/app/data/ais.db"
 OUTPUT_DIR = Path("/app/data")
+
+# Resolve land_mask.geojson relative to this file
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+_GEOJSON_PATH = _DATA_DIR / "land_mask.geojson"
 
 # Match the web UI color scheme exactly
 TYPE_COLORS = {
@@ -32,6 +39,18 @@ TYPE_COLORS = {
     "Unknown": "#616161",
 }
 
+# Marker shapes per vessel type for better visual distinction
+TYPE_MARKERS = {
+    "Tanker": "D",        # diamond
+    "Cargo": "s",         # square
+    "Passenger": "^",     # triangle up
+    "Fishing/Towing/Dredging": "v",  # triangle down
+    "Military/Sailing/Pleasure": "P",  # plus (filled)
+    "HSC": ">",           # triangle right
+    "Other": "h",         # hexagon
+    "Unknown": "o",       # circle
+}
+
 SHIP_TYPE_RANGES = {
     range(20, 30): "WIG",
     range(30, 36): "Fishing/Towing/Dredging",
@@ -43,55 +62,47 @@ SHIP_TYPE_RANGES = {
     range(90, 100): "Other",
 }
 
+# Monitoring BBOX (matches the collector's WebSocket subscription)
+MONITOR_BBOX = {
+    "lat_min": 22.0, "lat_max": 30.5,
+    "lon_min": 48.0, "lon_max": 60.0,
+}
+
 # Key geographic labels for the Strait of Hormuz region
 GEO_LABELS = [
-    (26.25, 56.25, "Strait of\nHormuz", 12, "#4fc3f7"),
-    (27.15, 56.30, "IRAN", 14, "#cccccc"),
-    (23.80, 54.60, "UAE", 14, "#cccccc"),
-    (24.50, 57.50, "OMAN", 14, "#cccccc"),
-    (25.35, 54.80, "QATAR", 9, "#999999"),
-    (26.05, 50.55, "BAHRAIN", 8, "#999999"),
-    (25.20, 55.30, "Dubai", 9, "#888888"),
-    (24.45, 54.65, "Abu Dhabi", 9, "#888888"),
-    (27.20, 56.60, "Bandar Abbas", 8, "#888888"),
-    (23.60, 58.55, "Muscat", 9, "#888888"),
+    # (lat, lon, label, fontsize, color)
+    (26.25, 56.25, "Strait of\nHormuz", 14, "#4fc3f7"),
+    (28.50, 53.00, "IRAN", 16, "#cccccc"),
+    (23.80, 54.60, "UAE", 16, "#cccccc"),
+    (24.00, 57.80, "OMAN", 16, "#cccccc"),
+    (29.50, 48.50, "KUWAIT", 10, "#999999"),
+    (25.35, 54.80, "QATAR", 10, "#999999"),
+    (26.05, 50.55, "BAHRAIN", 9, "#999999"),
+    (25.20, 55.30, "Dubai", 10, "#888888"),
+    (24.45, 54.65, "Abu Dhabi", 10, "#888888"),
+    (27.20, 56.60, "Bandar Abbas", 9, "#888888"),
+    (23.60, 58.55, "Muscat", 10, "#888888"),
+    (24.80, 49.50, "Al-Jubail", 8, "#777777"),
+    (26.25, 50.20, "Dammam", 8, "#777777"),
 ]
 
-# Approximate coastline polygons (simplified) for the Hormuz region
-# These are rough outlines to give geographic context on the dark background
-COASTLINE_SEGMENTS = [
-    # Iran southern coast (west to east)
-    [
-        (27.50, 54.00), (27.20, 54.50), (26.90, 54.80), (26.70, 55.10),
-        (26.60, 55.40), (26.55, 55.70), (26.50, 55.90), (26.60, 56.10),
-        (26.70, 56.20), (26.90, 56.30), (27.10, 56.30), (27.20, 56.50),
-        (27.15, 56.80), (26.95, 57.05), (26.80, 57.20), (26.70, 57.40),
-        (26.55, 57.60), (26.30, 57.80), (26.10, 58.00), (25.90, 58.30),
-        (25.80, 58.50),
-    ],
-    # UAE coast (west to east, northern coast)
-    [
-        (24.00, 54.00), (24.30, 54.30), (24.50, 54.50), (24.80, 54.70),
-        (25.00, 55.00), (25.10, 55.20), (25.25, 55.30), (25.35, 55.40),
-        (25.40, 55.50), (25.60, 55.80), (25.70, 56.00), (25.80, 56.10),
-        (25.95, 56.20), (26.10, 56.25), (26.30, 56.35), (26.35, 56.35),
-    ],
-    # Oman (Musandam peninsula tip + east coast)
-    [
-        (26.35, 56.35), (26.40, 56.40), (26.38, 56.45), (26.20, 56.50),
-        (26.10, 56.40), (25.95, 56.30), (25.80, 56.30), (25.60, 56.35),
-        (25.40, 56.40), (25.00, 56.60), (24.70, 56.80), (24.40, 57.00),
-        (24.10, 57.20), (23.80, 57.50), (23.60, 57.80), (23.50, 58.00),
-        (23.55, 58.30), (23.60, 58.50), (23.65, 58.60),
-    ],
-    # Qatar peninsula
-    [
-        (24.70, 50.80), (25.00, 51.00), (25.30, 51.20), (25.60, 51.30),
-        (25.90, 51.40), (26.10, 51.50), (26.15, 51.55), (26.10, 51.60),
-        (25.80, 51.60), (25.50, 51.55), (25.20, 51.50), (24.90, 51.40),
-        (24.70, 51.30), (24.50, 51.20),
-    ],
-]
+
+def _load_coastline_polygons() -> list:
+    """Load coastline polygons from land_mask.geojson for rendering."""
+    try:
+        with open(_GEOJSON_PATH) as f:
+            data = json.load(f)
+        polygons = []
+        for feature in data["features"]:
+            geom = shape(feature["geometry"])
+            if geom.geom_type == "Polygon":
+                polygons.append(geom)
+            elif geom.geom_type == "MultiPolygon":
+                polygons.extend(geom.geoms)
+        return polygons
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Warning: Could not load coastlines from {_GEOJSON_PATH}: {e}")
+        return []
 
 
 def get_ship_type_label(type_code: int | None) -> str:
@@ -110,6 +121,14 @@ def get_color(ship_type: str) -> str:
         if ship_type.startswith(key.split("/")[0]):
             return color
     return TYPE_COLORS["Unknown"]
+
+
+def get_marker(ship_type: str) -> str:
+    """Get marker shape for a ship type."""
+    for key, marker in TYPE_MARKERS.items():
+        if ship_type.startswith(key.split("/")[0]):
+            return marker
+    return TYPE_MARKERS["Unknown"]
 
 
 def query_latest_positions(db_path: str) -> list[dict]:
@@ -175,31 +194,51 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
     now_utc = datetime.now(timezone.utc)
 
     # --- Figure setup ---
-    fig, ax = plt.subplots(figsize=(14, 9), facecolor="#0a0a1a")
+    fig, ax = plt.subplots(figsize=(16, 10), facecolor="#0a0a1a")
     ax.set_facecolor("#0d1b2a")
 
-    # Bounding box matching the collector's area with some padding
-    lon_min, lon_max = 47.5, 60.5
-    lat_min, lat_max = 21.5, 31.0
+    # Display area (slightly wider than monitoring BBOX for context)
+    lon_min, lon_max = 46.5, 61.0
+    lat_min, lat_max = 21.0, 31.5
     ax.set_xlim(lon_min, lon_max)
     ax.set_ylim(lat_min, lat_max)
     ax.set_aspect("equal")
 
-    # --- Grid lines ---
-    for lon in range(50, 59):
-        ax.axvline(lon, color="#1a2a3a", linewidth=0.5, zorder=1)
-    for lat in range(23, 28):
-        ax.axhline(lat, color="#1a2a3a", linewidth=0.5, zorder=1)
+    # --- Subtle grid lines ---
+    for lon in range(48, 61):
+        ax.axvline(lon, color="#141e2e", linewidth=0.3, zorder=1)
+    for lat in range(22, 32):
+        ax.axhline(lat, color="#141e2e", linewidth=0.3, zorder=1)
 
-    # --- Coastline ---
-    for segment in COASTLINE_SEGMENTS:
-        lats, lons = zip(*segment)
-        ax.plot(lons, lats, color="#2a3a4a", linewidth=1.2, zorder=2)
-        # Fill land side with a subtle shade
-        ax.fill(lons, lats, color="#111822", alpha=0.6, zorder=1)
+    # --- Coastline from land_mask.geojson ---
+    coastline_polys = _load_coastline_polygons()
+    for poly in coastline_polys:
+        exterior = poly.exterior
+        xs, ys = exterior.xy
+        ax.fill(xs, ys, facecolor="#111822", edgecolor="#2a3a4a",
+                linewidth=0.8, zorder=2)
+
+    # --- Monitoring area BBOX (dashed rectangle) ---
+    bbox = MONITOR_BBOX
+    bbox_rect = mpatches.FancyBboxPatch(
+        (bbox["lon_min"], bbox["lat_min"]),
+        bbox["lon_max"] - bbox["lon_min"],
+        bbox["lat_max"] - bbox["lat_min"],
+        boxstyle="round,pad=0",
+        fill=False, edgecolor="#4fc3f7", linewidth=1.5,
+        linestyle=(0, (8, 4)),  # dashed
+        zorder=4,
+    )
+    ax.add_patch(bbox_rect)
+    # Label for the monitoring area
+    ax.text(
+        bbox["lon_min"] + 0.15, bbox["lat_max"] - 0.3,
+        "MONITORING AREA", fontsize=8, color="#4fc3f7", alpha=0.7,
+        fontweight="bold", zorder=4,
+    )
 
     # --- Geographic labels ---
-    text_effects = [pe.withStroke(linewidth=2, foreground="#0a0a1a")]
+    text_effects = [pe.withStroke(linewidth=3, foreground="#0a0a1a")]
     for lat, lon, label, size, color in GEO_LABELS:
         if lon_min <= lon <= lon_max and lat_min <= lat <= lat_max:
             ax.text(
@@ -209,62 +248,91 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
                 path_effects=text_effects,
             )
 
-    # --- Vessel dots ---
+    # --- Vessel markers ---
     type_counter: Counter = Counter()
     if vessels:
-        # Group by type for efficient plotting and legend
         by_type: dict[str, list] = {}
         for v in vessels:
             by_type.setdefault(v["type"], []).append(v)
 
         for ship_type, group in sorted(by_type.items()):
             color = get_color(ship_type)
+            marker = get_marker(ship_type)
             lats = [v["lat"] for v in group]
             lons = [v["lon"] for v in group]
-            size = 30 if "Tanker" in ship_type else 22
+            size = 60 if "Tanker" in ship_type else 45
             ax.scatter(
                 lons, lats,
-                s=size, c=color, edgecolors="white", linewidths=0.4,
-                alpha=0.85, zorder=5, label=f"{ship_type} ({len(group)})",
+                s=size, c=color, marker=marker,
+                edgecolors="white", linewidths=0.6,
+                alpha=0.9, zorder=5, label=f"{ship_type} ({len(group)})",
             )
             type_counter[ship_type] = len(group)
 
     # --- Legend ---
     legend = ax.legend(
-        loc="lower left", fontsize=10,
-        facecolor="#0d1b2a", edgecolor="#2a3a4a", labelcolor="#cccccc",
-        framealpha=0.9, borderpad=0.8,
-        title="Vessel Types", title_fontsize=11,
+        loc="lower right", fontsize=12,
+        facecolor="#0d1b2aee", edgecolor="#2a3a4a", labelcolor="#cccccc",
+        framealpha=0.95, borderpad=1.0, handletextpad=0.8,
+        title="Vessel Types", title_fontsize=13,
     )
     if legend.get_title():
         legend.get_title().set_color("#4fc3f7")
 
-    # --- Title bar ---
+    # --- Title (top-left overlay, not matplotlib title) ---
     total_str = f"{stats['total_records']:,}"
-    title_text = (
-        f"Strait of Hormuz — Ship Tracker Snapshot\n"
-        f"{now_utc.strftime('%Y-%m-%d %H:%M UTC')}  |  "
-        f"Active: {len(vessels)} vessels  |  "
-        f"24h unique: {stats['unique_vessels_24h']}  |  "
-        f"Total records: {total_str}"
-    )
-    ax.set_title(
-        title_text, fontsize=14, fontweight="bold",
-        color="#e0e0e0", pad=12,
-        fontfamily="sans-serif",
+    fig.text(
+        0.02, 0.97,
+        "Strait of Hormuz  Live Ship Tracker",
+        fontsize=18, fontweight="bold", color="#e0e0e0",
+        va="top", fontfamily="sans-serif",
+        path_effects=[pe.withStroke(linewidth=3, foreground="#0a0a1a")],
     )
 
-    # --- Axis labels ---
-    ax.set_xlabel("Longitude", fontsize=12, color="#888888", labelpad=8)
-    ax.set_ylabel("Latitude", fontsize=12, color="#888888", labelpad=8)
-    ax.tick_params(colors="#666666", labelsize=10)
+    # Stats badges (top-right)
+    fig.text(
+        0.88, 0.97,
+        f"{len(vessels)}", fontsize=22, fontweight="bold",
+        color="#4fc3f7", va="top", ha="center",
+        path_effects=[pe.withStroke(linewidth=2, foreground="#0a0a1a")],
+    )
+    fig.text(
+        0.88, 0.935,
+        "ACTIVE\nVESSELS", fontsize=7, color="#888888",
+        va="top", ha="center", linespacing=1.2,
+    )
+    fig.text(
+        0.96, 0.97,
+        total_str, fontsize=22, fontweight="bold",
+        color="#4fc3f7", va="top", ha="center",
+        path_effects=[pe.withStroke(linewidth=2, foreground="#0a0a1a")],
+    )
+    fig.text(
+        0.96, 0.935,
+        "TOTAL\nRECORDS", fontsize=7, color="#888888",
+        va="top", ha="center", linespacing=1.2,
+    )
+
+    # Timestamp (below title)
+    fig.text(
+        0.02, 0.935,
+        f"{now_utc.strftime('%Y-%m-%d %H:%M UTC')}  |  "
+        f"24h unique: {stats['unique_vessels_24h']}",
+        fontsize=10, color="#888888", va="top",
+    )
+
+    # --- Axis formatting (degree notation, no labels) ---
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:.0f}\u00b0E"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}\u00b0N"))
+    ax.tick_params(colors="#555555", labelsize=10, length=0)
     for spine in ax.spines.values():
-        spine.set_color("#2a3a4a")
+        spine.set_visible(False)
 
     # --- Attribution ---
     fig.text(
-        0.99, 0.01, "Data: aisstream.io  |  github.com/yasumorishima/hormuz-ship-tracker",
-        fontsize=8, color="#555555", ha="right", va="bottom",
+        0.99, 0.01,
+        "Data: aisstream.io  |  github.com/yasumorishima/hormuz-ship-tracker",
+        fontsize=8, color="#444444", ha="right", va="bottom",
     )
 
     # --- Save ---
