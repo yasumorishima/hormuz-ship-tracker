@@ -56,6 +56,9 @@ SPEED_ANCHORED = 0.5    # knots
 SPEED_SLOW = 3.0
 SPEED_MANEUVERING = 8.0
 
+# AIS speed sentinel: 102.3 knots = 0x3FF = "not available"
+AIS_SPEED_UNAVAILABLE = 102.3
+
 # ── Known anchorage / waiting zones ──
 # Each zone: center (lat, lon), radius in nautical miles
 ANCHORAGE_ZONES = {
@@ -386,7 +389,7 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
 
 def classify_vessel_state(speed: float | None) -> str:
     """Classify a vessel's operational state based on speed."""
-    if speed is None:
+    if speed is None or speed >= AIS_SPEED_UNAVAILABLE:
         return "unknown"
     if speed < SPEED_ANCHORED:
         return "anchored"
