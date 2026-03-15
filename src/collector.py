@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 import aiosqlite
 import websockets
 
+from country_codes import mmsi_to_flag
+from destinations import normalize_destination
 from land_filter import is_on_land
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,32 @@ POSITION_INTERVAL_SEC = 120
 
 # Batch flush interval (seconds)
 BATCH_FLUSH_SEC = 5
+
+
+def _normalize_timestamp(raw: str) -> str:
+    """Normalize aisstream.io timestamp to ISO 8601.
+
+    Input:  "2026-03-14 06:57:51.594510977 +0000 UTC"
+    Output: "2026-03-14T06:57:51.594510+00:00"
+    """
+    if not raw:
+        return ""
+    try:
+        # Strip " +0000 UTC" or similar timezone suffix
+        parts = raw.split(" +")
+        if len(parts) >= 2:
+            base = parts[0]
+        else:
+            base = raw.rstrip(" UTC")
+        # Replace space with T for ISO format
+        base = base.replace(" ", "T", 1)
+        # Truncate nanoseconds to microseconds (max 6 decimal places)
+        if "." in base:
+            main, frac = base.split(".", 1)
+            base = main + "." + frac[:6]
+        return base
+    except Exception:
+        return ""
 
 
 async def init_db():
@@ -157,7 +185,19 @@ async def collect():
                             )
 
                             now = datetime.now(timezone.utc).isoformat()
-                            ts = meta_data.get("time_utc", now)
+
+                            # Normalize timestamp from aisstream.io format
+                            # e.g. "2026-03-14 06:57:51.594510977 +0000 UTC"
+                            raw_ts = meta_data.get("time_utc", "")
+                            ts = _normalize_timestamp(raw_ts) or now
+
+                            # Flag: derive from MMSI (aisstream MetaData
+                            # doesn't reliably provide country_code)
+                            flag_code, _ = mmsi_to_flag(mmsi)
+
+                            # Normalize destination
+                            raw_dest = static.get("destination", "")
+                            dest = normalize_destination(raw_dest)
 
                             batch.append((
                                 mmsi,
@@ -169,11 +209,11 @@ async def collect():
                                 pos.get("TrueHeading"),
                                 ship_name,
                                 static.get("ship_type"),
-                                static.get("destination", ""),
+                                dest,
                                 static.get("draught"),
                                 static.get("length"),
                                 static.get("width"),
-                                meta_data.get("country_code", ""),
+                                flag_code,
                                 now,
                             ))
 

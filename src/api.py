@@ -1,4 +1,4 @@
-"""FastAPI endpoints for the ship tracker."""
+"""FastAPI endpoints for the ship tracker + analytics."""
 
 import aiosqlite
 from fastapi import FastAPI, Request
@@ -6,6 +6,17 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from analytics import (
+    ANCHORAGE_ZONES,
+    GATE_A,
+    GATE_B,
+    get_daily_summary,
+    get_destination_distribution,
+    get_flag_distribution,
+    get_hourly_transits,
+    get_transit_summary,
+    get_vessel_states,
+)
 from land_filter import is_on_land
 
 app = FastAPI(title="Hormuz Ship Tracker")
@@ -36,9 +47,11 @@ def get_ship_type_label(type_code: int | None) -> str:
     return "Unknown"
 
 
+# ── Core endpoints ──
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """Serve the live map page."""
+    """Serve the live map + analytics dashboard."""
     return templates.TemplateResponse("map.html", {"request": request})
 
 
@@ -136,3 +149,60 @@ async def stats():
             {"type": get_ship_type_label(row[0]), "count": row[1]} for row in type_counts
         ],
     }
+
+
+# ── Analytics endpoints ──
+
+@app.get("/api/analytics/transits")
+async def api_transits(hours: int = 24):
+    """Transit events through the Strait of Hormuz."""
+    return await get_transit_summary(hours)
+
+
+@app.get("/api/analytics/hourly")
+async def api_hourly_transits(hours: int = 48):
+    """Hourly transit counts for charting."""
+    return {"hours": hours, "data": await get_hourly_transits(hours)}
+
+
+@app.get("/api/analytics/states")
+async def api_vessel_states():
+    """Current vessel state classification (anchored/transiting/etc)."""
+    return await get_vessel_states()
+
+
+@app.get("/api/analytics/flags")
+async def api_flags(hours: int = 24):
+    """Flag state distribution."""
+    return {"hours": hours, "data": await get_flag_distribution(hours)}
+
+
+@app.get("/api/analytics/destinations")
+async def api_destinations(hours: int = 24):
+    """Destination distribution."""
+    return {"hours": hours, "data": await get_destination_distribution(hours)}
+
+
+@app.get("/api/analytics/gate")
+async def api_gate_info():
+    """Gate line coordinates and anchorage zone definitions."""
+    return {
+        "gate": {
+            "a": {"lat": GATE_A[0], "lon": GATE_A[1]},
+            "b": {"lat": GATE_B[0], "lon": GATE_B[1]},
+        },
+        "anchorage_zones": {
+            name: {
+                "lat": z["lat"],
+                "lon": z["lon"],
+                "radius_nm": z["radius_nm"],
+            }
+            for name, z in ANCHORAGE_ZONES.items()
+        },
+    }
+
+
+@app.get("/api/analytics/summary")
+async def api_daily_summary():
+    """Comprehensive daily summary."""
+    return await get_daily_summary()

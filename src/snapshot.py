@@ -176,9 +176,27 @@ def query_stats(db_path: str) -> dict:
             "SELECT COUNT(DISTINCT mmsi) FROM positions "
             "WHERE received_at > datetime('now', '-24 hours')"
         ).fetchone()[0]
+
+        # Transit stats (if analytics tables exist)
+        transit_in_24h = 0
+        transit_out_24h = 0
+        try:
+            transit_in_24h = conn.execute(
+                "SELECT COUNT(*) FROM transit_events "
+                "WHERE direction='INBOUND' AND crossed_at > datetime('now', '-24 hours')"
+            ).fetchone()[0]
+            transit_out_24h = conn.execute(
+                "SELECT COUNT(*) FROM transit_events "
+                "WHERE direction='OUTBOUND' AND crossed_at > datetime('now', '-24 hours')"
+            ).fetchone()[0]
+        except Exception:
+            pass  # table may not exist yet
+
         return {
             "total_records": total_records,
             "unique_vessels_24h": unique_vessels_24h,
+            "transit_in_24h": transit_in_24h,
+            "transit_out_24h": transit_out_24h,
         }
     finally:
         conn.close()
@@ -248,6 +266,30 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
                 path_effects=text_effects,
             )
 
+    # --- Gate line (Strait of Hormuz transit detection) ---
+    gate_lats = [26.05, 26.65]
+    gate_lons = [56.50, 56.10]
+    ax.plot(
+        gate_lons, gate_lats,
+        color="#ff1744", linewidth=2.5, linestyle=(0, (6, 4)),
+        zorder=4, alpha=0.9,
+    )
+    # Gate endpoints
+    ax.scatter(
+        gate_lons, gate_lats,
+        s=40, c="#ff1744", marker="o", edgecolors="white",
+        linewidths=0.8, zorder=5,
+    )
+    # Gate label
+    mid_lat = (gate_lats[0] + gate_lats[1]) / 2
+    mid_lon = (gate_lons[0] + gate_lons[1]) / 2
+    ax.text(
+        mid_lon + 0.25, mid_lat, "GATE",
+        fontsize=9, color="#ff1744", fontweight="bold",
+        ha="left", va="center", zorder=5,
+        path_effects=[pe.withStroke(linewidth=2, foreground="#0a0a1a")],
+    )
+
     # --- Vessel markers ---
     type_counter: Counter = Counter()
     if vessels:
@@ -313,6 +355,33 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
         va="top", ha="center", linespacing=1.2,
     )
 
+    # Transit stats badges (center-right)
+    t_in = stats.get("transit_in_24h", 0)
+    t_out = stats.get("transit_out_24h", 0)
+    if t_in or t_out:
+        fig.text(
+            0.78, 0.97,
+            f"{t_in}", fontsize=20, fontweight="bold",
+            color="#4caf50", va="top", ha="center",
+            path_effects=[pe.withStroke(linewidth=2, foreground="#0a0a1a")],
+        )
+        fig.text(
+            0.78, 0.935,
+            "IN 24h", fontsize=7, color="#66bb6a",
+            va="top", ha="center",
+        )
+        fig.text(
+            0.83, 0.97,
+            f"{t_out}", fontsize=20, fontweight="bold",
+            color="#ff9800", va="top", ha="center",
+            path_effects=[pe.withStroke(linewidth=2, foreground="#0a0a1a")],
+        )
+        fig.text(
+            0.83, 0.935,
+            "OUT 24h", fontsize=7, color="#ffb74d",
+            va="top", ha="center",
+        )
+
     # Timestamp (below title)
     fig.text(
         0.02, 0.935,
@@ -366,6 +435,7 @@ def generate_stats_summary(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR
         f"Active vessels (30 min): {len(vessels)}",
         f"Unique vessels (24h): {stats['unique_vessels_24h']}",
         f"Total position records: {stats['total_records']:,}",
+        f"Strait transits (24h): IN {stats.get('transit_in_24h', 0)} / OUT {stats.get('transit_out_24h', 0)}",
         "",
         "## By vessel type",
     ]

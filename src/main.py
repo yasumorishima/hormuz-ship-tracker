@@ -1,10 +1,11 @@
-"""Entry point: run AIS collector and web server concurrently."""
+"""Entry point: run AIS collector, analytics engine, and web server concurrently."""
 
 import asyncio
 import logging
 
 import uvicorn
 
+from analytics import transit_detection_loop
 from collector import collect
 
 logging.basicConfig(
@@ -21,10 +22,11 @@ async def run_server():
 
 
 async def main():
-    """Run collector and web server in parallel."""
+    """Run collector, analytics, and web server in parallel."""
     await asyncio.gather(
         collect(),
         run_server(),
+        transit_detection_loop(interval_sec=300),
     )
 
 
