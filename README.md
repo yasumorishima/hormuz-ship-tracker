@@ -1,7 +1,9 @@
-# Persian Gulf & Strait of Hormuz — Live Ship Tracker
+# Strait of Hormuz — Maritime Monitor
 
-Real-time vessel tracking across the Persian Gulf, Strait of Hormuz, and Gulf of Oman using AIS (Automatic Identification System) data.
-Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
+Real-time vessel tracking and maritime intelligence for the Persian Gulf, Strait of Hormuz, and Gulf of Oman.
+Continuously monitors shipping patterns using AIS data, with automated transit detection, vessel state classification, and anomaly analysis.
+
+Runs 24/7 on Raspberry Pi 5.
 
 ![Live Map](docs/screenshot.png)
 
@@ -9,83 +11,88 @@ Runs 24/7 on Raspberry Pi 5, collecting and visualizing live maritime traffic.
 
 ![Latest Snapshot](docs/snapshot_latest.png)
 
+## What This Monitors
+
+- **Strait transit rate** — virtual gate lines detect vessels entering/leaving the Persian Gulf and major ports
+- **Vessel state** — anchored, maneuvering, transiting (speed-based + geofence classification)
+- **Anchorage congestion** — named zones (Fujairah, Dubai, Bandar Abbas, etc.) with vessel counts
+- **Waiting fleet** — vessels stationary for 6h+ / 24h+ (indicates disruption)
+- **Flag state & destination analysis** — MMSI-based country detection, AIS destination normalization
+- **Situation assessment** — data-driven status: NO TRANSIT / LIMITED / ACTIVE, auto-adapts to conditions
+
 ## Architecture
 
 ```
-aisstream.io (WebSocket) → Land Filter (Natural Earth 10m + Shapely)
-                              → SQLite → FastAPI + Leaflet.js
-                              → matplotlib snapshot → GitHub (every 6h)
+aisstream.io (WebSocket)
+  → Land Filter (Natural Earth 10m + Shapely)
+  → SQLite
+  → Analytics Engine (transit detection, vessel classification)
+  → FastAPI + Leaflet.js + Chart.js
+  → matplotlib snapshot → GitHub (every 6h)
 ```
 
-- **Data Source**: [aisstream.io](https://aisstream.io/) — free, real-time global AIS stream
-- **Collection**: Python WebSocket client, covering the full Persian Gulf + Gulf of Oman (batch insert + per-vessel throttle for efficiency)
-- **Land Filter**: [Natural Earth](https://www.naturalearthdata.com/) 10m land polygons + Shapely — rejects AIS positions on land
-- **Storage**: SQLite (lightweight, no external DB needed)
-- **Visualization**: Leaflet.js dark map with vessel type color coding, track history, auto-refresh
-- **Auto Snapshot**: matplotlib generates a map image every 6 hours and pushes to this repo
+## Key Features
 
-## Features
-
-- Real-time vessel positions updated every 30 seconds
-- Color-coded by vessel type (Tanker, Cargo, Passenger, Military, etc.)
-- Click any vessel to see name, speed, course, destination, flag, and size
+- Real-time vessel positions (30-sec refresh) with type/state color coding
+- **3 virtual gate lines**: Strait of Hormuz, Dubai/Jebel Ali Approach, Fujairah Approach
+- **Transit event detection** (INBOUND/OUTBOUND) with 6-hour deduplication
+- Hourly transit chart (Chart.js, stacked IN/OUT)
+- **Data-driven situation report** — severity and description auto-generated from traffic patterns
+- Anchorage zone congestion monitoring (11 defined zones)
+- Flag state distribution (MMSI MID → 100+ countries)
+- Destination normalization (40+ AIS variants → canonical port names)
+- Land mask filtering (Natural Earth 10m polygons)
 - Track history visualization (6-hour trail per vessel)
-- Statistics dashboard (active vessels, total records, type breakdown)
-- Land mask filtering — positions on land (GPS drift, building-mounted AIS) are automatically excluded
-- Auto-reconnect on connection loss
-- Auto-snapshot pushed to GitHub every 6 hours (only if data changed)
-
-## Quick Start
-
-```bash
-# Clone
-git clone https://github.com/yasumorishima/hormuz-ship-tracker.git
-cd hormuz-ship-tracker
-
-# Set API key (free registration at https://aisstream.io/)
-cp .env.example .env
-# Edit .env and add your aisstream.io API key
-
-# Run
-docker-compose up -d --build
-
-# Open http://localhost:8002
-```
-
-### Auto Snapshot (optional)
-
-To enable automatic snapshot generation and push to GitHub, add to `.env`:
-
-```
-GITHUB_TOKEN=your_personal_access_token
-GITHUB_REPO=your_username/hormuz-ship-tracker
-```
-
-The `snapshot-cron` container generates a map image every 6 hours and pushes it to the repo.
+- Auto-snapshot with gate lines, transit stats, and crisis context
+- **Database migration tool** for timestamp/flag/destination backfill
 
 ## API Endpoints
 
 | Endpoint | Description |
 |---|---|
-| `GET /` | Live map UI |
+| `GET /` | Live map + analytics dashboard |
 | `GET /api/latest` | Latest position per vessel (last 30 min) |
 | `GET /api/tracks/{mmsi}?hours=6` | Position history for a vessel |
-| `GET /api/stats` | Active vessels count, type breakdown |
+| `GET /api/stats` | Active vessels, type breakdown |
+| `GET /api/analytics/transits?hours=24&gate=` | Transit events (optional gate filter) |
+| `GET /api/analytics/hourly?hours=48&gate=` | Hourly transit counts for charting |
+| `GET /api/analytics/states` | Vessel state classification |
+| `GET /api/analytics/blockade` | Traffic analysis: waiting fleet, anchored ratio, situation assessment |
+| `GET /api/analytics/flags?hours=24` | Flag state distribution |
+| `GET /api/analytics/destinations?hours=24` | Destination distribution |
+| `GET /api/analytics/gate` | Gate lines, anchorage zones, danger zone, crisis timeline |
+| `GET /api/analytics/summary` | Comprehensive daily summary |
+
+## Quick Start
+
+```bash
+git clone https://github.com/yasumorishima/hormuz-ship-tracker.git
+cd hormuz-ship-tracker
+
+cp .env.example .env
+# Edit .env: add your aisstream.io API key (free at https://aisstream.io/)
+
+docker-compose up -d --build
+# Open http://localhost:8002
+
+# First run: fix historical data (timestamps, flags, destinations)
+docker exec hormuz-tracker python src/migrate.py
+```
 
 ## Tech Stack
 
-- Python 3.12 / FastAPI / uvicorn
-- WebSocket (aisstream.io)
-- SQLite (aiosqlite)
-- Leaflet.js + CARTO dark tiles
+- Python 3.12 / FastAPI / uvicorn / aiosqlite
+- WebSocket client (aisstream.io)
+- SQLite (positions + transit_events + analytics_state)
+- Leaflet.js + Chart.js + CARTO dark tiles
 - matplotlib (auto-snapshot)
-- Shapely + [Natural Earth](https://www.naturalearthdata.com/) 10m (land filtering)
+- Shapely + Natural Earth 10m (land filtering)
 - Docker on Raspberry Pi 5
 
 ## Data Source
 
-Ship position data is provided by [aisstream.io](https://aisstream.io/) via their free WebSocket API.
-AIS (Automatic Identification System) is a maritime safety system that broadcasts vessel position, speed, course, and identification.
+Ship position data: [aisstream.io](https://aisstream.io/) (free WebSocket API, terrestrial AIS receivers).
+Note: terrestrial AIS coverage is limited in open water — satellite AIS provides more complete coverage.
 
 ## Related
 

@@ -8,9 +8,12 @@ from fastapi.templating import Jinja2Templates
 
 from analytics import (
     ANCHORAGE_ZONES,
+    CRISIS_TIMELINE,
     GATE_A,
     GATE_B,
     GATES,
+    STRAIT_DANGER_ZONE,
+    get_blockade_indicators,
     get_daily_summary,
     get_destination_distribution,
     get_flag_distribution,
@@ -186,7 +189,7 @@ async def api_destinations(hours: int = 24):
 
 @app.get("/api/analytics/gate")
 async def api_gate_info():
-    """All gate line coordinates and anchorage zone definitions."""
+    """All gate line coordinates, anchorage zones, danger zone, and crisis timeline."""
     return {
         "gates": {
             name: {
@@ -204,7 +207,15 @@ async def api_gate_info():
             }
             for name, z in ANCHORAGE_ZONES.items()
         },
+        "danger_zone": [{"lat": p[0], "lon": p[1]} for p in STRAIT_DANGER_ZONE],
+        "crisis_timeline": CRISIS_TIMELINE,
     }
+
+
+@app.get("/api/analytics/blockade")
+async def api_blockade():
+    """Blockade impact indicators — waiting fleet, anchored ratio, strait status."""
+    return await get_blockade_indicators()
 
 
 @app.get("/api/analytics/summary")

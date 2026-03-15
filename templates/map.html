@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strait of Hormuz — Live Ship Tracker & Analytics</title>
+    <title>Hormuz Strait Maritime Monitor — Live Intelligence</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,77 +12,80 @@
         /* ── Header ── */
         #header {
             background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
-            padding: 10px 20px;
+            padding: 8px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #2a3a4a;
-            height: 52px;
+            height: 56px;
         }
-        #header h1 { font-size: 17px; font-weight: 600; }
-        #header h1 span { color: #4fc3f7; }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        #header h1 { font-size: 16px; font-weight: 600; line-height: 1.2; }
+        #header h1 .crisis { color: #4fc3f7; font-weight: 800; }
+        #header h1 .sub { font-size: 11px; color: #888; display: block; font-weight: 400; }
+
+        /* Strait status badge */
+        .strait-status {
+            padding: 4px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+        .strait-blocked {
+            background: #b71c1c;
+            color: #ffcdd2;
+            border: 1px solid #ff5252;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Header stats */
         #header-stats {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             align-items: center;
         }
-        .header-stat {
-            text-align: center;
-        }
+        .header-stat { text-align: center; }
         .header-stat .val { font-size: 18px; font-weight: 700; color: #4fc3f7; }
-        .header-stat .lbl { font-size: 10px; color: #888; text-transform: uppercase; }
+        .header-stat .lbl { font-size: 9px; color: #888; text-transform: uppercase; }
 
-        /* ── Transit counter in header ── */
+        /* Transit counter */
         .transit-counter {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            padding: 4px 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            padding: 4px 12px;
             border: 1px solid #2a3a4a;
         }
-        .transit-dir {
-            text-align: center;
-        }
-        .transit-dir .num {
-            font-size: 20px;
-            font-weight: 800;
-        }
-        .transit-dir .arrow-label {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .transit-dir { text-align: center; }
+        .transit-dir .num { font-size: 18px; font-weight: 800; }
+        .transit-dir .arrow-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .transit-in .num { color: #4caf50; }
         .transit-in .arrow-label { color: #66bb6a; }
         .transit-out .num { color: #ff9800; }
         .transit-out .arrow-label { color: #ffb74d; }
-        .transit-sep {
-            width: 1px;
-            height: 30px;
-            background: #2a3a4a;
-        }
-        .transit-period {
-            font-size: 9px;
-            color: #666;
-            text-transform: uppercase;
-        }
+        .transit-sep { width: 1px; height: 28px; background: #2a3a4a; }
+        .transit-period { font-size: 8px; color: #666; text-transform: uppercase; line-height: 1.3; }
 
         /* ── Main layout ── */
-        #main {
-            display: flex;
-            height: calc(100vh - 52px);
-        }
-        #map-container {
-            flex: 1;
-            position: relative;
-        }
+        #main { display: flex; height: calc(100vh - 56px); }
+        #map-container { flex: 1; position: relative; }
         #map { height: 100%; width: 100%; }
 
         /* ── Sidebar ── */
         #sidebar {
-            width: 340px;
+            width: 360px;
             background: #0d1b2a;
             border-left: 1px solid #2a3a4a;
             overflow-y: auto;
@@ -91,7 +94,7 @@
         #sidebar.collapsed { width: 0; overflow: hidden; }
         #sidebar-toggle {
             position: absolute;
-            right: 345px;
+            right: 365px;
             top: 10px;
             z-index: 1000;
             background: #0d1b2aee;
@@ -106,16 +109,88 @@
         #sidebar.collapsed ~ #sidebar-toggle { right: 5px; }
 
         .panel {
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-bottom: 1px solid #1a2a3a;
         }
         .panel-title {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #4fc3f7;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
+        }
+
+        /* ── Crisis alert banner ── */
+        .crisis-banner {
+            background: linear-gradient(135deg, #1a0000, #2d0000);
+            border-bottom: 1px solid #b71c1c;
+            padding: 12px 16px;
+        }
+        .crisis-banner .title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .crisis-banner .desc {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        .situation-critical { background: linear-gradient(135deg, #1a0000, #2d0000); border-bottom: 1px solid #b71c1c; }
+        .situation-critical .title { color: #ff5252; }
+        .situation-critical .desc { color: #ffcdd2; }
+        .situation-high { background: linear-gradient(135deg, #1a0a00, #2d1500); border-bottom: 1px solid #e65100; }
+        .situation-high .title { color: #ff9800; }
+        .situation-high .desc { color: #ffe0b2; }
+        .situation-elevated { background: linear-gradient(135deg, #1a1500, #2d2200); border-bottom: 1px solid #f9a825; }
+        .situation-elevated .title { color: #fdd835; }
+        .situation-elevated .desc { color: #fff9c4; }
+        .situation-normal { background: #0d1b2a; border-bottom: 1px solid #2a3a4a; }
+        .situation-normal .title { color: #4fc3f7; }
+        .situation-normal .desc { color: #b0bec5; }
+
+        /* ── Blockade indicators ── */
+        .blockade-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .blockade-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            padding: 8px 10px;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .blockade-card .num { font-size: 20px; font-weight: 800; }
+        .blockade-card .lbl { font-size: 9px; color: #888; text-transform: uppercase; }
+        .blockade-critical { border-color: #b71c1c; }
+        .blockade-critical .num { color: #ff5252; }
+        .blockade-warning { border-color: #e65100; }
+        .blockade-warning .num { color: #fdd835; }
+        .blockade-info .num { color: #4fc3f7; }
+
+        .anchored-bar {
+            margin-top: 8px;
+            background: #1a2a3a;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .anchored-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #fdd835, #ff9800);
+            transition: width 0.5s;
+        }
+        .anchored-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
         }
 
         /* ── Vessel states ── */
@@ -130,93 +205,72 @@
             padding: 8px 10px;
             text-align: center;
         }
-        .state-card .num {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .state-card .lbl {
-            font-size: 10px;
-            color: #888;
-            text-transform: uppercase;
-        }
+        .state-card .num { font-size: 18px; font-weight: 700; }
+        .state-card .lbl { font-size: 9px; color: #888; text-transform: uppercase; }
         .state-anchored .num { color: #fdd835; }
         .state-slow .num { color: #ff9800; }
         .state-maneuvering .num { color: #42a5f5; }
         .state-transiting .num { color: #66bb6a; }
 
-        /* ── Chart container ── */
-        .chart-container {
-            height: 160px;
-            position: relative;
-        }
+        /* ── Chart ── */
+        .chart-container { height: 160px; position: relative; }
 
-        /* ── List items ── */
-        .rank-list {
-            list-style: none;
-        }
+        /* ── Lists ── */
+        .rank-list { list-style: none; }
         .rank-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0;
-            font-size: 13px;
+            padding: 3px 0;
+            font-size: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.04);
         }
         .rank-item:last-child { border-bottom: none; }
         .rank-name { color: #ccc; }
-        .rank-val {
-            font-weight: 600;
-            color: #4fc3f7;
-            min-width: 30px;
-            text-align: right;
-        }
-        .rank-bar {
-            flex: 1;
-            margin: 0 10px;
-            height: 4px;
-            background: #1a2a3a;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .rank-bar-fill {
-            height: 100%;
-            background: #4fc3f7;
-            border-radius: 2px;
-            transition: width 0.3s;
-        }
+        .rank-val { font-weight: 600; color: #4fc3f7; min-width: 28px; text-align: right; }
+        .rank-bar { flex: 1; margin: 0 8px; height: 4px; background: #1a2a3a; border-radius: 2px; overflow: hidden; }
+        .rank-bar-fill { height: 100%; background: #4fc3f7; border-radius: 2px; transition: width 0.3s; }
 
-        /* ── Anchorage zones ── */
-        .zone-list {
-            list-style: none;
-        }
-        .zone-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            font-size: 12px;
-        }
+        /* Zones */
+        .zone-list { list-style: none; }
+        .zone-item { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
         .zone-name { color: #aaa; }
         .zone-count { color: #fdd835; font-weight: 600; }
 
-        /* ── Recent transits ── */
+        /* Transit events */
         .transit-event {
-            padding: 6px 0;
+            padding: 5px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
-            font-size: 12px;
+            font-size: 11px;
         }
         .transit-event:last-child { border-bottom: none; }
         .transit-event .dir {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 3px;
             font-weight: 700;
-            font-size: 10px;
-            margin-right: 6px;
+            font-size: 9px;
+            margin-right: 4px;
         }
         .dir-in { background: #1b5e20; color: #a5d6a7; }
         .dir-out { background: #e65100; color: #ffcc80; }
         .transit-event .vessel-name { color: #ccc; }
-        .transit-event .time { color: #666; font-size: 11px; }
+        .transit-event .time { color: #666; font-size: 10px; }
+
+        /* Crisis timeline */
+        .timeline-list { list-style: none; }
+        .timeline-item {
+            padding: 4px 0;
+            border-left: 3px solid;
+            padding-left: 10px;
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+        .timeline-item .date { color: #888; font-size: 10px; }
+        .timeline-item .event { color: #ccc; }
+        .tl-critical { border-color: #ff5252; }
+        .tl-high { border-color: #ff9800; }
+        .tl-medium { border-color: #fdd835; }
 
         /* ── Map overlays ── */
         .vessel-popup {
@@ -226,12 +280,8 @@
         }
         .vessel-popup .name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
         .vessel-popup .type-badge {
-            display: inline-block;
-            padding: 1px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 6px;
+            display: inline-block; padding: 1px 8px; border-radius: 10px;
+            font-size: 11px; font-weight: 600; margin-bottom: 6px;
         }
         .type-tanker { background: #e65100; color: #fff; }
         .type-cargo { background: #1565c0; color: #fff; }
@@ -240,42 +290,27 @@
         .type-military { background: #b71c1c; color: #fff; }
         .type-unknown { background: #424242; color: #fff; }
         .track-btn {
-            margin-top: 6px;
-            padding: 4px 12px;
-            background: #1565c0;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+            margin-top: 6px; padding: 4px 12px; background: #1565c0;
+            color: #fff; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 12px;
         }
         .track-btn:hover { background: #1976d2; }
 
         .legend {
-            background: rgba(10, 10, 26, 0.9);
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            line-height: 1.8;
+            background: rgba(10, 10, 26, 0.92);
+            padding: 8px 12px; border-radius: 6px;
+            font-size: 11px; line-height: 1.7;
             border: 1px solid #2a3a4a;
         }
-        .legend-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .legend-title { font-weight: 700; margin-bottom: 3px; font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
-        /* ── Color mode toggle ── */
         .color-toggle {
-            position: absolute;
-            top: 10px;
-            left: 55px;
-            z-index: 1000;
-            background: #0d1b2aee;
-            border: 1px solid #2a3a4a;
-            color: #ccc;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
+            position: absolute; top: 10px; left: 55px; z-index: 1000;
+            background: #0d1b2aee; border: 1px solid #2a3a4a;
+            color: #ccc; padding: 5px 9px; border-radius: 6px;
+            cursor: pointer; font-size: 11px;
         }
         .color-toggle:hover { color: #4fc3f7; border-color: #4fc3f7; }
         .color-toggle.active { color: #4fc3f7; border-color: #4fc3f7; }
@@ -283,9 +318,17 @@
 </head>
 <body>
     <div id="header">
-        <h1>Strait of Hormuz <span>Live Analytics</span></h1>
+        <div class="header-left">
+            <div>
+                <h1>
+                    <span class="crisis">Hormuz Strait Monitor</span>
+                    <span class="sub">Real-time Maritime Intelligence — AIS data via aisstream.io</span>
+                </h1>
+            </div>
+            <div class="strait-status" id="strait-badge" style="background:#424242;color:#ccc">LOADING</div>
+        </div>
         <div class="transit-counter">
-            <div class="transit-period">24h Strait<br>Transits</div>
+            <div class="transit-period">Port<br>Traffic 24h</div>
             <div class="transit-sep"></div>
             <div class="transit-dir transit-in">
                 <div class="num" id="transit-in">--</div>
@@ -311,12 +354,46 @@
     <div id="main">
         <div id="map-container">
             <div id="map"></div>
-            <button class="color-toggle" id="color-mode-btn" title="Toggle vessel coloring">
-                Color: Type
-            </button>
+            <button class="color-toggle" id="color-mode-btn" title="Toggle vessel coloring">Color: Type</button>
         </div>
         <button id="sidebar-toggle" title="Toggle analytics panel">&#9776;</button>
         <div id="sidebar">
+            <!-- Situation Report (data-driven) -->
+            <div class="crisis-banner" id="situation-banner" style="display:none">
+                <div class="title" id="situation-title">Loading...</div>
+                <div class="desc" id="situation-text"></div>
+            </div>
+
+            <!-- Strait Traffic Analysis -->
+            <div class="panel">
+                <div class="panel-title">Strait Traffic Analysis</div>
+                <div class="blockade-grid">
+                    <div class="blockade-card blockade-critical">
+                        <div class="num" id="bi-strait">--</div>
+                        <div class="lbl">Strait Transits 24h</div>
+                    </div>
+                    <div class="blockade-card blockade-warning">
+                        <div class="num" id="bi-waiting">--</div>
+                        <div class="lbl">Waiting Fleet (6h+)</div>
+                    </div>
+                    <div class="blockade-card blockade-info">
+                        <div class="num" id="bi-active">--</div>
+                        <div class="lbl">Active Vessels</div>
+                    </div>
+                    <div class="blockade-card blockade-warning">
+                        <div class="num" id="bi-waiting24">--</div>
+                        <div class="lbl">Stuck 24h+</div>
+                    </div>
+                </div>
+                <div class="anchored-bar">
+                    <div class="anchored-bar-fill" id="anchored-bar" style="width:0%"></div>
+                </div>
+                <div class="anchored-label">
+                    <span>Anchored ratio</span>
+                    <span id="anchored-pct">--%</span>
+                </div>
+            </div>
+
             <!-- Vessel States -->
             <div class="panel">
                 <div class="panel-title">Vessel Status (Live)</div>
@@ -342,34 +419,46 @@
 
             <!-- Hourly Transit Chart -->
             <div class="panel">
-                <div class="panel-title">Hourly Strait Transits</div>
+                <div class="panel-title">Port Approach Traffic (Hourly)</div>
                 <div class="chart-container">
                     <canvas id="transit-chart"></canvas>
                 </div>
             </div>
 
+            <!-- Waiting Fleet Composition -->
+            <div class="panel">
+                <div class="panel-title">Waiting Fleet by Type</div>
+                <ul class="rank-list" id="fleet-type-list"></ul>
+            </div>
+
             <!-- Anchorage Zones -->
             <div class="panel">
-                <div class="panel-title">Anchorage Zones</div>
+                <div class="panel-title">Anchorage Congestion</div>
                 <ul class="zone-list" id="zone-list"></ul>
             </div>
 
             <!-- Top Flags -->
             <div class="panel">
-                <div class="panel-title">Top Flag States (24h)</div>
+                <div class="panel-title">Flag States (24h)</div>
                 <ul class="rank-list" id="flag-list"></ul>
             </div>
 
             <!-- Top Destinations -->
             <div class="panel">
-                <div class="panel-title">Top Destinations (24h)</div>
+                <div class="panel-title">Declared Destinations (24h)</div>
                 <ul class="rank-list" id="dest-list"></ul>
             </div>
 
-            <!-- Recent Transits -->
+            <!-- Recent Gate Crossings -->
             <div class="panel">
-                <div class="panel-title">Recent Strait Crossings</div>
+                <div class="panel-title">Recent Port Crossings</div>
                 <div id="recent-transits"></div>
+            </div>
+
+            <!-- Crisis Timeline -->
+            <div class="panel">
+                <div class="panel-title">Crisis Timeline</div>
+                <ul class="timeline-list" id="timeline-list"></ul>
             </div>
         </div>
     </div>
@@ -379,27 +468,16 @@
     <script>
         // ── Config ──
         const TYPE_COLORS = {
-            'Tanker': '#e65100',
-            'Cargo': '#1565c0',
-            'Passenger': '#2e7d32',
-            'Fishing/Towing/Dredging': '#6a1b9a',
-            'Military/Sailing/Pleasure': '#b71c1c',
-            'HSC': '#00838f',
-            'Unknown': '#616161',
-            'Other': '#455a64',
-            'WIG': '#f57f17',
+            'Tanker': '#e65100', 'Cargo': '#1565c0', 'Passenger': '#2e7d32',
+            'Fishing/Towing/Dredging': '#6a1b9a', 'Military/Sailing/Pleasure': '#b71c1c',
+            'HSC': '#00838f', 'Unknown': '#616161', 'Other': '#455a64', 'WIG': '#f57f17',
         };
         const STATE_COLORS = {
-            'anchored': '#fdd835',
-            'slow': '#ff9800',
-            'maneuvering': '#42a5f5',
-            'transiting': '#66bb6a',
-            'unknown': '#616161',
+            'anchored': '#fdd835', 'slow': '#ff9800',
+            'maneuvering': '#42a5f5', 'transiting': '#66bb6a', 'unknown': '#616161',
         };
 
-        let colorMode = 'type'; // 'type' or 'state'
-        let vesselData = [];
-        let stateData = {};
+        let colorMode = 'type';
 
         function getTypeColor(type) {
             for (const [key, color] of Object.entries(TYPE_COLORS)) {
@@ -407,7 +485,6 @@
             }
             return TYPE_COLORS['Unknown'];
         }
-
         function getTypeClass(type) {
             if (!type) return 'type-unknown';
             if (type.includes('Tanker')) return 'type-tanker';
@@ -417,11 +494,10 @@
             if (type.includes('Military')) return 'type-military';
             return 'type-unknown';
         }
-
         function getVesselColor(vessel) {
             if (colorMode === 'state') {
                 const spd = vessel.speed;
-                if (spd == null) return STATE_COLORS['unknown'];
+                if (spd == null || spd >= 102.3) return STATE_COLORS['unknown'];
                 if (spd < 0.5) return STATE_COLORS['anchored'];
                 if (spd < 3) return STATE_COLORS['slow'];
                 if (spd < 8) return STATE_COLORS['maneuvering'];
@@ -431,27 +507,21 @@
         }
 
         // ── Map setup ──
-        const map = L.map('map', {
-            center: [26.0, 55.5],
-            zoom: 7,
-            zoomControl: true,
-        });
-
+        const map = L.map('map', { center: [25.5, 55.5], zoom: 7, zoomControl: true });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19,
         }).addTo(map);
 
-        // Monitoring BBOX
+        // BBOX
         L.rectangle([[22.0, 48.0], [30.5, 60.0]], {
-            color: '#4fc3f7', weight: 1.5, dashArray: '8 4',
-            fill: false, interactive: false, opacity: 0.4,
+            color: '#4fc3f7', weight: 1, dashArray: '8 4', fill: false, interactive: false, opacity: 0.3,
         }).addTo(map);
 
         let markers = L.layerGroup().addTo(map);
         let trackLayer = L.layerGroup().addTo(map);
         let gateLayer = L.layerGroup().addTo(map);
         let zoneLayer = L.layerGroup().addTo(map);
+        let dangerLayer = L.layerGroup().addTo(map);
 
         // Legend
         const legend = L.control({ position: 'bottomright' });
@@ -466,45 +536,67 @@
         };
         legend.addTo(map);
 
-        // ── Gate lines & zones overlay ──
+        // ── Gate lines, danger zone, zones ──
         const GATE_COLORS = ['#ff1744', '#00e676', '#448aff'];
-        async function loadGateAndZones() {
+        async function loadOverlays() {
             try {
                 const res = await fetch('/api/analytics/gate');
                 const data = await res.json();
 
                 gateLayer.clearLayers();
                 zoneLayer.clearLayers();
+                dangerLayer.clearLayers();
 
-                // Draw ALL gate lines
+                // DANGER ZONE — red-tinted polygon over the Strait
+                if (data.danger_zone && data.danger_zone.length > 0) {
+                    const dzCoords = data.danger_zone.map(p => [p.lat, p.lon]);
+                    L.polygon(dzCoords, {
+                        color: '#ff1744',
+                        weight: 2,
+                        dashArray: '6 4',
+                        fillColor: '#ff1744',
+                        fillOpacity: 0.12,
+                        interactive: true,
+                    }).bindTooltip('Strait of Hormuz — No AIS transit data detected in this zone', {
+                        sticky: true,
+                    }).addTo(dangerLayer);
+
+                    // Label — will be updated by blockade data
+                    const centerLat = dzCoords.reduce((s, c) => s + c[0], 0) / dzCoords.length;
+                    const centerLon = dzCoords.reduce((s, c) => s + c[1], 0) / dzCoords.length;
+                    window._dangerLabel = L.marker([centerLat, centerLon], {
+                        icon: L.divIcon({
+                            html: '<div id="danger-label" style="color:#ff5252;font-size:12px;font-weight:900;text-shadow:2px 2px 4px #000;white-space:nowrap;text-align:center">&#x26A0; NO TRANSIT DATA<br><span style="font-size:9px;font-weight:400;color:#ffcdd2">Limited AIS coverage</span></div>',
+                            className: '', iconSize: [130, 30],
+                        }),
+                        interactive: false,
+                    });
+                    window._dangerLabel.addTo(dangerLayer);
+                }
+
+                // Gate lines
                 let colorIdx = 0;
                 for (const [name, gate] of Object.entries(data.gates)) {
                     const color = GATE_COLORS[colorIdx % GATE_COLORS.length];
                     colorIdx++;
 
-                    const gateLine = L.polyline(
-                        [[gate.a.lat, gate.a.lon], [gate.b.lat, gate.b.lon]],
-                        { color: color, weight: 3, dashArray: '10 6', opacity: 0.9 }
-                    );
-                    gateLine.bindTooltip(`${name}`, { permanent: false });
-                    gateLayer.addLayer(gateLine);
+                    L.polyline([[gate.a.lat, gate.a.lon], [gate.b.lat, gate.b.lon]], {
+                        color: color, weight: 3, dashArray: '10 6', opacity: 0.9,
+                    }).bindTooltip(name).addTo(gateLayer);
 
-                    // Gate endpoints
                     [gate.a, gate.b].forEach(pt => {
                         gateLayer.addLayer(L.circleMarker([pt.lat, pt.lon], {
-                            radius: 4, fillColor: color, color: '#fff',
-                            weight: 1, fillOpacity: 0.9,
+                            radius: 4, fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.9,
                         }));
                     });
 
-                    // Gate label at midpoint
                     const midLat = (gate.a.lat + gate.b.lat) / 2;
                     const midLon = (gate.a.lon + gate.b.lon) / 2;
-                    const shortName = name.length > 20 ? name.substring(0, 18) + '...' : name;
-                    gateLayer.addLayer(L.marker([midLat, midLon + 0.15], {
+                    const shortName = name.length > 22 ? name.substring(0, 20) + '..' : name;
+                    gateLayer.addLayer(L.marker([midLat, midLon + 0.12], {
                         icon: L.divIcon({
-                            html: `<div style="color:${color};font-size:10px;font-weight:700;text-shadow:1px 1px 2px #000;white-space:nowrap">${shortName}</div>`,
-                            className: '', iconSize: [120, 14],
+                            html: `<div style="color:${color};font-size:9px;font-weight:700;text-shadow:1px 1px 2px #000;white-space:nowrap">${shortName}</div>`,
+                            className: '', iconSize: [110, 12],
                         }),
                         interactive: false,
                     }));
@@ -512,72 +604,62 @@
 
                 // Anchorage zones
                 for (const [name, zone] of Object.entries(data.anchorage_zones)) {
-                    const radiusMeters = zone.radius_nm * 1852;
-                    const circle = L.circle([zone.lat, zone.lon], {
-                        radius: radiusMeters,
-                        color: '#fdd835',
-                        weight: 1,
-                        dashArray: '4 4',
-                        fillColor: '#fdd835',
-                        fillOpacity: 0.05,
-                        interactive: true,
-                    });
-                    circle.bindTooltip(name, { sticky: true });
-                    zoneLayer.addLayer(circle);
+                    L.circle([zone.lat, zone.lon], {
+                        radius: zone.radius_nm * 1852,
+                        color: '#fdd835', weight: 1, dashArray: '4 4',
+                        fillColor: '#fdd835', fillOpacity: 0.05, interactive: true,
+                    }).bindTooltip(name, { sticky: true }).addTo(zoneLayer);
+                }
+
+                // Crisis timeline
+                if (data.crisis_timeline) {
+                    const tl = document.getElementById('timeline-list');
+                    tl.innerHTML = data.crisis_timeline.map(e => {
+                        const cls = e.severity === 'critical' ? 'tl-critical' : e.severity === 'high' ? 'tl-high' : 'tl-medium';
+                        return `<li class="timeline-item ${cls}"><span class="date">${e.date}</span><br><span class="event">${e.event}</span></li>`;
+                    }).join('');
                 }
             } catch (e) {
-                console.error('Failed to load gate/zones:', e);
+                console.error('Failed to load overlays:', e);
             }
         }
 
-        // ── Vessel markers ──
+        // ── Vessels ──
         async function loadVessels() {
             try {
                 const res = await fetch('/api/latest');
                 const data = await res.json();
-                vesselData = data.vessels;
 
                 markers.clearLayers();
                 data.vessels.forEach(v => {
                     const color = getVesselColor(v);
                     const marker = L.circleMarker([v.lat, v.lon], {
                         radius: v.type && v.type.includes('Tanker') ? 6 : 5,
-                        fillColor: color,
-                        color: '#fff',
-                        weight: 1,
-                        fillOpacity: 0.85,
+                        fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.85,
                     });
-
-                    const speedKnots = v.speed ? v.speed.toFixed(1) : '--';
-                    const popup = `
+                    const speedKn = v.speed != null && v.speed < 102.3 ? v.speed.toFixed(1) : '--';
+                    marker.bindPopup(`
                         <div class="vessel-popup">
                             <div class="name">${v.name}</div>
-                            <span class="type-badge ${getTypeClass(v.type)}">${v.type}</span>
-                            <br>
-                            <strong>Speed:</strong> ${speedKnots} kn &nbsp;
-                            <strong>Course:</strong> ${v.course ? v.course.toFixed(0) + '&deg;' : '--'}
-                            <br>
+                            <span class="type-badge ${getTypeClass(v.type)}">${v.type}</span><br>
+                            <strong>Speed:</strong> ${speedKn} kn &nbsp;
+                            <strong>Course:</strong> ${v.course ? v.course.toFixed(0) + '&deg;' : '--'}<br>
                             <strong>Flag:</strong> ${v.flag || '--'} &nbsp;
-                            <strong>MMSI:</strong> ${v.mmsi}
-                            <br>
-                            <strong>Dest:</strong> ${v.destination || '--'}
-                            <br>
-                            <strong>Size:</strong> ${v.length ? v.length + 'm' : '--'} x ${v.width ? v.width + 'm' : '--'}
-                            <br>
+                            <strong>MMSI:</strong> ${v.mmsi}<br>
+                            <strong>Dest:</strong> ${v.destination || '--'}<br>
+                            <strong>Size:</strong> ${v.length ? v.length + 'm' : '--'} x ${v.width ? v.width + 'm' : '--'}<br>
                             <button class="track-btn" onclick="showTrack(${v.mmsi})">Show Track (6h)</button>
                         </div>
-                    `;
-                    marker.bindPopup(popup);
+                    `);
                     markers.addLayer(marker);
                 });
 
                 document.getElementById('vessel-count').textContent = data.count;
-
                 const statsRes = await fetch('/api/stats');
                 const stats = await statsRes.json();
+                const total = stats.total_records;
                 document.getElementById('total-records').textContent =
-                    stats.total_records > 1000 ? (stats.total_records / 1000).toFixed(1) + 'K' : stats.total_records;
-
+                    total > 1000 ? (total / 1000).toFixed(1) + 'K' : total;
             } catch (e) {
                 console.error('Failed to load vessels:', e);
             }
@@ -589,22 +671,72 @@
                 const res = await fetch(`/api/tracks/${mmsi}?hours=6`);
                 const data = await res.json();
                 if (data.points.length < 2) return;
-
                 const latlngs = data.points.map(p => [p.lat, p.lon]);
-                L.polyline(latlngs, {
-                    color: '#4fc3f7', weight: 2, opacity: 0.7, dashArray: '6 4',
-                }).addTo(trackLayer);
-
+                L.polyline(latlngs, { color: '#4fc3f7', weight: 2, opacity: 0.7, dashArray: '6 4' }).addTo(trackLayer);
                 L.circleMarker(latlngs[0], {
-                    radius: 4, fillColor: '#81c784', color: '#fff',
-                    weight: 1, fillOpacity: 0.9,
+                    radius: 4, fillColor: '#81c784', color: '#fff', weight: 1, fillOpacity: 0.9,
                 }).bindTooltip('Start').addTo(trackLayer);
-            } catch (e) {
-                console.error('Failed to load track:', e);
-            }
+            } catch (e) { console.error('Track error:', e); }
         }
 
-        // ── Analytics loading ──
+        // ── Blockade indicators ──
+        async function loadBlockade() {
+            try {
+                const res = await fetch('/api/analytics/blockade');
+                const data = await res.json();
+
+                document.getElementById('bi-strait').textContent = data.strait_transits_24h;
+                document.getElementById('bi-waiting').textContent = data.waiting_fleet_6h;
+                document.getElementById('bi-waiting24').textContent = data.waiting_fleet_24h;
+                document.getElementById('bi-active').textContent = data.active_vessels;
+                document.getElementById('anchored-pct').textContent = data.anchored_ratio_pct + '%';
+                document.getElementById('anchored-bar').style.width = Math.min(data.anchored_ratio_pct, 100) + '%';
+
+                // Data-driven strait status badge
+                const badge = document.getElementById('strait-badge');
+                const status = data.strait_status;
+                if (status === 'NO_TRANSIT') {
+                    badge.textContent = 'NO TRANSIT';
+                    badge.className = 'strait-status strait-blocked';
+                } else if (status === 'LIMITED') {
+                    badge.textContent = data.strait_transits_24h + ' TRANSITS (LIMITED)';
+                    badge.className = 'strait-status';
+                    badge.style.cssText = 'background:#e65100;color:#ffe0b2;border:1px solid #ff9800;padding:4px 14px;border-radius:4px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;';
+                } else {
+                    badge.textContent = data.strait_transits_24h + ' TRANSITS';
+                    badge.className = 'strait-status';
+                    badge.style.cssText = 'background:#1b5e20;color:#a5d6a7;border:1px solid #4caf50;padding:4px 14px;border-radius:4px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;';
+                }
+
+                // Data-driven situation report
+                const sit = data.situation;
+                if (sit) {
+                    const banner = document.getElementById('situation-banner');
+                    banner.style.display = 'block';
+                    banner.className = 'crisis-banner situation-' + sit.level;
+                    document.getElementById('situation-title').textContent = sit.title;
+                    document.getElementById('situation-text').textContent = sit.text;
+                }
+
+                // Waiting fleet by type
+                const ftl = document.getElementById('fleet-type-list');
+                const fleetTypes = data.fleet_by_type || [];
+                if (fleetTypes.length === 0) {
+                    ftl.innerHTML = '<li style="color:#555;font-size:11px">Calculating...</li>';
+                } else {
+                    const maxFt = fleetTypes[0].count;
+                    ftl.innerHTML = fleetTypes.map(f =>
+                        `<li class="rank-item">
+                            <span class="rank-name">${f.type}</span>
+                            <div class="rank-bar"><div class="rank-bar-fill" style="width:${(f.count/maxFt*100).toFixed(0)}%;background:#fdd835"></div></div>
+                            <span class="rank-val" style="color:#fdd835">${f.count}</span>
+                        </li>`
+                    ).join('');
+                }
+            } catch (e) { console.error('Blockade error:', e); }
+        }
+
+        // ── Analytics ──
         let transitChart = null;
 
         function initTransitChart() {
@@ -614,41 +746,18 @@
                 data: {
                     labels: [],
                     datasets: [
-                        {
-                            label: 'Inbound',
-                            data: [],
-                            backgroundColor: '#4caf50',
-                            borderRadius: 2,
-                        },
-                        {
-                            label: 'Outbound',
-                            data: [],
-                            backgroundColor: '#ff9800',
-                            borderRadius: 2,
-                        },
+                        { label: 'Inbound', data: [], backgroundColor: '#4caf50', borderRadius: 2 },
+                        { label: 'Outbound', data: [], backgroundColor: '#ff9800', borderRadius: 2 },
                     ],
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { color: '#888', font: { size: 10 }, boxWidth: 12 },
-                        },
+                        legend: { position: 'top', labels: { color: '#888', font: { size: 10 }, boxWidth: 12 } },
                     },
                     scales: {
-                        x: {
-                            stacked: true,
-                            ticks: { color: '#555', font: { size: 9 }, maxRotation: 45 },
-                            grid: { color: 'rgba(255,255,255,0.03)' },
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: { color: '#555', font: { size: 10 }, stepSize: 1 },
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                        },
+                        x: { stacked: true, ticks: { color: '#555', font: { size: 9 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                        y: { stacked: true, beginAtZero: true, ticks: { color: '#555', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
                     },
                 },
             });
@@ -656,29 +765,25 @@
 
         async function loadTransitData() {
             try {
-                // Transit summary (header)
                 const tRes = await fetch('/api/analytics/transits?hours=24');
                 const tData = await tRes.json();
-
-                // Per-gate breakdown — header counter uses total across all gates
                 document.getElementById('transit-in').textContent = tData.inbound;
                 document.getElementById('transit-out').textContent = tData.outbound;
 
                 // Recent events
                 const recentDiv = document.getElementById('recent-transits');
                 if (tData.recent_events.length === 0) {
-                    recentDiv.innerHTML = '<div style="color:#555;font-size:12px;padding:8px 0">No transits detected yet. Data accumulating...</div>';
+                    recentDiv.innerHTML = '<div style="color:#555;font-size:11px;padding:6px 0">No port crossings detected in this window.</div>';
                 } else {
                     recentDiv.innerHTML = tData.recent_events.slice(0, 10).map(e => {
                         const dirClass = e.direction === 'INBOUND' ? 'dir-in' : 'dir-out';
                         const timeStr = e.crossed_at ? new Date(e.crossed_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--';
                         const name = e.ship_name || `MMSI:${e.mmsi}`;
-                        const gateName = (e.gate || '').replace('Dubai / Jebel Ali Approach', 'Dubai').replace('Fujairah Approach', 'Fujairah').replace('Strait of Hormuz', 'Strait');
+                        const gateName = (e.gate || '').replace('Dubai / Jebel Ali Approach','Dubai').replace('Fujairah Approach','Fujairah').replace('Strait of Hormuz','Strait');
                         return `<div class="transit-event">
                             <span class="dir ${dirClass}">${e.direction === 'INBOUND' ? 'IN' : 'OUT'}</span>
                             <span class="vessel-name">${name}</span>
-                            <span style="color:#4fc3f7;font-size:10px;margin-left:4px">${gateName}</span>
-                            ${e.speed ? `<span style="color:#666;margin-left:4px">${e.speed.toFixed(1)}kn</span>` : ''}
+                            <span style="color:#4fc3f7;font-size:9px;margin-left:3px">${gateName}</span>
                             <span class="time" style="float:right">${timeStr}</span>
                         </div>`;
                     }).join('');
@@ -696,35 +801,29 @@
                     transitChart.data.datasets[1].data = hData.data.map(d => d.outbound);
                     transitChart.update();
                 }
-            } catch (e) {
-                console.error('Failed to load transit data:', e);
-            }
+            } catch (e) { console.error('Transit error:', e); }
         }
 
         async function loadVesselStates() {
             try {
                 const res = await fetch('/api/analytics/states');
-                stateData = await res.json();
-
-                const s = stateData.states || {};
+                const data = await res.json();
+                const s = data.states || {};
                 document.getElementById('st-transiting').textContent = s.transiting || 0;
                 document.getElementById('st-anchored').textContent = s.anchored || 0;
                 document.getElementById('st-maneuvering').textContent = s.maneuvering || 0;
                 document.getElementById('st-slow').textContent = s.slow || 0;
 
-                // Anchorage zones
                 const zl = document.getElementById('zone-list');
-                const zones = stateData.zone_counts || {};
+                const zones = data.zone_counts || {};
                 if (Object.keys(zones).length === 0) {
-                    zl.innerHTML = '<li style="color:#555;font-size:12px">No vessels in defined zones</li>';
+                    zl.innerHTML = '<li style="color:#555;font-size:11px">No vessels in defined zones</li>';
                 } else {
                     zl.innerHTML = Object.entries(zones).map(([name, cnt]) =>
-                        `<li class="zone-item"><span class="zone-name">${name}</span><span class="zone-count">${cnt}</span></li>`
+                        `<li class="zone-item"><span class="zone-name">${name}</span><span class="zone-count">${cnt} vessels</span></li>`
                     ).join('');
                 }
-            } catch (e) {
-                console.error('Failed to load vessel states:', e);
-            }
+            } catch (e) { console.error('States error:', e); }
         }
 
         async function loadFlagData() {
@@ -733,21 +832,14 @@
                 const data = await res.json();
                 const list = document.getElementById('flag-list');
                 const items = data.data || [];
-                if (items.length === 0) {
-                    list.innerHTML = '<li style="color:#555;font-size:12px">No flag data available</li>';
-                    return;
-                }
+                if (items.length === 0) { list.innerHTML = '<li style="color:#555;font-size:11px">No data</li>'; return; }
                 const maxVal = items[0].vessels;
                 list.innerHTML = items.slice(0, 10).map(f =>
-                    `<li class="rank-item">
-                        <span class="rank-name">${f.flag}</span>
-                        <div class="rank-bar"><div class="rank-bar-fill" style="width:${(f.vessels/maxVal*100).toFixed(0)}%"></div></div>
-                        <span class="rank-val">${f.vessels}</span>
-                    </li>`
+                    `<li class="rank-item"><span class="rank-name">${f.flag}</span>
+                    <div class="rank-bar"><div class="rank-bar-fill" style="width:${(f.vessels/maxVal*100).toFixed(0)}%"></div></div>
+                    <span class="rank-val">${f.vessels}</span></li>`
                 ).join('');
-            } catch (e) {
-                console.error('Failed to load flags:', e);
-            }
+            } catch (e) { console.error('Flag error:', e); }
         }
 
         async function loadDestData() {
@@ -756,30 +848,20 @@
                 const data = await res.json();
                 const list = document.getElementById('dest-list');
                 const items = data.data || [];
-                if (items.length === 0) {
-                    list.innerHTML = '<li style="color:#555;font-size:12px">No destination data</li>';
-                    return;
-                }
+                if (items.length === 0) { list.innerHTML = '<li style="color:#555;font-size:11px">No data</li>'; return; }
                 const maxVal = items[0].vessels;
                 list.innerHTML = items.slice(0, 10).map(d =>
-                    `<li class="rank-item">
-                        <span class="rank-name">${d.destination}</span>
-                        <div class="rank-bar"><div class="rank-bar-fill" style="width:${(d.vessels/maxVal*100).toFixed(0)}%"></div></div>
-                        <span class="rank-val">${d.vessels}</span>
-                    </li>`
+                    `<li class="rank-item"><span class="rank-name">${d.destination}</span>
+                    <div class="rank-bar"><div class="rank-bar-fill" style="width:${(d.vessels/maxVal*100).toFixed(0)}%"></div></div>
+                    <span class="rank-val">${d.vessels}</span></li>`
                 ).join('');
-            } catch (e) {
-                console.error('Failed to load destinations:', e);
-            }
+            } catch (e) { console.error('Dest error:', e); }
         }
 
-        // ── Sidebar toggle ──
+        // ── Controls ──
         document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            const sb = document.getElementById('sidebar');
-            sb.classList.toggle('collapsed');
+            document.getElementById('sidebar').classList.toggle('collapsed');
         });
-
-        // ── Color mode toggle ──
         document.getElementById('color-mode-btn').addEventListener('click', () => {
             colorMode = colorMode === 'type' ? 'state' : 'type';
             const btn = document.getElementById('color-mode-btn');
@@ -788,10 +870,11 @@
             loadVessels();
         });
 
-        // ── Load everything ──
+        // ── Main load ──
         async function loadAll() {
             await Promise.all([
                 loadVessels(),
+                loadBlockade(),
                 loadTransitData(),
                 loadVesselStates(),
                 loadFlagData(),
@@ -800,7 +883,7 @@
         }
 
         initTransitChart();
-        loadGateAndZones();
+        loadOverlays();
         loadAll();
         setInterval(loadAll, 30000);
     </script>

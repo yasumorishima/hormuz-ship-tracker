@@ -655,6 +655,204 @@ async def get_daily_summary() -> dict:
     }
 
 
+# ── Crisis timeline ──
+# Key events in the 2026 Strait of Hormuz crisis, for chart annotations and context.
+CRISIS_TIMELINE = [
+    {"date": "2026-02-28", "event": "US-Israel strikes on Iran", "severity": "critical"},
+    {"date": "2026-03-01", "event": "Iran retaliatory missile/drone strikes", "severity": "critical"},
+    {"date": "2026-03-04", "event": "IRGC declares Strait closed, attacks on ships", "severity": "critical"},
+    {"date": "2026-03-05", "event": "Iran: closed to US/Israel/Western allies only", "severity": "high"},
+    {"date": "2026-03-07", "event": "Kuwait declares force majeure, cuts production", "severity": "high"},
+    {"date": "2026-03-12", "event": "US admits escort readiness lacking", "severity": "medium"},
+    {"date": "2026-03-13", "event": "Limited passages: Turkey, India, Saudi allowed", "severity": "medium"},
+    {"date": "2026-03-13", "event": "US attacks Kharg Island oil facilities", "severity": "critical"},
+]
+
+# Approximate "danger zone" polygon for the Strait (for map overlay)
+STRAIT_DANGER_ZONE = [
+    (26.85, 55.80),  # NW — Iran coast
+    (26.85, 56.70),  # NE — Iran coast
+    (26.10, 56.70),  # SE — Musandam (Oman)
+    (26.10, 56.15),  # SW — Musandam tip
+    (26.50, 55.80),  # W — Qeshm coast
+]
+
+
+# ── Blockade impact indicators ──
+
+async def get_blockade_indicators() -> dict:
+    """Compute metrics that characterize the blockade's impact on maritime traffic.
+
+    Key indicators:
+    - waiting_fleet_6h / 24h: vessels anchored (max speed < 1 kt) for extended periods
+    - anchored_ratio: % of active vessels that are stationary
+    - strait_transits_24h: how many ships crossed the Strait gate (should be ~0 during blockade)
+    - fleet_by_type: breakdown of waiting fleet by vessel type (tankers vs cargo etc.)
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Vessels anchored for 6+ hours (max speed < 1 kt, ignoring AIS unavailable)
+        waiting_6h = (await db.execute_fetchall("""
+            SELECT COUNT(*) FROM (
+                SELECT mmsi FROM positions
+                WHERE received_at > datetime('now', '-6 hours')
+                GROUP BY mmsi
+                HAVING MAX(CASE WHEN speed >= 102.0 THEN 0 ELSE COALESCE(speed, 0) END) < 1.0
+                   AND COUNT(*) >= 3
+            )
+        """))[0][0]
+
+        # Vessels anchored for 24+ hours
+        waiting_24h = (await db.execute_fetchall("""
+            SELECT COUNT(*) FROM (
+                SELECT mmsi FROM positions
+                WHERE received_at > datetime('now', '-24 hours')
+                GROUP BY mmsi
+                HAVING MAX(CASE WHEN speed >= 102.0 THEN 0 ELSE COALESCE(speed, 0) END) < 1.0
+                   AND COUNT(*) >= 10
+            )
+        """))[0][0]
+
+        # Active vessels (30 min)
+        active_count = (await db.execute_fetchall(
+            "SELECT COUNT(DISTINCT mmsi) FROM positions "
+            "WHERE received_at > datetime('now', '-30 minutes')"
+        ))[0][0]
+
+        # Anchored now (speed < 0.5, excluding AIS unavailable)
+        anchored_count = (await db.execute_fetchall(
+            "SELECT COUNT(DISTINCT mmsi) FROM positions "
+            "WHERE received_at > datetime('now', '-30 minutes') "
+            "  AND speed IS NOT NULL AND speed < 0.5 AND speed < 102.0"
+        ))[0][0]
+
+        # Strait transits in last 24h (should be ~0 during blockade)
+        strait_transits = (await db.execute_fetchall(
+            "SELECT COUNT(*) FROM transit_events "
+            "WHERE gate_name = 'Strait of Hormuz' "
+            "  AND crossed_at > datetime('now', '-24 hours')"
+        ))[0][0]
+
+        # Waiting fleet by vessel type (anchored 6h+)
+        fleet_by_type = await db.execute_fetchall("""
+            SELECT ship_type, COUNT(*) as cnt FROM (
+                SELECT mmsi, MAX(ship_type) as ship_type FROM positions
+                WHERE received_at > datetime('now', '-6 hours')
+                GROUP BY mmsi
+                HAVING MAX(CASE WHEN speed >= 102.0 THEN 0 ELSE COALESCE(speed, 0) END) < 1.0
+                   AND COUNT(*) >= 3
+            ) GROUP BY ship_type ORDER BY cnt DESC
+        """)
+
+        # Waiting fleet by flag
+        fleet_by_flag = await db.execute_fetchall("""
+            SELECT flag, COUNT(*) as cnt FROM (
+                SELECT mmsi, MAX(flag) as flag FROM positions
+                WHERE received_at > datetime('now', '-6 hours')
+                  AND flag IS NOT NULL AND flag != ''
+                GROUP BY mmsi
+                HAVING MAX(CASE WHEN speed >= 102.0 THEN 0 ELSE COALESCE(speed, 0) END) < 1.0
+                   AND COUNT(*) >= 3
+            ) GROUP BY flag ORDER BY cnt DESC LIMIT 15
+        """)
+
+    from api import get_ship_type_label  # avoid circular at module level
+
+    anchored_pct = round(anchored_count / active_count * 100, 1) if active_count > 0 else 0.0
+
+    # Data-driven strait status
+    if strait_transits == 0:
+        strait_status = "NO_TRANSIT"
+    elif strait_transits <= 5:
+        strait_status = "LIMITED"
+    else:
+        strait_status = "ACTIVE"
+
+    # Data-driven situation assessment
+    situation = _assess_situation(
+        strait_transits, anchored_pct, waiting_6h, active_count,
+    )
+
+    return {
+        "active_vessels": active_count,
+        "anchored_vessels": anchored_count,
+        "anchored_ratio_pct": anchored_pct,
+        "waiting_fleet_6h": waiting_6h,
+        "waiting_fleet_24h": waiting_24h,
+        "strait_transits_24h": strait_transits,
+        "strait_status": strait_status,
+        "situation": situation,
+        "fleet_by_type": [
+            {"type": get_ship_type_label(r[0]), "count": r[1]} for r in fleet_by_type
+        ],
+        "fleet_by_flag": [
+            {"flag": r[0], "count": r[1]} for r in fleet_by_flag
+        ],
+    }
+
+
+def _assess_situation(
+    strait_transits: int,
+    anchored_pct: float,
+    waiting_6h: int,
+    active: int,
+) -> dict:
+    """Generate a data-driven situation assessment.
+
+    Returns severity level and description text that adapts
+    to whatever the current maritime situation is — crisis or calm.
+    """
+    if strait_transits == 0 and anchored_pct > 40:
+        return {
+            "level": "critical",
+            "title": "Strait Transit Suspended",
+            "text": (
+                f"No vessel transits detected through the Strait of Hormuz in the last 24 hours. "
+                f"{anchored_pct:.0f}% of {active} monitored vessels are stationary. "
+                f"{waiting_6h} vessels have been waiting 6+ hours. "
+                f"This pattern indicates a significant disruption to normal shipping activity."
+            ),
+        }
+    elif strait_transits == 0 and anchored_pct > 20:
+        return {
+            "level": "high",
+            "title": "No Strait Transit Detected",
+            "text": (
+                f"Zero strait crossings in 24h with {anchored_pct:.0f}% of vessels anchored. "
+                f"Note: terrestrial AIS coverage in the open strait is limited — "
+                f"satellite AIS data would provide a more complete picture."
+            ),
+        }
+    elif 0 < strait_transits <= 5:
+        return {
+            "level": "elevated",
+            "title": "Limited Strait Transit",
+            "text": (
+                f"Only {strait_transits} vessel(s) detected crossing the Strait in 24h. "
+                f"Normal traffic volume is significantly higher. "
+                f"{waiting_6h} vessels waiting 6+ hours."
+            ),
+        }
+    elif strait_transits > 5 and anchored_pct > 40:
+        return {
+            "level": "elevated",
+            "title": "High Anchorage Congestion",
+            "text": (
+                f"{strait_transits} strait transits detected, but {anchored_pct:.0f}% of vessels "
+                f"are anchored — higher than typical. Possible delays or congestion."
+            ),
+        }
+    else:
+        return {
+            "level": "normal",
+            "title": "Monitoring Active",
+            "text": (
+                f"Tracking {active} vessels across the Persian Gulf region. "
+                f"{strait_transits} strait transits in 24h. "
+                f"Anchored ratio: {anchored_pct:.0f}%."
+            ),
+        }
+
+
 # ── Background task ──
 
 async def transit_detection_loop(interval_sec: int = 300):

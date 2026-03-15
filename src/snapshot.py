@@ -325,7 +325,7 @@ def generate_snapshot(db_path: str = DB_PATH, output_dir: Path = OUTPUT_DIR) -> 
     total_str = f"{stats['total_records']:,}"
     fig.text(
         0.02, 0.97,
-        "Strait of Hormuz  Live Ship Tracker",
+        "Strait of Hormuz  Maritime Monitor",
         fontsize=18, fontweight="bold", color="#e0e0e0",
         va="top", fontfamily="sans-serif",
         path_effects=[pe.withStroke(linewidth=3, foreground="#0a0a1a")],
