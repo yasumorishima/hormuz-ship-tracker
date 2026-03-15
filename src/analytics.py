@@ -19,12 +19,37 @@ logger = logging.getLogger(__name__)
 
 DB_PATH = "/app/data/ais.db"
 
-# ── Virtual gate line across the Strait of Hormuz ──
-# Ships INBOUND to the Gulf cross from east (Gulf of Oman) to west (Persian Gulf).
-# Ships OUTBOUND from the Gulf cross from west to east.
-# The gate runs from the Musandam Peninsula (Oman) to near Qeshm Island (Iran).
-GATE_A = (26.05, 56.50)  # south end (Oman/Musandam) — (lat, lon)
-GATE_B = (26.65, 56.10)  # north end (Iran/Qeshm)   — (lat, lon)
+# ── Virtual gate lines ──
+# Multiple gates to capture traffic patterns at different scales.
+# Each gate: name, point_a, point_b, and a rule to determine INBOUND direction.
+#
+# "inbound_side": which side of the gate vector (A→B) is the "outside" / approach side.
+#   "left"  = points with positive cross product are the approach side
+#   "right" = points with negative cross product are the approach side
+GATES = {
+    "Strait of Hormuz": {
+        "a": (26.05, 56.50),  # Oman/Musandam
+        "b": (26.65, 56.10),  # Iran/Qeshm
+        "inbound_side": "left",  # east (Gulf of Oman) side
+        "description": "Main chokepoint — satellite AIS needed for full coverage",
+    },
+    "Dubai / Jebel Ali Approach": {
+        "a": (25.00, 55.20),  # south — offshore Abu Dhabi
+        "b": (25.35, 55.20),  # north — offshore Sharjah
+        "inbound_side": "left",  # east (offshore) side approaching port
+        "description": "Traffic entering/leaving Dubai & Jebel Ali ports",
+    },
+    "Fujairah Approach": {
+        "a": (25.00, 56.50),  # south
+        "b": (25.30, 56.50),  # north
+        "inbound_side": "left",  # east (Gulf of Oman offshore) side
+        "description": "Fujairah anchorage & bunkering traffic",
+    },
+}
+
+# Legacy single-gate references (for snapshot.py compatibility)
+GATE_A = GATES["Strait of Hormuz"]["a"]
+GATE_B = GATES["Strait of Hormuz"]["b"]
 
 # ── Vessel speed states ──
 SPEED_ANCHORED = 0.5    # knots
@@ -57,6 +82,7 @@ async def init_analytics_db():
             CREATE TABLE IF NOT EXISTS transit_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 mmsi INTEGER NOT NULL,
+                gate_name TEXT NOT NULL DEFAULT 'Strait of Hormuz',
                 direction TEXT NOT NULL,
                 crossed_at TEXT NOT NULL,
                 latitude REAL,
@@ -75,6 +101,10 @@ async def init_analytics_db():
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_transit_mmsi
             ON transit_events(mmsi)
+        """)
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transit_gate
+            ON transit_events(gate_name)
         """)
         # Key-value store for analytics state
         await db.execute("""
@@ -126,29 +156,34 @@ def haversine_nm(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 def determine_transit_direction(
     p1: tuple[float, float],
     p2: tuple[float, float],
+    gate_a: tuple[float, float],
+    gate_b: tuple[float, float],
+    inbound_side: str = "left",
 ) -> str:
-    """Determine if a vessel crossing the gate is INBOUND or OUTBOUND.
+    """Determine if a vessel crossing a gate is INBOUND or OUTBOUND.
 
-    The gate runs roughly NE-SW (from Oman at lower-right to Iran at upper-left).
-    - INBOUND (into the Gulf): vessel moves from east (high lon) to west (low lon),
-      i.e., from Gulf of Oman side to Persian Gulf side.
-    - OUTBOUND: the reverse.
+    Uses the cross product relative to the gate vector (A→B) to determine
+    which side each point is on:
+    - Positive cross product = point is to the LEFT of A→B
+    - Negative = to the RIGHT
 
-    We use the cross product relative to the gate vector to determine which
-    side each point is on. Gate vector: A→B (south to north, Oman to Iran).
+    inbound_side: "left" means left-side is the approach/outside direction.
     """
-    # Cross product of gate vector (A→B) with point vector (A→P)
-    # Positive = point is to the left of A→B (east side = Gulf of Oman)
-    # Negative = point is to the right of A→B (west side = Persian Gulf)
-    side1 = _cross_product_2d(GATE_A, GATE_B, p1)
-    side2 = _cross_product_2d(GATE_A, GATE_B, p2)
+    side1 = _cross_product_2d(gate_a, gate_b, p1)
+    side2 = _cross_product_2d(gate_a, gate_b, p2)
 
-    if side1 > 0 and side2 < 0:
-        # Started on east side (Oman), ended on west side (Gulf) = INBOUND
-        return "INBOUND"
-    elif side1 < 0 and side2 > 0:
-        # Started on west side (Gulf), ended on east side (Oman) = OUTBOUND
-        return "OUTBOUND"
+    if inbound_side == "left":
+        # left (positive) = outside/approach side
+        if side1 > 0 and side2 < 0:
+            return "INBOUND"
+        elif side1 < 0 and side2 > 0:
+            return "OUTBOUND"
+    else:
+        # right (negative) = outside/approach side
+        if side1 < 0 and side2 > 0:
+            return "INBOUND"
+        elif side1 > 0 and side2 < 0:
+            return "OUTBOUND"
     return "UNKNOWN"
 
 
@@ -235,7 +270,7 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                 "destination": r["destination"],
             })
 
-        # Detect crossings
+        # Detect crossings across ALL gates
         new_events = 0
         now_iso = datetime.now(timezone.utc).isoformat()
 
@@ -248,7 +283,6 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                 p2 = positions[i + 1]
 
                 # Skip if points are too far apart in time (>30 min gap)
-                # Use received_at which is in ISO format
                 try:
                     t1 = datetime.fromisoformat(p1["received_at"])
                     t2 = datetime.fromisoformat(p2["received_at"])
@@ -257,42 +291,52 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                 except (ValueError, TypeError):
                     continue
 
-                # Skip if both points are far from the gate (>30 nm)
-                gate_center = (
-                    (GATE_A[0] + GATE_B[0]) / 2,
-                    (GATE_A[1] + GATE_B[1]) / 2,
-                )
-                d1 = haversine_nm(p1["lat"], p1["lon"], gate_center[0], gate_center[1])
-                d2 = haversine_nm(p2["lat"], p2["lon"], gate_center[0], gate_center[1])
-                if d1 > 40 and d2 > 40:
-                    continue
+                # Check each gate
+                for gate_name, gate in GATES.items():
+                    gate_a = gate["a"]
+                    gate_b = gate["b"]
+                    gate_center = (
+                        (gate_a[0] + gate_b[0]) / 2,
+                        (gate_a[1] + gate_b[1]) / 2,
+                    )
 
-                # Check if the track segment crosses the gate line
-                if segments_intersect(
-                    (p1["lat"], p1["lon"]),
-                    (p2["lat"], p2["lon"]),
-                    GATE_A,
-                    GATE_B,
-                ):
+                    # Skip if both points are far from this gate (>30 nm)
+                    d1 = haversine_nm(p1["lat"], p1["lon"], gate_center[0], gate_center[1])
+                    d2 = haversine_nm(p2["lat"], p2["lon"], gate_center[0], gate_center[1])
+                    if d1 > 30 and d2 > 30:
+                        continue
+
+                    # Check crossing
+                    if not segments_intersect(
+                        (p1["lat"], p1["lon"]),
+                        (p2["lat"], p2["lon"]),
+                        gate_a,
+                        gate_b,
+                    ):
+                        continue
+
                     direction = determine_transit_direction(
                         (p1["lat"], p1["lon"]),
                         (p2["lat"], p2["lon"]),
+                        gate_a,
+                        gate_b,
+                        gate.get("inbound_side", "left"),
                     )
                     if direction == "UNKNOWN":
                         continue
 
-                    # Deduplicate: skip if same MMSI crossed in the last 6 hours
+                    # Deduplicate: same MMSI + same gate in last 6 hours
                     existing = await db.execute_fetchall(
                         """
                         SELECT id FROM transit_events
-                        WHERE mmsi = ? AND crossed_at > datetime(?, '-6 hours')
+                        WHERE mmsi = ? AND gate_name = ?
+                          AND crossed_at > datetime(?, '-6 hours')
                         """,
-                        (mmsi, p2["received_at"]),
+                        (mmsi, gate_name, p2["received_at"]),
                     )
                     if existing:
                         continue
 
-                    # Estimate crossing point (midpoint of segment)
                     cross_lat = (p1["lat"] + p2["lat"]) / 2
                     cross_lon = (p1["lon"] + p2["lon"]) / 2
                     cross_speed = p2["speed"] or p1["speed"]
@@ -300,12 +344,13 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                     await db.execute(
                         """
                         INSERT INTO transit_events
-                        (mmsi, direction, crossed_at, latitude, longitude,
-                         speed, ship_name, ship_type, flag, destination)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (mmsi, gate_name, direction, crossed_at, latitude,
+                         longitude, speed, ship_name, ship_type, flag, destination)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             mmsi,
+                            gate_name,
                             direction,
                             p2["received_at"],
                             cross_lat,
@@ -319,8 +364,9 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                     )
                     new_events += 1
                     logger.info(
-                        "Transit detected: MMSI %d %s at %s (%.1f kn)",
-                        mmsi, direction, p2["received_at"], cross_speed or 0,
+                        "Transit [%s]: MMSI %d %s at %s (%.1f kn)",
+                        gate_name, mmsi, direction,
+                        p2["received_at"], cross_speed or 0,
                     )
 
         # Update last check time
@@ -362,48 +408,80 @@ def identify_anchorage_zone(lat: float, lon: float) -> str | None:
 
 # ── Query functions for API ──
 
-async def get_transit_summary(hours: int = 24) -> dict:
-    """Get transit event summary for the last N hours."""
+async def get_transit_summary(hours: int = 24, gate: str | None = None) -> dict:
+    """Get transit event summary for the last N hours, optionally filtered by gate."""
+    gate_filter = "AND gate_name = ?" if gate else ""
+    params_base = (f"-{hours}",) + ((gate,) if gate else ())
+
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
 
         inbound = await db.execute_fetchall(
-            """
+            f"""
             SELECT COUNT(*) as cnt FROM transit_events
             WHERE direction = 'INBOUND'
               AND crossed_at > datetime('now', ? || ' hours')
+              {gate_filter}
             """,
-            (f"-{hours}",),
+            params_base,
         )
         outbound = await db.execute_fetchall(
-            """
+            f"""
             SELECT COUNT(*) as cnt FROM transit_events
             WHERE direction = 'OUTBOUND'
               AND crossed_at > datetime('now', ? || ' hours')
+              {gate_filter}
+            """,
+            params_base,
+        )
+
+        # Per-gate breakdown
+        by_gate = await db.execute_fetchall(
+            """
+            SELECT gate_name, direction, COUNT(*) as cnt
+            FROM transit_events
+            WHERE crossed_at > datetime('now', ? || ' hours')
+            GROUP BY gate_name, direction
+            ORDER BY gate_name
             """,
             (f"-{hours}",),
         )
 
         # Recent events
         recent = await db.execute_fetchall(
-            """
-            SELECT mmsi, direction, crossed_at, speed,
+            f"""
+            SELECT mmsi, gate_name, direction, crossed_at, speed,
                    ship_name, ship_type, flag, destination
             FROM transit_events
             WHERE crossed_at > datetime('now', ? || ' hours')
+              {gate_filter}
             ORDER BY crossed_at DESC
             LIMIT 20
             """,
-            (f"-{hours}",),
+            params_base,
         )
+
+    # Build per-gate summary
+    gate_summary: dict[str, dict] = {}
+    for row in by_gate:
+        gn = row[0]
+        if gn not in gate_summary:
+            gate_summary[gn] = {"inbound": 0, "outbound": 0}
+        if row[1] == "INBOUND":
+            gate_summary[gn]["inbound"] = row[2]
+        else:
+            gate_summary[gn]["outbound"] = row[2]
 
     return {
         "hours": hours,
+        "gate_filter": gate,
         "inbound": inbound[0][0] if inbound else 0,
         "outbound": outbound[0][0] if outbound else 0,
+        "by_gate": gate_summary,
         "recent_events": [
             {
                 "mmsi": r["mmsi"],
+                "gate": r["gate_name"],
                 "direction": r["direction"],
                 "crossed_at": r["crossed_at"],
                 "speed": r["speed"],
@@ -417,23 +495,26 @@ async def get_transit_summary(hours: int = 24) -> dict:
     }
 
 
-async def get_hourly_transits(hours: int = 48) -> list[dict]:
+async def get_hourly_transits(hours: int = 48, gate: str | None = None) -> list[dict]:
     """Get transit counts aggregated by hour for charting."""
+    gate_filter = "AND gate_name = ?" if gate else ""
+    params = (f"-{hours}",) + ((gate,) if gate else ())
+
     async with aiosqlite.connect(DB_PATH) as db:
         rows = await db.execute_fetchall(
-            """
+            f"""
             SELECT strftime('%Y-%m-%dT%H:00:00', crossed_at) as hour,
                    direction,
                    COUNT(*) as cnt
             FROM transit_events
             WHERE crossed_at > datetime('now', ? || ' hours')
+              {gate_filter}
             GROUP BY hour, direction
             ORDER BY hour
             """,
-            (f"-{hours}",),
+            params,
         )
 
-    # Build a complete hourly timeline
     result: dict[str, dict] = {}
     for row in rows:
         hour = row[0]

@@ -10,6 +10,7 @@ from analytics import (
     ANCHORAGE_ZONES,
     GATE_A,
     GATE_B,
+    GATES,
     get_daily_summary,
     get_destination_distribution,
     get_flag_distribution,
@@ -154,15 +155,15 @@ async def stats():
 # ── Analytics endpoints ──
 
 @app.get("/api/analytics/transits")
-async def api_transits(hours: int = 24):
-    """Transit events through the Strait of Hormuz."""
-    return await get_transit_summary(hours)
+async def api_transits(hours: int = 24, gate: str | None = None):
+    """Transit events. Optional gate filter: 'Strait of Hormuz', 'Dubai / Jebel Ali Approach', etc."""
+    return await get_transit_summary(hours, gate)
 
 
 @app.get("/api/analytics/hourly")
-async def api_hourly_transits(hours: int = 48):
-    """Hourly transit counts for charting."""
-    return {"hours": hours, "data": await get_hourly_transits(hours)}
+async def api_hourly_transits(hours: int = 48, gate: str | None = None):
+    """Hourly transit counts for charting. Optional gate filter."""
+    return {"hours": hours, "data": await get_hourly_transits(hours, gate)}
 
 
 @app.get("/api/analytics/states")
@@ -185,11 +186,15 @@ async def api_destinations(hours: int = 24):
 
 @app.get("/api/analytics/gate")
 async def api_gate_info():
-    """Gate line coordinates and anchorage zone definitions."""
+    """All gate line coordinates and anchorage zone definitions."""
     return {
-        "gate": {
-            "a": {"lat": GATE_A[0], "lon": GATE_A[1]},
-            "b": {"lat": GATE_B[0], "lon": GATE_B[1]},
+        "gates": {
+            name: {
+                "a": {"lat": g["a"][0], "lon": g["a"][1]},
+                "b": {"lat": g["b"][0], "lon": g["b"][1]},
+                "description": g.get("description", ""),
+            }
+            for name, g in GATES.items()
         },
         "anchorage_zones": {
             name: {

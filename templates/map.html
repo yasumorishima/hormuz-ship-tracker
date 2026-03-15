@@ -466,7 +466,8 @@
         };
         legend.addTo(map);
 
-        // ── Gate line & zones overlay ──
+        // ── Gate lines & zones overlay ──
+        const GATE_COLORS = ['#ff1744', '#00e676', '#448aff'];
         async function loadGateAndZones() {
             try {
                 const res = await fetch('/api/analytics/gate');
@@ -475,42 +476,39 @@
                 gateLayer.clearLayers();
                 zoneLayer.clearLayers();
 
-                // Gate line
-                const gate = data.gate;
-                const gateLine = L.polyline(
-                    [[gate.a.lat, gate.a.lon], [gate.b.lat, gate.b.lon]],
-                    { color: '#ff1744', weight: 3, dashArray: '10 6', opacity: 0.9 }
-                );
-                gateLine.bindTooltip('Strait Gate Line (Transit Detection)', {
-                    permanent: false, className: 'gate-tooltip',
-                });
-                gateLayer.addLayer(gateLine);
+                // Draw ALL gate lines
+                let colorIdx = 0;
+                for (const [name, gate] of Object.entries(data.gates)) {
+                    const color = GATE_COLORS[colorIdx % GATE_COLORS.length];
+                    colorIdx++;
 
-                // Gate endpoints
-                [gate.a, gate.b].forEach(pt => {
-                    gateLayer.addLayer(L.circleMarker([pt.lat, pt.lon], {
-                        radius: 5, fillColor: '#ff1744', color: '#fff',
-                        weight: 1, fillOpacity: 0.9,
+                    const gateLine = L.polyline(
+                        [[gate.a.lat, gate.a.lon], [gate.b.lat, gate.b.lon]],
+                        { color: color, weight: 3, dashArray: '10 6', opacity: 0.9 }
+                    );
+                    gateLine.bindTooltip(`${name}`, { permanent: false });
+                    gateLayer.addLayer(gateLine);
+
+                    // Gate endpoints
+                    [gate.a, gate.b].forEach(pt => {
+                        gateLayer.addLayer(L.circleMarker([pt.lat, pt.lon], {
+                            radius: 4, fillColor: color, color: '#fff',
+                            weight: 1, fillOpacity: 0.9,
+                        }));
+                    });
+
+                    // Gate label at midpoint
+                    const midLat = (gate.a.lat + gate.b.lat) / 2;
+                    const midLon = (gate.a.lon + gate.b.lon) / 2;
+                    const shortName = name.length > 20 ? name.substring(0, 18) + '...' : name;
+                    gateLayer.addLayer(L.marker([midLat, midLon + 0.15], {
+                        icon: L.divIcon({
+                            html: `<div style="color:${color};font-size:10px;font-weight:700;text-shadow:1px 1px 2px #000;white-space:nowrap">${shortName}</div>`,
+                            className: '', iconSize: [120, 14],
+                        }),
+                        interactive: false,
                     }));
-                });
-
-                // Direction labels
-                const midLat = (gate.a.lat + gate.b.lat) / 2;
-                const midLon = (gate.a.lon + gate.b.lon) / 2;
-                gateLayer.addLayer(L.marker([midLat + 0.15, midLon + 0.2], {
-                    icon: L.divIcon({
-                        html: '<div style="color:#4caf50;font-size:11px;font-weight:700;text-shadow:1px 1px 2px #000">&#x2192; INBOUND</div>',
-                        className: '', iconSize: [80, 16],
-                    }),
-                    interactive: false,
-                }));
-                gateLayer.addLayer(L.marker([midLat - 0.15, midLon - 0.2], {
-                    icon: L.divIcon({
-                        html: '<div style="color:#ff9800;font-size:11px;font-weight:700;text-shadow:1px 1px 2px #000">OUTBOUND &#x2190;</div>',
-                        className: '', iconSize: [80, 16],
-                    }),
-                    interactive: false,
-                }));
+                }
 
                 // Anchorage zones
                 for (const [name, zone] of Object.entries(data.anchorage_zones)) {
@@ -661,6 +659,8 @@
                 // Transit summary (header)
                 const tRes = await fetch('/api/analytics/transits?hours=24');
                 const tData = await tRes.json();
+
+                // Per-gate breakdown — header counter uses total across all gates
                 document.getElementById('transit-in').textContent = tData.inbound;
                 document.getElementById('transit-out').textContent = tData.outbound;
 
@@ -669,13 +669,15 @@
                 if (tData.recent_events.length === 0) {
                     recentDiv.innerHTML = '<div style="color:#555;font-size:12px;padding:8px 0">No transits detected yet. Data accumulating...</div>';
                 } else {
-                    recentDiv.innerHTML = tData.recent_events.slice(0, 8).map(e => {
+                    recentDiv.innerHTML = tData.recent_events.slice(0, 10).map(e => {
                         const dirClass = e.direction === 'INBOUND' ? 'dir-in' : 'dir-out';
                         const timeStr = e.crossed_at ? new Date(e.crossed_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--';
                         const name = e.ship_name || `MMSI:${e.mmsi}`;
+                        const gateName = (e.gate || '').replace('Dubai / Jebel Ali Approach', 'Dubai').replace('Fujairah Approach', 'Fujairah').replace('Strait of Hormuz', 'Strait');
                         return `<div class="transit-event">
                             <span class="dir ${dirClass}">${e.direction === 'INBOUND' ? 'IN' : 'OUT'}</span>
                             <span class="vessel-name">${name}</span>
+                            <span style="color:#4fc3f7;font-size:10px;margin-left:4px">${gateName}</span>
                             ${e.speed ? `<span style="color:#666;margin-left:4px">${e.speed.toFixed(1)}kn</span>` : ''}
                             <span class="time" style="float:right">${timeStr}</span>
                         </div>`;

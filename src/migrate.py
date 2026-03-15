@@ -109,6 +109,7 @@ def create_analytics_tables(conn: sqlite3.Connection):
         CREATE TABLE IF NOT EXISTS transit_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             mmsi INTEGER NOT NULL,
+            gate_name TEXT NOT NULL DEFAULT 'Strait of Hormuz',
             direction TEXT NOT NULL,
             crossed_at TEXT NOT NULL,
             latitude REAL,
@@ -127,6 +128,10 @@ def create_analytics_tables(conn: sqlite3.Connection):
     conn.execute("""
         CREATE INDEX IF NOT EXISTS idx_transit_mmsi
         ON transit_events(mmsi)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_transit_gate
+        ON transit_events(gate_name)
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS analytics_state (
