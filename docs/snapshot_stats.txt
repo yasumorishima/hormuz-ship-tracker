@@ -1,28 +1,32 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-14 13:30:52 UTC
+Generated: 2026-03-15 15:04:53 UTC
 
-Active vessels (30 min): 54
-Unique vessels (24h): 56
-Total position records: 1,263
+Active vessels (30 min): 236
+Unique vessels (24h): 265
+Total position records: 6,678
 
 ## By vessel type
-  Unknown: 49
-  Cargo: 4
-  Tanker: 1
+  Unknown: 131
+  Cargo: 42
+  Tanker: 40
+  Other: 9
+  Fishing/Towing/Dredging: 6
+  Military/Sailing/Pleasure: 6
+  Passenger: 2
 
 ## Top vessels by name
-  AL JAMOH [Unknown] → RAK | 74.1 kn
-  PLC 02 [Unknown] → -- | 102.2 kn
-  CRONUS [Unknown] → NAIA ISLAND | 102.2 kn
-  TUG GULF DOLPHIN [Unknown] → NAIAPR0JECT | 93.6 kn
-  PLC-03 [Unknown] → DUBAI | 102.2 kn
-  COASTAL BOXER [Unknown] → UMM SUQEIEM IS | 74.3 kn
-  SAFEEN POWER [Cargo] → KANDLA | 102.3 kn
-  W KITHIRA [Cargo] → LKCMB | 102.3 kn
-  NAN LIN WAN [Tanker] → ROTTERDAM | 68.8 kn
-  XIN ZI LANG 6 [Unknown] → -- | 98.3 kn
-  PRABHU PARVATI [Unknown] → -- | 61.6 kn
-  MERCURY HOPE [Unknown] → -- | 66.7 kn
-  JASA MURNI [Cargo] → AE AUH OPL | 100.9 kn
-  AS CLEMENTINA [Cargo] → JEBEL ALI | 99.1 kn
-  GFS GENESIS [Unknown] → -- | 82.6 kn
+  MIRACLE HOPE [Unknown] → -- | 102.2 kn
+  SSF VALENCE [Unknown] → -- | 99.1 kn
+  DMS COURAGEOUS [Other] → FATEH FIELD UAE | 99.3 kn
+  HAI TUN ZUO [Tanker] → MERAK | 86.9 kn
+  HABRUT [Tanker] → XX XXX>AE DXB | 102.2 kn
+  PLC 02 [Unknown] → -- | 49.9 kn
+  SIENA [Tanker] → FOR ORDER | 99.7 kn
+  AL BAZM II [Cargo] → JEA | 99.1 kn
+  TRANSSHELF [Cargo] → -- | 90.0 kn
+  SHAHRAZAD [Tanker] → FOR ORDERS | 102.2 kn
+  CHARLES DARWIN [Fishing/Towing/Dredging] → DXB PJA | 99.2 kn
+  AMIRA MIRUNA [Cargo] → SAJUB | 48.7 kn
+  CSCL ARCTIC OCEAN [Cargo] → MYPKG | 98.9 kn
+  SADAH SILVER [Unknown] → -- | 102.3 kn
+  MONTE URBASA [Unknown] → -- | 79.5 kn
