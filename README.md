@@ -89,6 +89,17 @@ docker exec hormuz-tracker python src/migrate.py
 - Shapely + Natural Earth 10m (land filtering)
 - Docker on Raspberry Pi 5
 
+## Roadmap
+
+- **Time-series trend analysis** — daily/weekly transit counts, anchored ratio over time to track how conditions evolve
+- **Satellite AIS integration** — terrestrial coverage misses mid-strait traffic; satellite data would fill the gap
+- **Historical baseline comparison** — establish "normal" traffic patterns to quantify deviations
+- **Automated daily report** — generate and push a text/image summary of the day's maritime activity
+- **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days to manage DB size
+- **Cloudflare Tunnel** — expose the dashboard publicly without a static IP
+- **Timelapse animation** — generate video of vessel movements over 24h/7d periods
+- **Additional gate lines** — Bab el-Mandeb, Suez approach, or other chokepoints using the same infrastructure
+
 ## Data Source
 
 Ship position data: [aisstream.io](https://aisstream.io/) (free WebSocket API, terrestrial AIS receivers).
