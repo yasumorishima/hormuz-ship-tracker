@@ -1,23 +1,22 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-18 11:54:36 UTC
+Generated: 2026-03-18 12:00:34 UTC
 
 Active vessels (30 min): 193
 Unique vessels (24h): 268
-Total position records: 43,313
+Total position records: 43,354
 Strait transits (24h): IN 17 / OUT 9
 
 ## By vessel type
-  Unknown: 132
-  Tanker: 27
+  Unknown: 134
+  Tanker: 26
   Cargo: 25
-  Military/Sailing/Pleasure: 3
   Other: 2
+  Military/Sailing/Pleasure: 2
   Fishing/Towing/Dredging: 2
   Passenger: 1
   WIG: 1
 
 ## Top vessels by name
-  AL KOUT [Tanker] → KWMEA>OMRMZ | 0.2 kn
   DUBAI FORTUNE [Cargo] → Jebel Ali | 10.6 kn
   NAVE ANDROMEDA [Tanker] → Singapore | 0.7 kn
   MARINE CHARGE [Tanker] → Dubai | 0.4 kn
@@ -32,3 +31,4 @@ Strait transits (24h): IN 17 / OUT 9
   SEA CONDOR [Tanker] → For Orders | 5.6 kn
   SEA WOLF [Unknown] → -- | 1.4 kn
   AL BARRAH [Tanker] → Jebel Ali | 8.5 kn
+  BSL NORDIC [Cargo] → JABEL ALI | 0.1 kn
