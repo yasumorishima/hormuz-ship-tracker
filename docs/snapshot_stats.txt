@@ -1,23 +1,22 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-18 11:21:39 UTC
+Generated: 2026-03-18 11:32:15 UTC
 
-Active vessels (30 min): 187
-Unique vessels (24h): 264
-Total position records: 43,041
-Strait transits (24h): IN 23 / OUT 10
+Active vessels (30 min): 189
+Unique vessels (24h): 266
+Total position records: 43,133
+Strait transits (24h): IN 17 / OUT 9
 
 ## By vessel type
-  Unknown: 108
-  Tanker: 32
-  Cargo: 32
-  Military/Sailing/Pleasure: 7
-  Fishing/Towing/Dredging: 4
+  Unknown: 119
+  Tanker: 31
+  Cargo: 28
+  Military/Sailing/Pleasure: 4
+  Fishing/Towing/Dredging: 3
   Other: 2
   Passenger: 1
   WIG: 1
 
 ## Top vessels by name
-  MIAOULIS 21 [Unknown] → -- | 5.2 kn
   AL KOUT [Tanker] → KWMEA>OMRMZ | 0.2 kn
   DUBAI FORTUNE [Cargo] → Jebel Ali | 10.6 kn
   NAVE ANDROMEDA [Tanker] → Singapore | 0.7 kn
@@ -32,3 +31,4 @@ Strait transits (24h): IN 23 / OUT 10
   VALLIANZ SUPREME [Unknown] → -- | --
   GREEN ONE [Tanker] → For Orders | 0.1 kn
   SEA CONDOR [Tanker] → For Orders | 5.6 kn
+  SEA WOLF [Unknown] → -- | 1.4 kn
