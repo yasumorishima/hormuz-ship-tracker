@@ -19,6 +19,10 @@ echo "Generating heatmap..."
 python /app/src/heatmap.py --hours 0 --filename heatmap.png
 echo ""
 
+echo "Generating stats report..."
+python /app/src/stats_report.py --db /app/data/ais.db --output /repo/docs/STATS.md
+echo ""
+
 SNAPSHOT="/app/data/snapshot.png"
 STATS="/app/data/snapshot_stats.txt"
 HEATMAP="/app/data/heatmap.png"
@@ -46,8 +50,11 @@ if [ -f "$HEATMAP" ]; then
     [ "$NEW_HM_HASH" != "$OLD_HM_HASH" ] && CHANGED=true
 fi
 
+# STATS.md is always regenerated (text changes every cycle)
+CHANGED=true
+
 if [ "$CHANGED" = false ]; then
-    echo "No changes in snapshot or heatmap — skipping push"
+    echo "No changes — skipping push"
     exit 0
 fi
 
@@ -73,7 +80,7 @@ fi
 TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
 VESSEL_COUNT=$(grep -oP 'Active vessels.*?: \K[0-9]+' "$STATS" 2>/dev/null || echo "?")
 
-git add docs/snapshot_latest.png docs/snapshot_stats.txt docs/heatmap.png
+git add docs/snapshot_latest.png docs/snapshot_stats.txt docs/heatmap.png docs/STATS.md
 git commit -m "snapshot: ${VESSEL_COUNT} vessels at ${TIMESTAMP}" || {
     echo "Nothing to commit"
     exit 0

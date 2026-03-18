@@ -20,6 +20,8 @@ From 4 days of continuous monitoring (43,000+ position records, 380+ unique vess
 - **Tankers (81) and cargo (67)** are the most common vessel types
 - **Karachi-bound traffic detected** — at least 1 vessel (CSTAR VOYAGER) bound for Pakistan observed in the western Gulf
 
+**[View full statistics (auto-updated every 6h) →](docs/STATS.md)**
+
 ## What This Monitors
 
 - **Strait transit rate** — virtual gate lines detect vessels entering/leaving the Persian Gulf and major ports
