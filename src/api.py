@@ -251,6 +251,7 @@ async def api_blockade():
 async def api_data_quality():
     """AIS data quality summary — anomaly counts and explanations."""
     async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
         total = (await db.execute_fetchall("SELECT COUNT(*) FROM positions"))[0][0]
 
         speed_unavailable = (await db.execute_fetchall(
