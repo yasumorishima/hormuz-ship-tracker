@@ -234,8 +234,8 @@ def generate_transit_report(db_path=DB_PATH, output_dir=OUTPUT_DIR,
                   fontsize=9, color="#888888", fontfamily="monospace",
                   va="top", transform=ax_table.transAxes)
     y_pos -= 0.005
-    ax_table.axhline(y=y_pos, xmin=0.02, xmax=0.98, color="#2a3a4a",
-                     linewidth=0.5, transform=ax_table.transAxes)
+    ax_table.plot([0.02, 0.98], [y_pos, y_pos], color="#2a3a4a",
+                  linewidth=0.5, transform=ax_table.transAxes, clip_on=False)
     y_pos -= 0.02
 
     # Rows
