@@ -9,6 +9,7 @@ Usage:
     python src/transit_report.py [--output transit_report.png]
 """
 
+import argparse
 import json
 import sqlite3
 import sys
