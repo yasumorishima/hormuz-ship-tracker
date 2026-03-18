@@ -124,46 +124,122 @@ def _load_coastline_polygons():
         return []
 
 
-def query_positions_in_window(db_path, start_ts, end_ts):
-    """Query latest position per vessel within a time window."""
+def load_all_trajectories(db_path, start_ts, end_ts):
+    """Load ALL position data for the time range, grouped by MMSI.
+
+    Returns dict: mmsi -> list of {ts_epoch, lat, lon, speed, ship_name, ship_type, flag}
+    sorted by timestamp. This enables smooth interpolation between any two timestamps.
+    """
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute("""
-            SELECT mmsi, latitude, longitude, speed, ship_name, ship_type, flag
+            SELECT mmsi, latitude, longitude, speed, ship_name, ship_type, flag, timestamp
             FROM positions
-            WHERE id IN (
-                SELECT MAX(id) FROM positions
-                WHERE timestamp >= ? AND timestamp < ?
-                GROUP BY mmsi
-            )
-        """, (start_ts, end_ts)).fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
-
-
-def query_trail_positions(db_path, end_ts, trail_minutes):
-    """Query all positions within the trail window, grouped by MMSI."""
-    start_ts = (datetime.fromisoformat(end_ts) - timedelta(minutes=trail_minutes)).isoformat()
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    try:
-        rows = conn.execute("""
-            SELECT mmsi, latitude, longitude, ship_type, timestamp
-            FROM positions
-            WHERE timestamp >= ? AND timestamp < ?
+            WHERE timestamp >= ? AND timestamp <= ?
             ORDER BY mmsi, timestamp
         """, (start_ts, end_ts)).fetchall()
-        trails = defaultdict(list)
+
+        trajectories = defaultdict(list)
         for r in rows:
-            trails[r["mmsi"]].append({
-                "lat": r["latitude"], "lon": r["longitude"],
-                "type": get_ship_type_label(r["ship_type"]),
+            ts_epoch = datetime.fromisoformat(r["timestamp"]).timestamp()
+            trajectories[r["mmsi"]].append({
+                "ts": ts_epoch,
+                "lat": r["latitude"],
+                "lon": r["longitude"],
+                "speed": r["speed"],
+                "ship_name": r["ship_name"],
+                "ship_type": r["ship_type"],
+                "flag": r["flag"],
             })
-        return trails
+        return trajectories
     finally:
         conn.close()
+
+
+def interpolate_positions(trajectories, frame_epoch, max_age_seconds=1800):
+    """For each vessel, interpolate its position at the given timestamp.
+
+    Uses linear interpolation between the two nearest known positions.
+    If the vessel has no data within max_age_seconds, it is excluded.
+
+    Returns list of vessel dicts with interpolated lat/lon.
+    """
+    vessels = []
+    for mmsi, points in trajectories.items():
+        # Binary search for the two points bracketing frame_epoch
+        lo, hi = 0, len(points) - 1
+
+        # Find last point <= frame_epoch
+        if points[0]["ts"] > frame_epoch + max_age_seconds:
+            continue  # vessel hasn't appeared yet
+        if points[-1]["ts"] < frame_epoch - max_age_seconds:
+            continue  # vessel disappeared too long ago
+
+        # Find bracketing indices
+        before_idx = None
+        after_idx = None
+        for i, p in enumerate(points):
+            if p["ts"] <= frame_epoch:
+                before_idx = i
+            if p["ts"] >= frame_epoch and after_idx is None:
+                after_idx = i
+
+        if before_idx is None and after_idx is None:
+            continue
+
+        if before_idx is not None and after_idx is not None and before_idx != after_idx:
+            # Interpolate between before and after
+            p0 = points[before_idx]
+            p1 = points[after_idx]
+            dt = p1["ts"] - p0["ts"]
+            if dt > 0 and dt < max_age_seconds * 2:
+                t = (frame_epoch - p0["ts"]) / dt
+                lat = p0["lat"] + t * (p1["lat"] - p0["lat"])
+                lon = p0["lon"] + t * (p1["lon"] - p0["lon"])
+                speed = p0["speed"] if p0["speed"] else p1["speed"]
+            else:
+                # Gap too large, use nearest
+                nearest = p0 if abs(p0["ts"] - frame_epoch) < abs(p1["ts"] - frame_epoch) else p1
+                lat, lon, speed = nearest["lat"], nearest["lon"], nearest["speed"]
+        else:
+            # Use nearest available point
+            idx = before_idx if before_idx is not None else after_idx
+            p = points[idx]
+            if abs(p["ts"] - frame_epoch) > max_age_seconds:
+                continue
+            lat, lon, speed = p["lat"], p["lon"], p["speed"]
+
+        ref = points[before_idx if before_idx is not None else after_idx]
+        vessels.append({
+            "mmsi": mmsi,
+            "latitude": lat,
+            "longitude": lon,
+            "speed": speed,
+            "ship_name": ref["ship_name"],
+            "ship_type": ref["ship_type"],
+            "flag": ref["flag"],
+        })
+    return vessels
+
+
+def get_trails_at(trajectories, frame_epoch, trail_seconds=7200):
+    """Extract trail polylines for each vessel up to the frame timestamp.
+
+    Returns dict: mmsi -> list of {lat, lon, type}.
+    """
+    trails = {}
+    cutoff = frame_epoch - trail_seconds
+    for mmsi, points in trajectories.items():
+        trail_pts = [
+            {"lat": p["lat"], "lon": p["lon"],
+             "type": get_ship_type_label(p["ship_type"])}
+            for p in points
+            if cutoff <= p["ts"] <= frame_epoch
+        ]
+        if len(trail_pts) >= 2:
+            trails[mmsi] = trail_pts
+    return trails
 
 
 def query_transit_events_in_window(db_path, start_ts, end_ts):
@@ -339,13 +415,17 @@ def render_frame(frame_ts, vessels, trails, transit_counts, coastlines,
 
 
 def generate_timelapse(db_path=DB_PATH, output_dir=OUTPUT_DIR,
-                       hours=96, interval_minutes=30, trail_minutes=120,
-                       fps=8, filename="timelapse.gif"):
-    """Generate a timelapse GIF of vessel movements.
+                       hours=96, interval_minutes=10, trail_minutes=120,
+                       fps=10, filename="timelapse.gif"):
+    """Generate a timelapse GIF with smooth interpolated vessel movement.
+
+    Key change: loads ALL trajectories upfront, then interpolates each vessel's
+    position at every frame timestamp. This produces smooth, continuous motion
+    instead of jerky frame-to-frame jumps.
 
     Args:
         hours: How many hours of data to animate.
-        interval_minutes: Time between frames (e.g., 30 = one frame per 30 min).
+        interval_minutes: Time between frames (smaller = smoother, more frames).
         trail_minutes: How many minutes of trail to show behind each vessel.
         fps: Frames per second in the output GIF.
         filename: Output filename.
@@ -364,11 +444,16 @@ def generate_timelapse(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         end_dt - timedelta(hours=hours),
     )
 
+    # Load ALL trajectories once (the key to smooth animation)
+    print("Loading all vessel trajectories...")
+    trajectories = load_all_trajectories(db_path, start_dt.isoformat(), end_dt.isoformat())
+    print(f"  Loaded {sum(len(v) for v in trajectories.values()):,} positions for {len(trajectories)} vessels")
+
     # Generate time steps
     steps = []
     current = start_dt
     while current <= end_dt:
-        steps.append(current.isoformat())
+        steps.append(current)
         current += timedelta(minutes=interval_minutes)
 
     total_frames = len(steps)
@@ -376,18 +461,16 @@ def generate_timelapse(db_path=DB_PATH, output_dir=OUTPUT_DIR,
 
     coastlines = _load_coastline_polygons()
     frames = []
+    trail_seconds = trail_minutes * 60
+    max_age = interval_minutes * 60 * 3  # allow 3x interval gap before hiding vessel
 
-    for i, frame_ts in enumerate(steps):
-        next_ts = (datetime.fromisoformat(frame_ts) + timedelta(minutes=interval_minutes)).isoformat()
+    for i, frame_dt in enumerate(steps):
+        frame_epoch = frame_dt.timestamp()
+        frame_ts = frame_dt.isoformat()
 
-        # Get current positions (vessels visible in this window)
-        vessels = query_positions_in_window(db_path, frame_ts, next_ts)
-        # If no vessels in exact window, look back a bit
-        if not vessels:
-            lookback_ts = (datetime.fromisoformat(frame_ts) - timedelta(minutes=15)).isoformat()
-            vessels = query_positions_in_window(db_path, lookback_ts, next_ts)
-
-        trails = query_trail_positions(db_path, frame_ts, trail_minutes)
+        # Interpolate all vessel positions at this exact timestamp
+        vessels = interpolate_positions(trajectories, frame_epoch, max_age_seconds=max_age)
+        trails = get_trails_at(trajectories, frame_epoch, trail_seconds=trail_seconds)
         transit_counts = query_transit_events_in_window(
             db_path, start_dt.isoformat(), frame_ts
         )
@@ -398,7 +481,7 @@ def generate_timelapse(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         )
         frames.append(img)
 
-        if (i + 1) % 10 == 0 or i == 0:
+        if (i + 1) % 20 == 0 or i == 0:
             print(f"  [{i + 1}/{total_frames}] {frame_ts[:16]} — {len(vessels)} vessels")
 
     if not frames:
