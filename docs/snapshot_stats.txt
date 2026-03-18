@@ -1,18 +1,18 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-18 11:35:27 UTC
+Generated: 2026-03-18 11:41:42 UTC
 
-Active vessels (30 min): 189
-Unique vessels (24h): 266
-Total position records: 43,159
+Active vessels (30 min): 192
+Unique vessels (24h): 268
+Total position records: 43,218
 Strait transits (24h): IN 17 / OUT 9
 
 ## By vessel type
-  Unknown: 124
-  Tanker: 30
+  Unknown: 129
+  Tanker: 29
   Cargo: 24
   Military/Sailing/Pleasure: 4
-  Fishing/Towing/Dredging: 3
   Other: 2
+  Fishing/Towing/Dredging: 2
   Passenger: 1
   WIG: 1
 
@@ -29,6 +29,6 @@ Strait transits (24h): IN 17 / OUT 9
   ABU DHABI III [Unknown] → -- | 0.1 kn
   SELAT HOPE [Unknown] → -- | 102.3 kn
   VALLIANZ SUPREME [Unknown] → -- | --
-  GREEN ONE [Tanker] → For Orders | 0.1 kn
   SEA CONDOR [Tanker] → For Orders | 5.6 kn
   SEA WOLF [Unknown] → -- | 1.4 kn
+  AL BARRAH [Tanker] → Jebel Ali | 8.5 kn
