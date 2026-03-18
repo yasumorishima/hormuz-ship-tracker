@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hormuz Strait — Vessel Movement Replay</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a1a; color: #e0e0e0; overflow: hidden; }
+
+        #header {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a3a4a;
+            height: 56px;
+            z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        #header h1 { font-size: 16px; font-weight: 600; }
+        #header h1 .accent { color: #4fc3f7; font-weight: 800; }
+        #header h1 .sub { font-size: 11px; color: #888; display: block; font-weight: 400; }
+        .header-stat { text-align: center; }
+        .header-stat .val { font-size: 18px; font-weight: 700; color: #4fc3f7; }
+        .header-stat .lbl { font-size: 9px; color: #888; text-transform: uppercase; }
+        #header-stats { display: flex; gap: 16px; align-items: center; }
+        .back-link { color: #4fc3f7; text-decoration: none; font-size: 13px; }
+        .back-link:hover { text-decoration: underline; }
+
+        #map { height: calc(100vh - 56px - 80px); width: 100%; }
+
+        /* Controls bar */
+        #controls {
+            height: 80px;
+            background: #0d1b2a;
+            border-top: 1px solid #2a3a4a;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+        }
+        .ctrl-btn {
+            background: #1a2a3a;
+            border: 1px solid #2a3a4a;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .ctrl-btn:hover { background: #2a3a4a; border-color: #4fc3f7; }
+        .ctrl-btn.active { background: #4fc3f7; color: #0a0a1a; border-color: #4fc3f7; }
+        .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        #timeline {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        #timeline-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #1a2a3a;
+            border-radius: 3px;
+            outline: none;
+        }
+        #timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4fc3f7;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #666;
+        }
+        #current-time {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4fc3f7;
+            min-width: 200px;
+            text-align: center;
+        }
+        #speed-display {
+            font-size: 12px;
+            color: #888;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Loading overlay */
+        #loading {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 26, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        #loading h2 { color: #4fc3f7; margin-bottom: 20px; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #1a2a3a;
+            border-top: 4px solid #4fc3f7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-status { color: #888; margin-top: 16px; font-size: 13px; }
+
+        /* Transit panel */
+        #transit-panel {
+            position: absolute;
+            top: 66px;
+            right: 10px;
+            width: 340px;
+            max-height: calc(100vh - 160px);
+            background: rgba(13, 27, 42, 0.95);
+            border: 1px solid #2a3a4a;
+            border-radius: 8px;
+            z-index: 800;
+            overflow: hidden;
+            display: none;
+        }
+        #transit-panel.visible { display: block; }
+        .panel-header {
+            padding: 12px 16px;
+            background: #1a2a3a;
+            border-bottom: 1px solid #2a3a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header h3 { font-size: 14px; color: #4fc3f7; }
+        .panel-close { background: none; border: none; color: #888; cursor: pointer; font-size: 18px; }
+        .panel-close:hover { color: #e0e0e0; }
+        #transit-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 230px);
+            padding: 8px;
+        }
+        .transit-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1a2a3a;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .transit-item:hover { background: rgba(79, 195, 247, 0.08); }
+        .transit-item .ship-name { font-weight: 600; font-size: 13px; }
+        .transit-item .ship-meta { font-size: 11px; color: #888; margin-top: 2px; }
+        .transit-item .direction-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .direction-badge.in { background: #1b5e20; color: #4caf50; }
+        .direction-badge.out { background: #e65100; color: #ffb74d; }
+
+        /* Ship popup styles */
+        .ship-popup { min-width: 200px; }
+        .ship-popup h4 { color: #0d1b2a; margin-bottom: 4px; }
+        .ship-popup .info-row { font-size: 12px; color: #555; margin: 2px 0; }
+        .ship-popup .info-row strong { color: #333; }
+
+        /* Legend */
+        .legend-box {
+            position: absolute;
+            bottom: 90px;
+            left: 10px;
+            background: rgba(13, 27, 42, 0.92);
+            border: 1px solid #2a3a4a;
+            border-radius: 6px;
+            padding: 10px 14px;
+            z-index: 800;
+            font-size: 11px;
+        }
+        .legend-box h4 { color: #4fc3f7; margin-bottom: 6px; font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="header-left">
+        <a href="/" class="back-link">&larr; Live Map</a>
+        <h1>
+            <span class="accent">Vessel Movement Replay</span>
+            <span class="sub">Animated timelapse of ship traffic in the Persian Gulf</span>
+        </h1>
+    </div>
+    <div id="header-stats">
+        <div class="header-stat">
+            <div class="val" id="stat-vessels">—</div>
+            <div class="lbl">Vessels</div>
+        </div>
+        <div class="header-stat">
+            <div class="val" id="stat-transits">—</div>
+            <div class="lbl">Transits</div>
+        </div>
+        <div class="header-stat">
+            <div class="val" id="stat-ships">—</div>
+            <div class="lbl">Unique Ships</div>
+        </div>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<div id="controls">
+    <button class="ctrl-btn" id="btn-play" title="Play / Pause">&#9654; Play</button>
+    <button class="ctrl-btn" id="btn-slower" title="Slower">&#9664;&#9664;</button>
+    <span id="speed-display">1x</span>
+    <button class="ctrl-btn" id="btn-faster" title="Faster">&#9654;&#9654;</button>
+    <div id="timeline">
+        <input type="range" id="timeline-slider" min="0" max="100" value="0">
+        <div id="timeline-labels">
+            <span id="time-start">—</span>
+            <span id="time-end">—</span>
+        </div>
+    </div>
+    <span id="current-time">Loading...</span>
+    <button class="ctrl-btn" id="btn-transits" title="Show transit ships">Transit Ships</button>
+</div>
+
+<div class="legend-box">
+    <h4>Vessel Types</h4>
+    <div class="legend-item"><div class="legend-dot" style="background:#e65100"></div> Tanker</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1565c0"></div> Cargo</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32"></div> Passenger</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6a1b9a"></div> Fishing/Towing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#b71c1c"></div> Military/Sailing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00838f"></div> HSC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#455a64"></div> Other</div>
+</div>
+
+<div id="transit-panel">
+    <div class="panel-header">
+        <h3>Ships That Crossed Gates</h3>
+        <button class="panel-close" id="btn-close-panel">&times;</button>
+    </div>
+    <div id="transit-list"></div>
+</div>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <h2>Loading Vessel Data...</h2>
+    <div id="loading-status">Fetching position history</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    // ── Type colors ──
+    const TYPE_COLORS = {
+        'Tanker': '#e65100',
+        'Cargo': '#1565c0',
+        'Passenger': '#2e7d32',
+        'Fishing/Towing/Dredging': '#6a1b9a',
+        'Military/Sailing/Pleasure': '#b71c1c',
+        'HSC': '#00838f',
+        'Other': '#455a64',
+        'Unknown': '#616161',
+    };
+    function getColor(type) {
+        for (const [key, color] of Object.entries(TYPE_COLORS)) {
+            if (type && type.startsWith(key.split('/')[0])) return color;
+        }
+        return '#616161';
+    }
+
+    // ── Gate lines ──
+    const GATES = [
+        { name: 'Strait of Hormuz', a: [26.05, 56.50], b: [26.65, 56.10] },
+        { name: 'Dubai / Jebel Ali', a: [25.00, 55.20], b: [25.35, 55.20] },
+        { name: 'Fujairah', a: [25.00, 56.50], b: [25.30, 56.50] },
+    ];
+
+    // ── Map setup ──
+    const map = L.map('map', {
+        center: [26.0, 54.5],
+        zoom: 6,
+        zoomControl: true,
+        attributionControl: false,
+    });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    // Gate lines on map
+    GATES.forEach(g => {
+        L.polyline([g.a, g.b], {
+            color: '#ff1744', weight: 2.5, dashArray: '10,6', opacity: 0.8,
+        }).addTo(map).bindTooltip(g.name, { permanent: false, className: 'gate-tooltip' });
+    });
+
+    // ── State ──
+    let frames = [];
+    let transitShips = [];
+    let currentFrame = 0;
+    let playing = false;
+    let playSpeed = 1;
+    let playInterval = null;
+    const vesselMarkers = {};  // mmsi -> L.circleMarker
+    const vesselTrails = {};   // mmsi -> L.polyline (recent trail)
+    const trailHistory = {};   // mmsi -> [{lat, lon, frame}]
+
+    // ── Elements ──
+    const $play = document.getElementById('btn-play');
+    const $slider = document.getElementById('timeline-slider');
+    const $currentTime = document.getElementById('current-time');
+    const $speedDisplay = document.getElementById('speed-display');
+    const $loading = document.getElementById('loading');
+    const $loadingStatus = document.getElementById('loading-status');
+    const $statVessels = document.getElementById('stat-vessels');
+    const $statTransits = document.getElementById('stat-transits');
+    const $statShips = document.getElementById('stat-ships');
+    const $transitPanel = document.getElementById('transit-panel');
+    const $transitList = document.getElementById('transit-list');
+
+    // ── Load data ──
+    async function loadData() {
+        $loadingStatus.textContent = 'Fetching position history (may take a moment)...';
+        const replayResp = await fetch('/api/replay/frames?hours=96&interval=30');
+        const replayData = await replayResp.json();
+        frames = replayData.frames;
+
+        $loadingStatus.textContent = 'Fetching transit ship data...';
+        const transitResp = await fetch('/api/analytics/transit-ships');
+        const transitData = await transitResp.json();
+        transitShips = transitData.ships;
+
+        $statTransits.textContent = transitData.summary.total_transits;
+        $statShips.textContent = transitData.summary.unique_ships;
+
+        if (frames.length > 0) {
+            $slider.max = frames.length - 1;
+            document.getElementById('time-start').textContent = formatTime(frames[0].ts);
+            document.getElementById('time-end').textContent = formatTime(frames[frames.length - 1].ts);
+        }
+
+        $loading.style.display = 'none';
+        renderFrame(0);
+    }
+
+    function formatTime(isoStr) {
+        if (!isoStr) return '—';
+        const d = new Date(isoStr + 'Z');
+        return d.toISOString().replace('T', '  ').substring(0, 18) + ' UTC';
+    }
+
+    // ── Render frame ──
+    function renderFrame(idx) {
+        if (idx < 0 || idx >= frames.length) return;
+        currentFrame = idx;
+        const frame = frames[idx];
+
+        $slider.value = idx;
+        $currentTime.textContent = formatTime(frame.ts);
+        $statVessels.textContent = frame.vessels.length;
+
+        // Track which vessels are in this frame
+        const activeMMSIs = new Set();
+
+        frame.vessels.forEach(v => {
+            activeMMSIs.add(v.mmsi);
+
+            // Update trail history
+            if (!trailHistory[v.mmsi]) trailHistory[v.mmsi] = [];
+            const hist = trailHistory[v.mmsi];
+            // Only add if different from last point
+            if (hist.length === 0 || hist[hist.length - 1].frame !== idx) {
+                hist.push({ lat: v.lat, lon: v.lon, frame: idx });
+            }
+            // Keep only last ~8 frames of trail
+            while (hist.length > 8) hist.shift();
+
+            // Create or update marker
+            if (vesselMarkers[v.mmsi]) {
+                vesselMarkers[v.mmsi].setLatLng([v.lat, v.lon]);
+                vesselMarkers[v.mmsi].setStyle({ fillColor: getColor(v.type) });
+            } else {
+                const m = L.circleMarker([v.lat, v.lon], {
+                    radius: v.type === 'Tanker' ? 5 : 4,
+                    fillColor: getColor(v.type),
+                    color: '#fff',
+                    weight: 0.8,
+                    fillOpacity: 0.9,
+                }).addTo(map);
+                m.bindPopup(() => makePopup(v));
+                vesselMarkers[v.mmsi] = m;
+            }
+
+            // Update trail polyline
+            if (hist.length >= 2) {
+                const latlngs = hist.map(h => [h.lat, h.lon]);
+                if (vesselTrails[v.mmsi]) {
+                    vesselTrails[v.mmsi].setLatLngs(latlngs);
+                } else {
+                    vesselTrails[v.mmsi] = L.polyline(latlngs, {
+                        color: getColor(v.type),
+                        weight: 1.5,
+                        opacity: 0.35,
+                    }).addTo(map);
+                }
+            }
+        });
+
+        // Remove markers for vessels not in this frame
+        Object.keys(vesselMarkers).forEach(mmsi => {
+            if (!activeMMSIs.has(parseInt(mmsi))) {
+                map.removeLayer(vesselMarkers[mmsi]);
+                delete vesselMarkers[mmsi];
+                if (vesselTrails[mmsi]) {
+                    map.removeLayer(vesselTrails[mmsi]);
+                    delete vesselTrails[mmsi];
+                }
+                delete trailHistory[mmsi];
+            }
+        });
+    }
+
+    function makePopup(v) {
+        const flag = v.flag ? `<img src="https://flagcdn.com/16x12/${v.flag.toLowerCase()}.png" alt="${v.flag}" style="vertical-align:middle"> ${v.flag}` : '—';
+        return `<div class="ship-popup">
+            <h4>${v.name}</h4>
+            <div class="info-row"><strong>Type:</strong> ${v.type}</div>
+            <div class="info-row"><strong>Flag:</strong> ${flag}</div>
+            <div class="info-row"><strong>Destination:</strong> ${v.dest || '—'}</div>
+            <div class="info-row"><strong>Speed:</strong> ${v.speed ? v.speed.toFixed(1) + ' kn' : '—'}</div>
+            <div class="info-row"><strong>MMSI:</strong> ${v.mmsi}</div>
+            <div class="info-row"><a href="/api/ship/${v.mmsi}/profile" target="_blank">Full Profile (JSON)</a></div>
+        </div>`;
+    }
+
+    // ── Playback controls ──
+    function startPlayback() {
+        if (playInterval) clearInterval(playInterval);
+        playing = true;
+        $play.innerHTML = '&#9646;&#9646; Pause';
+        $play.classList.add('active');
+        const baseDelay = 200;  // ms per frame at 1x
+        playInterval = setInterval(() => {
+            if (currentFrame >= frames.length - 1) {
+                stopPlayback();
+                return;
+            }
+            renderFrame(currentFrame + 1);
+        }, baseDelay / playSpeed);
+    }
+
+    function stopPlayback() {
+        if (playInterval) clearInterval(playInterval);
+        playing = false;
+        $play.innerHTML = '&#9654; Play';
+        $play.classList.remove('active');
+    }
+
+    $play.addEventListener('click', () => {
+        if (playing) stopPlayback();
+        else {
+            if (currentFrame >= frames.length - 1) currentFrame = 0;
+            startPlayback();
+        }
+    });
+
+    document.getElementById('btn-faster').addEventListener('click', () => {
+        playSpeed = Math.min(playSpeed * 2, 16);
+        $speedDisplay.textContent = playSpeed + 'x';
+        if (playing) startPlayback();  // restart with new speed
+    });
+
+    document.getElementById('btn-slower').addEventListener('click', () => {
+        playSpeed = Math.max(playSpeed / 2, 0.25);
+        $speedDisplay.textContent = playSpeed + 'x';
+        if (playing) startPlayback();
+    });
+
+    $slider.addEventListener('input', () => {
+        const wasPlaying = playing;
+        if (playing) stopPlayback();
+        renderFrame(parseInt($slider.value));
+        // Don't auto-resume — user is scrubbing
+    });
+
+    // ── Keyboard shortcuts ──
+    document.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'k') { e.preventDefault(); $play.click(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); if (!playing) renderFrame(Math.min(currentFrame + 1, frames.length - 1)); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); if (!playing) renderFrame(Math.max(currentFrame - 1, 0)); }
+        if (e.key === '+' || e.key === '=') { e.preventDefault(); document.getElementById('btn-faster').click(); }
+        if (e.key === '-') { e.preventDefault(); document.getElementById('btn-slower').click(); }
+    });
+
+    // ── Transit ships panel ──
+    document.getElementById('btn-transits').addEventListener('click', () => {
+        $transitPanel.classList.toggle('visible');
+        if ($transitPanel.classList.contains('visible')) {
+            renderTransitList();
+        }
+    });
+    document.getElementById('btn-close-panel').addEventListener('click', () => {
+        $transitPanel.classList.remove('visible');
+    });
+
+    function renderTransitList() {
+        if (!transitShips.length) {
+            $transitList.innerHTML = '<div style="padding:16px;color:#888">No transit events recorded yet.</div>';
+            return;
+        }
+        let html = '';
+        transitShips.forEach(s => {
+            const dirClass = s.direction === 'INBOUND' ? 'in' : 'out';
+            const flag = s.flag ? `<img src="https://flagcdn.com/16x12/${s.flag.toLowerCase()}.png" style="vertical-align:middle"> ` : '';
+            const time = s.crossed_at ? s.crossed_at.substring(0, 16).replace('T', ' ') : '—';
+            html += `<div class="transit-item" data-mmsi="${s.mmsi}" data-lat="${s.lat}" data-lon="${s.lon}">
+                <div class="ship-name">${flag}${s.name}
+                    <span class="direction-badge ${dirClass}">${s.direction}</span>
+                </div>
+                <div class="ship-meta">
+                    ${s.type} | ${s.gate} | ${s.speed_kn ? s.speed_kn.toFixed(1) + ' kn' : '—'} | ${time}
+                </div>
+                <div class="ship-meta">${s.destination ? 'Dest: ' + s.destination : ''}</div>
+            </div>`;
+        });
+        $transitList.innerHTML = html;
+
+        // Click to fly to transit location
+        $transitList.querySelectorAll('.transit-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const lat = parseFloat(el.dataset.lat);
+                const lon = parseFloat(el.dataset.lon);
+                if (lat && lon) map.flyTo([lat, lon], 10);
+            });
+        });
+    }
+
+    // ── Start ──
+    loadData();
+
+})();
+</script>
+</body>
+</html>

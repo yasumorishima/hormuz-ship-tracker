@@ -222,3 +222,214 @@ async def api_blockade():
 async def api_daily_summary():
     """Comprehensive daily summary."""
     return await get_daily_summary()
+
+
+# ── Replay & transit detail endpoints ──
+
+@app.get("/api/replay/frames")
+async def api_replay_frames(hours: int = 96, interval: int = 30):
+    """Return position data bucketed by time for animated replay.
+
+    Each frame contains latest position per vessel within the interval window.
+    Optimized for Leaflet-based client-side animation.
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+
+        # Get data range
+        row = await db.execute_fetchall(
+            "SELECT MIN(timestamp), MAX(timestamp) FROM positions"
+        )
+        if not row or not row[0][0]:
+            return {"frames": [], "meta": {}}
+
+        earliest = row[0][0]
+        latest = row[0][1]
+
+        from datetime import datetime, timedelta
+
+        end_dt = datetime.fromisoformat(latest)
+        start_dt = max(
+            datetime.fromisoformat(earliest),
+            end_dt - timedelta(hours=hours),
+        )
+
+        # Build time windows and query positions for each
+        frames = []
+        current = start_dt
+        while current <= end_dt:
+            next_ts = current + timedelta(minutes=interval)
+            rows = await db.execute_fetchall("""
+                SELECT mmsi, latitude, longitude, speed, course,
+                       ship_name, ship_type, flag, destination, timestamp
+                FROM positions
+                WHERE id IN (
+                    SELECT MAX(id) FROM positions
+                    WHERE timestamp >= ? AND timestamp < ?
+                    GROUP BY mmsi
+                )
+            """, (current.isoformat(), next_ts.isoformat()))
+
+            vessels = []
+            for r in rows:
+                if is_on_land(r["latitude"], r["longitude"]):
+                    continue
+                vessels.append({
+                    "mmsi": r["mmsi"],
+                    "lat": r["latitude"],
+                    "lon": r["longitude"],
+                    "speed": r["speed"],
+                    "course": r["course"],
+                    "name": r["ship_name"] or f"MMSI:{r['mmsi']}",
+                    "type": get_ship_type_label(r["ship_type"]),
+                    "flag": r["flag"],
+                    "dest": r["destination"],
+                })
+            frames.append({
+                "ts": current.isoformat(),
+                "vessels": vessels,
+            })
+            current = next_ts
+
+    return {
+        "frames": frames,
+        "meta": {
+            "earliest": earliest,
+            "latest": latest,
+            "hours": hours,
+            "interval_min": interval,
+            "total_frames": len(frames),
+        },
+    }
+
+
+@app.get("/api/analytics/transit-ships")
+async def api_transit_ships(hours: int = 0, gate: str | None = None):
+    """Detailed list of ships that actually crossed gate lines.
+
+    Returns ship name, type, flag, destination, speed at crossing, and direction
+    for each transit event. hours=0 means all time.
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+
+        query = """
+            SELECT t.mmsi, t.gate_name, t.direction, t.crossed_at,
+                   t.speed, t.ship_name, t.ship_type, t.flag, t.destination,
+                   t.latitude, t.longitude
+            FROM transit_events t
+        """
+        conditions = []
+        params = []
+
+        if hours > 0:
+            conditions.append("t.crossed_at > datetime('now', ? || ' hours')")
+            params.append(f"-{hours}")
+        if gate:
+            conditions.append("t.gate_name = ?")
+            params.append(gate)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+        query += " ORDER BY t.crossed_at DESC"
+
+        rows = await db.execute_fetchall(query, params)
+
+        ships = []
+        for r in rows:
+            ships.append({
+                "mmsi": r["mmsi"],
+                "name": r["ship_name"] or f"MMSI:{r['mmsi']}",
+                "type": get_ship_type_label(r["ship_type"]),
+                "type_code": r["ship_type"],
+                "flag": r["flag"],
+                "destination": r["destination"],
+                "gate": r["gate_name"],
+                "direction": r["direction"],
+                "crossed_at": r["crossed_at"],
+                "speed_kn": r["speed"],
+                "lat": r["latitude"],
+                "lon": r["longitude"],
+            })
+
+        # Summary stats
+        unique_ships = len({s["mmsi"] for s in ships})
+        by_gate = {}
+        by_type = {}
+        by_flag = {}
+        for s in ships:
+            by_gate[s["gate"]] = by_gate.get(s["gate"], 0) + 1
+            by_type[s["type"]] = by_type.get(s["type"], 0) + 1
+            if s["flag"]:
+                by_flag[s["flag"]] = by_flag.get(s["flag"], 0) + 1
+
+    return {
+        "ships": ships,
+        "summary": {
+            "total_transits": len(ships),
+            "unique_ships": unique_ships,
+            "by_gate": dict(sorted(by_gate.items(), key=lambda x: -x[1])),
+            "by_type": dict(sorted(by_type.items(), key=lambda x: -x[1])),
+            "by_flag": dict(sorted(by_flag.items(), key=lambda x: -x[1])[:20]),
+        },
+    }
+
+
+@app.get("/api/ship/{mmsi}/profile")
+async def api_ship_profile(mmsi: int):
+    """Full profile of a specific ship — name, type, flag, all positions, transits."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+
+        # Latest info
+        info_rows = await db.execute_fetchall("""
+            SELECT ship_name, ship_type, flag, destination, length, width, draught
+            FROM positions WHERE mmsi = ? ORDER BY id DESC LIMIT 1
+        """, (mmsi,))
+        if not info_rows:
+            return {"error": "Ship not found"}
+
+        info = info_rows[0]
+
+        # Position history
+        positions = await db.execute_fetchall("""
+            SELECT latitude, longitude, speed, course, timestamp
+            FROM positions WHERE mmsi = ? ORDER BY timestamp
+        """, (mmsi,))
+
+        # Transit events
+        transits = await db.execute_fetchall("""
+            SELECT gate_name, direction, crossed_at, speed
+            FROM transit_events WHERE mmsi = ? ORDER BY crossed_at
+        """, (mmsi,))
+
+    return {
+        "mmsi": mmsi,
+        "name": info["ship_name"] or f"MMSI:{mmsi}",
+        "type": get_ship_type_label(info["ship_type"]),
+        "type_code": info["ship_type"],
+        "flag": info["flag"],
+        "destination": info["destination"],
+        "length_m": info["length"],
+        "width_m": info["width"],
+        "draught_m": info["draught"],
+        "positions": [
+            {"lat": p["latitude"], "lon": p["longitude"],
+             "speed": p["speed"], "course": p["course"], "ts": p["timestamp"]}
+            for p in positions
+        ],
+        "transits": [
+            {"gate": t["gate_name"], "direction": t["direction"],
+             "crossed_at": t["crossed_at"], "speed_kn": t["speed"]}
+            for t in transits
+        ],
+        "total_positions": len(positions),
+        "first_seen": positions[0]["timestamp"] if positions else None,
+        "last_seen": positions[-1]["timestamp"] if positions else None,
+    }
+
+
+@app.get("/replay", response_class=HTMLResponse)
+async def replay_page(request: Request):
+    """Serve the animated replay page."""
+    return templates.TemplateResponse("replay.html", {"request": request})
