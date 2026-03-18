@@ -24,6 +24,30 @@ from analytics import (
 from land_filter import is_on_land
 
 app = FastAPI(title="Hormuz Ship Tracker")
+
+# AIS speed sentinel: 102.3 knots = "not available" in AIS protocol (10-bit 0x3FF)
+AIS_SPEED_UNAVAILABLE = 102.3
+# Threshold for suspicious speed (most merchant ships max ~25 kn)
+SUSPICIOUS_SPEED_THRESHOLD = 40.0
+
+
+def classify_anomalies(speed, lat, lon, prev_lat=None, prev_lon=None):
+    """Classify AIS data quality issues for a position report.
+
+    Returns a list of anomaly codes (empty = clean data):
+      - "speed_unavailable": AIS speed = 102.3 (protocol "not available")
+      - "speed_suspicious": Speed > 40 kn (likely receiver glitch or AIS mixup)
+      - "position_jump": > 0.5 degree jump from previous position (AIS spoofing/glitch)
+    """
+    anomalies = []
+    if speed is not None and speed >= AIS_SPEED_UNAVAILABLE:
+        anomalies.append("speed_unavailable")
+    elif speed is not None and speed >= SUSPICIOUS_SPEED_THRESHOLD:
+        anomalies.append("speed_suspicious")
+    if prev_lat is not None and prev_lon is not None:
+        if abs(lat - prev_lat) > 0.5 or abs(lon - prev_lon) > 0.5:
+            anomalies.append("position_jump")
+    return anomalies
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -76,9 +100,13 @@ async def latest_positions():
             )
         """)
     vessels = []
+    anomaly_count = 0
     for r in rows:
         if is_on_land(r["latitude"], r["longitude"]):
             continue
+        anomalies = classify_anomalies(r["speed"], r["latitude"], r["longitude"])
+        if anomalies:
+            anomaly_count += 1
         vessels.append({
             "mmsi": r["mmsi"],
             "lat": r["latitude"],
@@ -94,8 +122,9 @@ async def latest_positions():
             "timestamp": r["timestamp"],
             "length": r["length"],
             "width": r["width"],
+            "anomalies": anomalies,
         })
-    return {"vessels": vessels, "count": len(vessels)}
+    return {"vessels": vessels, "count": len(vessels), "anomaly_count": anomaly_count}
 
 
 @app.get("/api/tracks/{mmsi}")
@@ -216,6 +245,69 @@ async def api_gate_info():
 async def api_blockade():
     """Blockade impact indicators — waiting fleet, anchored ratio, strait status."""
     return await get_blockade_indicators()
+
+
+@app.get("/api/analytics/data-quality")
+async def api_data_quality():
+    """AIS data quality summary — anomaly counts and explanations."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        total = (await db.execute_fetchall("SELECT COUNT(*) FROM positions"))[0][0]
+
+        speed_unavailable = (await db.execute_fetchall(
+            "SELECT COUNT(*) FROM positions WHERE speed >= 102.0"
+        ))[0][0]
+
+        speed_suspicious = (await db.execute_fetchall(
+            "SELECT COUNT(*) FROM positions WHERE speed >= 40.0 AND speed < 102.0"
+        ))[0][0]
+
+        # Ships with wide position jumps (likely AIS glitches)
+        jump_ships = await db.execute_fetchall("""
+            SELECT ship_name, mmsi, flag, COUNT(*) as glitch_count
+            FROM positions
+            WHERE speed >= 40.0
+            GROUP BY mmsi
+            HAVING COUNT(*) >= 3
+            ORDER BY COUNT(*) DESC
+            LIMIT 10
+        """)
+
+    clean = total - speed_unavailable - speed_suspicious
+    clean_pct = (clean / total * 100) if total > 0 else 0
+
+    return {
+        "total_positions": total,
+        "clean_positions": clean,
+        "clean_percentage": round(clean_pct, 1),
+        "anomalies": {
+            "speed_unavailable": {
+                "count": speed_unavailable,
+                "description": "AIS speed = 102.3 kn (protocol sentinel for 'not available'). "
+                               "Occurs when vessel GPS is offline or AIS transmitter error.",
+            },
+            "speed_suspicious": {
+                "count": speed_suspicious,
+                "description": "Speed 40-102 kn, likely AIS receiver glitch or signal mixup. "
+                               "Most merchant vessels max ~25 kn. Common near coastal AIS stations.",
+            },
+        },
+        "known_glitch_sources": [
+            {
+                "name": r["ship_name"] or f"MMSI:{r['mmsi']}",
+                "mmsi": r["mmsi"],
+                "flag": r["flag"],
+                "glitch_positions": r["glitch_count"],
+            }
+            for r in jump_ships
+        ],
+        "notes": [
+            "AIS is a self-reporting system — vessels control what they broadcast",
+            "Terrestrial AIS receivers cannot cover mid-strait (30+ nm offshore)",
+            "Speed = 102.3 kn is the AIS protocol 'not available' value (0x3FF in 10-bit field)",
+            "Multiple vessels appearing at the same location with ~48 kn often indicates "
+            "a single receiver decoding error affecting all signals",
+        ],
+    }
 
 
 @app.get("/api/analytics/summary")

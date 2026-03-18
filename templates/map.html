@@ -632,16 +632,31 @@
 
                 markers.clearLayers();
                 data.vessels.forEach(v => {
-                    const color = getVesselColor(v);
+                    const hasAnomaly = v.anomalies && v.anomalies.length > 0;
+                    const color = hasAnomaly ? '#ff5252' : getVesselColor(v);
                     const marker = L.circleMarker([v.lat, v.lon], {
                         radius: v.type && v.type.includes('Tanker') ? 6 : 5,
-                        fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.85,
+                        fillColor: color, color: hasAnomaly ? '#ff5252' : '#fff',
+                        weight: hasAnomaly ? 2 : 1, fillOpacity: hasAnomaly ? 0.5 : 0.85,
+                        dashArray: hasAnomaly ? '3 3' : null,
                     });
                     const speedKn = v.speed != null && v.speed < 102.3 ? v.speed.toFixed(1) : '--';
+                    // Build anomaly warning HTML
+                    let anomalyHtml = '';
+                    if (v.anomalies && v.anomalies.length > 0) {
+                        const labels = {
+                            'speed_unavailable': 'Speed data unavailable (AIS 102.3 kn = protocol "not available")',
+                            'speed_suspicious': 'Suspicious speed (&gt;40 kn) — likely AIS receiver glitch',
+                            'position_jump': 'Large position jump detected — possible AIS spoofing or glitch',
+                        };
+                        const msgs = v.anomalies.map(a => labels[a] || a).join('<br>');
+                        anomalyHtml = `<div style="background:#4a1c1c;border:1px solid #ff5252;border-radius:4px;padding:4px 8px;margin:4px 0;font-size:11px;color:#ffcdd2;">&#9888; DATA QUALITY WARNING<br>${msgs}</div>`;
+                    }
                     marker.bindPopup(`
                         <div class="vessel-popup">
                             <div class="name">${v.name}</div>
                             <span class="type-badge ${getTypeClass(v.type)}">${v.type}</span><br>
+                            ${anomalyHtml}
                             <strong>Speed:</strong> ${speedKn} kn &nbsp;
                             <strong>Course:</strong> ${v.course ? v.course.toFixed(0) + '&deg;' : '--'}<br>
                             <strong>Flag:</strong> ${v.flag || '--'} &nbsp;
