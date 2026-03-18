@@ -5,7 +5,13 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 
 ![Traffic Density Heatmap](docs/heatmap.png)
 
-> **[Collection Statistics (auto-updated every 6h)](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations
+### At a Glance
+
+| Positions | Vessels | Strait Transit | Top Port | Top Flag | Top Type |
+|---:|---:|---:|---|---|---|
+| 43,000+ | 384 | **0** | Dubai / Jebel Ali (196) | Panama (63) | Tanker (81) |
+
+**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 6h)*
 
 ### Latest Snapshot (auto-updated every 6 hours)
 
@@ -13,16 +19,12 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 
 ## Key Findings
 
-From 4 days of continuous monitoring (43,000+ position records, 380+ unique vessels):
-
 - **0 confirmed Strait of Hormuz crossings** — no vessel was detected transiting through the strait gate line
 - **AIS dead zone mid-strait** — terrestrial AIS receivers on shore cannot cover the ~35 nm wide strait center; ships crossing are invisible without satellite AIS
 - **~17% of AIS data is anomalous** — speed 102.3 kn (protocol "not available" sentinel) and 40-99 kn (receiver glitches) produce false position jumps
 - **Dubai / Jebel Ali dominates traffic** — 196 unique ships detected near the port, with Panama (63), UAE (45), and Marshall Islands (40) as top flag states
 - **Tankers (81) and cargo (67)** are the most common vessel types
 - **Karachi-bound traffic detected** — at least 1 vessel (CSTAR VOYAGER) bound for Pakistan observed in the western Gulf
-
-**[View full statistics (auto-updated every 6h) →](docs/STATS.md)**
 
 ## What This Monitors
 
