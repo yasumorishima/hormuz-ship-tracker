@@ -257,11 +257,11 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
     hist_preview, _, _ = np.histogram2d(lons, lats, bins=[x_bins_full, y_bins_full])
     vmax_clip = np.percentile(hist_preview[hist_preview > 0], 97)
 
-    # ── Figure — larger for generous whitespace ──
-    fig = plt.figure(figsize=(28, 18), facecolor=BG)
+    # ── Figure — taller to give bottom charts more room ──
+    fig = plt.figure(figsize=(28, 20), facecolor=BG)
 
     # ── Top-left: Full Gulf ──
-    ax1 = fig.add_axes([0.03, 0.30, 0.44, 0.58])
+    ax1 = fig.add_axes([0.03, 0.33, 0.44, 0.55])
     ax1.set_facecolor(PANEL_BG)
     ax1.set_xlim(47.5, 60.0)
     ax1.set_ylim(22.0, 30.5)
@@ -303,7 +303,7 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
     plt.setp(cbar.ax.yaxis.get_ticklabels(), color=TEXT_SECONDARY, fontsize=12)
 
     # ── Top-right: Strait zoom ──
-    ax2 = fig.add_axes([0.53, 0.30, 0.44, 0.58])
+    ax2 = fig.add_axes([0.53, 0.33, 0.44, 0.55])
     ax2.set_facecolor(PANEL_BG)
     ax2.set_xlim(54.3, 57.3)
     ax2.set_ylim(24.5, 27.2)
@@ -368,10 +368,10 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         ax_bar.spines["bottom"].set_edgecolor("#1a2a3a")
         ax_bar.spines["left"].set_edgecolor("#1a2a3a")
         ax_bar.xaxis.set_visible(False)
-        ax_bar.tick_params(colors=TEXT_SECONDARY, labelsize=14, pad=6)
+        ax_bar.tick_params(colors=TEXT_SECONDARY, labelsize=18, pad=8)
 
-    # --- Ports ---
-    ax_ports = fig.add_axes([0.04, 0.04, 0.24, 0.20])
+    # --- Ports (4 items — needs less height) ---
+    ax_ports = fig.add_axes([0.04, 0.04, 0.24, 0.24])
     _style_bar_chart(ax_ports)
     port_names = list(info["ports"].keys())
     port_vals = list(info["ports"].values())
@@ -380,13 +380,13 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_ports.text(bar.get_width() + 3, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=16, color=TEXT_PRIMARY, fontweight="bold")
-    ax_ports.set_title("Ships by Port Area", fontsize=18,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=12)
-    ax_ports.set_xlim(0, max(port_vals) * 1.35 if port_vals else 10)
+                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
+    ax_ports.set_title("Ships by Port Area", fontsize=22,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+    ax_ports.set_xlim(0, max(port_vals) * 1.4 if port_vals else 10)
 
-    # --- Flags ---
-    ax_flags = fig.add_axes([0.36, 0.04, 0.28, 0.20])
+    # --- Flags (8 items — needs more height) ---
+    ax_flags = fig.add_axes([0.36, 0.04, 0.28, 0.24])
     _style_bar_chart(ax_flags)
     flag_labels = [FLAG_NAMES.get(f, f) for f, _ in info["flags"]]
     flag_vals = [c for _, c in info["flags"]]
@@ -399,13 +399,13 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_flags.text(bar.get_width() + 1.5, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=16, color=TEXT_PRIMARY, fontweight="bold")
-    ax_flags.set_title("Ships by Flag State", fontsize=18,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=12)
-    ax_flags.set_xlim(0, max(flag_vals) * 1.25 if flag_vals else 10)
+                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
+    ax_flags.set_title("Ships by Flag State", fontsize=22,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+    ax_flags.set_xlim(0, max(flag_vals) * 1.3 if flag_vals else 10)
 
-    # --- Ship Types ---
-    ax_types = fig.add_axes([0.70, 0.04, 0.28, 0.20])
+    # --- Ship Types (6 items) ---
+    ax_types = fig.add_axes([0.70, 0.04, 0.28, 0.24])
     _style_bar_chart(ax_types)
     type_labels = [t for t, _ in info["types"] if t != "Unknown"][:6]
     type_vals = [c for t, c in info["types"] if t != "Unknown"][:6]
@@ -416,10 +416,10 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_types.text(bar.get_width() + 1.5, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=16, color=TEXT_PRIMARY, fontweight="bold")
-    ax_types.set_title("Ships by Type", fontsize=18,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=12)
-    ax_types.set_xlim(0, max(type_vals) * 1.25 if type_vals else 10)
+                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
+    ax_types.set_title("Ships by Type", fontsize=22,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+    ax_types.set_xlim(0, max(type_vals) * 1.3 if type_vals else 10)
 
     # ── Header ──
     hours_label = f"Past {hours}h" if hours > 0 else "All Data"
