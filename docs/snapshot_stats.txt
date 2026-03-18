@@ -1,35 +1,34 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-15 23:47:59 UTC
+Generated: 2026-03-18 11:05:42 UTC
 
-Active vessels (30 min): 291
-Unique vessels (24h): 317
-Total position records: 13,202
-Strait transits (24h): IN 20 / OUT 17
+Active vessels (30 min): 186
+Unique vessels (24h): 263
+Total position records: 42,942
+Strait transits (24h): IN 22 / OUT 10
 
 ## By vessel type
-  Unknown: 172
-  Tanker: 60
-  Cargo: 36
-  Fishing/Towing/Dredging: 8
+  Unknown: 93
+  Cargo: 35
+  Tanker: 33
+  Military/Sailing/Pleasure: 10
   Other: 6
-  Military/Sailing/Pleasure: 5
-  Passenger: 2
+  Passenger: 4
+  Fishing/Towing/Dredging: 4
   WIG: 1
-  HSC: 1
 
 ## Top vessels by name
-  MIRACLE HOPE [Unknown] → -- | 102.2 kn
-  SSF VALENCE [Unknown] → -- | 99.1 kn
-  DMS COURAGEOUS [Other] → FATEH FIELD UAE | 99.3 kn
-  HAI TUN ZUO [Tanker] → Ras Al Khaimah | 86.9 kn
-  HABRUT [Tanker] → Dubai | 102.2 kn
-  AL BAZM II [Cargo] → Jebel Ali | 99.1 kn
-  TRANSSHELF [Cargo] → -- | 90.0 kn
-  SHAHRAZAD [Tanker] → For Orders | 102.2 kn
-  AMIRA MIRUNA [Cargo] → SAJUB | 48.7 kn
-  ONE MAJESTY [Unknown] → -- | 102.2 kn
-  BANASTAR [Cargo] → -- | 47.7 kn
-  PACIFIC PANDA [Unknown] → -- | --
-  ZAYA DIAMOND [Unknown] → -- | 0.3 kn
-  YE CHI [Unknown] → -- | 4.8 kn
-  PRUDENT WARRIOR [Unknown] → -- | 0.1 kn
+  MIAOULIS 21 [Unknown] → -- | 5.2 kn
+  AL KOUT [Tanker] → KWMEA>OMRMZ | 0.2 kn
+  DUBAI FORTUNE [Cargo] → Jebel Ali | 10.6 kn
+  NAVE ANDROMEDA [Tanker] → Singapore | 0.7 kn
+  MARINE CHARGE [Tanker] → Dubai | 0.4 kn
+  YC PANSY [Unknown] → -- | 0.4 kn
+  EXPLORER [Unknown] → -- | 8.8 kn
+  CAMILLA [Unknown] → -- | 0.2 kn
+  ASP AVANA [Unknown] → -- | --
+  MONTE URBASA [Tanker] → TBC | 15.5 kn
+  ABU DHABI III [Unknown] → -- | 0.1 kn
+  SELAT HOPE [Unknown] → -- | 102.3 kn
+  VALLIANZ SUPREME [Unknown] → -- | --
+  GREEN ONE [Tanker] → For Orders | 0.1 kn
+  SEA CONDOR [Tanker] → For Orders | 5.6 kn
