@@ -57,7 +57,7 @@ aisstream.io (WebSocket)
 ## Visualization Tools
 
 ### Traffic Density Heatmap (`src/heatmap.py`)
-3-panel layout: full Gulf hexbin + zoomed strait with AIS dead zone + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered.
+3-panel layout: full Gulf hexbin + zoomed strait with AIS dead zone + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered. **Auto-updated every 6 hours.**
 
 ```bash
 docker exec hormuz-tracker python3 src/heatmap.py --hours 0 --filename heatmap.png
@@ -66,15 +66,19 @@ docker exec hormuz-tracker python3 src/heatmap.py --hours 0 --filename heatmap.p
 ### Timelapse GIF (`src/timelapse.py`)
 Animated GIF with smooth interpolated vessel movement, trails, and transit counters. Land-aware interpolation prevents ships from crossing peninsulas.
 
+![Vessel Movement Timelapse](docs/timelapse.gif)
+
 ```bash
 docker exec hormuz-tracker python3 src/timelapse.py --hours 24 --interval 10 --trail 90 --fps 10
 ```
 
-### Animated Replay (`/replay`)
-Browser-based Leaflet.js playback with play/pause, speed control (0.25x–16x), timeline scrubbing, and transit ship panel. Keyboard shortcuts: Space (play), arrows (step), +/- (speed).
-
 ### Transit Report (`src/transit_report.py`)
 Map + table showing gate crossings with ship details (name, type, flag, speed, destination), plus Karachi-bound vessel tracking.
+
+![Transit Report](docs/transit_report.png)
+
+### Animated Replay (`/replay`)
+Browser-based Leaflet.js playback with play/pause, speed control (0.25x–16x), timeline scrubbing, and transit ship panel. Keyboard shortcuts: Space (play), arrows (step), +/- (speed).
 
 ## AIS Data Quality
 
