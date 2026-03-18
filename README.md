@@ -5,6 +5,8 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 
 ![Traffic Density Heatmap](docs/heatmap.png)
 
+> **[Collection Statistics (auto-updated every 6h)](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations
+
 ### Latest Snapshot (auto-updated every 6 hours)
 
 ![Latest Snapshot](docs/snapshot_latest.png)
