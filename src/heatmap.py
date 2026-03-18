@@ -198,7 +198,7 @@ def _draw_coastline(ax, coastlines):
 
 
 def _draw_gates(ax, fontsize=14, zoom=False):
-    te = [pe.withStroke(linewidth=2, foreground=PANEL_BG)]
+    te = [pe.withStroke(linewidth=3, foreground=PANEL_BG)]
     for gate in GATE_LINES:
         ax.plot(gate["lons"], gate["lats"], color=ACCENT, linewidth=3,
                 linestyle=(0, (5, 3)), zorder=8, alpha=0.9)
@@ -216,7 +216,7 @@ def _draw_gates(ax, fontsize=14, zoom=False):
 def _style_axis(ax):
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:.0f}\u00b0E"))
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}\u00b0N"))
-    ax.tick_params(colors=TEXT_DIM, labelsize=14, length=0)
+    ax.tick_params(colors=TEXT_DIM, labelsize=11, length=0)
     for spine in ax.spines.values():
         spine.set_edgecolor("#1a2a3a")
 
@@ -257,11 +257,12 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
     hist_preview, _, _ = np.histogram2d(lons, lats, bins=[x_bins_full, y_bins_full])
     vmax_clip = np.percentile(hist_preview[hist_preview > 0], 97)
 
-    # ── Figure — taller to give bottom charts more room ──
-    fig = plt.figure(figsize=(28, 20), facecolor=BG)
+    # ── Figure — smaller canvas = fonts take more relative space ──
+    # 14x10 @ 100 DPI = 1400x1000 px → fonts are proportionally LARGE
+    fig = plt.figure(figsize=(14, 10), facecolor=BG)
 
     # ── Top-left: Full Gulf ──
-    ax1 = fig.add_axes([0.03, 0.33, 0.44, 0.55])
+    ax1 = fig.add_axes([0.03, 0.38, 0.44, 0.48])
     ax1.set_facecolor(PANEL_BG)
     ax1.set_xlim(47.5, 60.0)
     ax1.set_ylim(22.0, 30.5)
@@ -269,41 +270,41 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
 
     _draw_coastline(ax1, coastlines)
 
-    hb1 = ax1.hexbin(lons, lats, gridsize=90, cmap=cmap, mincnt=1,
+    hb1 = ax1.hexbin(lons, lats, gridsize=60, cmap=cmap, mincnt=1,
                      linewidths=0.05, edgecolors=PANEL_BG, zorder=3,
                      reduce_C_function=np.sum,
                      norm=mcolors.LogNorm(vmin=1, vmax=max(vmax_clip, 10)))
 
-    _draw_gates(ax1, fontsize=10, zoom=False)
+    _draw_gates(ax1, fontsize=7, zoom=False)
 
-    te = [pe.withStroke(linewidth=4, foreground=PANEL_BG)]
+    te = [pe.withStroke(linewidth=3, foreground=PANEL_BG)]
     for lat, lon, label, size, color in [
-        (28.50, 53.00, "IRAN", 22, "#667788"),
-        (23.80, 54.60, "UAE", 22, "#667788"),
-        (24.20, 58.00, "OMAN", 22, "#667788"),
-        (29.30, 48.30, "KUWAIT", 14, TEXT_DIM),
-        (25.40, 54.60, "QATAR", 14, TEXT_DIM),
-        (25.10, 55.40, "Dubai", 14, TEXT_SECONDARY),
-        (27.30, 56.80, "Bandar\nAbbas", 12, TEXT_SECONDARY),
-        (23.60, 58.55, "Muscat", 14, TEXT_SECONDARY),
-        (26.30, 56.30, "Strait of\nHormuz", 14, ACCENT),
+        (28.50, 53.00, "IRAN", 14, "#667788"),
+        (23.80, 54.60, "UAE", 14, "#667788"),
+        (24.20, 58.00, "OMAN", 14, "#667788"),
+        (29.30, 48.30, "KUWAIT", 9, TEXT_DIM),
+        (25.40, 54.60, "QATAR", 9, TEXT_DIM),
+        (25.10, 55.40, "Dubai", 9, TEXT_SECONDARY),
+        (27.30, 56.80, "Bandar\nAbbas", 8, TEXT_SECONDARY),
+        (23.60, 58.55, "Muscat", 9, TEXT_SECONDARY),
+        (26.30, 56.30, "Strait of\nHormuz", 9, ACCENT),
     ]:
         ax1.text(lon, lat, label, fontsize=size, color=color, fontweight="bold",
                  ha="center", va="center", zorder=5, path_effects=te)
 
-    ax1.set_title("Persian Gulf \u2014 Full Coverage", fontsize=20,
-                  color=TEXT_PRIMARY, pad=16, loc="left", fontweight="bold")
+    ax1.set_title("Persian Gulf \u2014 Full Coverage", fontsize=13,
+                  color=TEXT_PRIMARY, pad=8, loc="left", fontweight="bold")
     _style_axis(ax1)
 
-    # Colorbar
-    cbar = fig.colorbar(hb1, ax=ax1, shrink=0.55, pad=0.02, aspect=25)
-    cbar.set_label("Positions per cell", color=TEXT_SECONDARY, fontsize=14)
+    # Colorbar — compact
+    cbar = fig.colorbar(hb1, ax=ax1, shrink=0.5, pad=0.02, aspect=20)
+    cbar.set_label("Positions", color=TEXT_SECONDARY, fontsize=9)
     cbar.ax.yaxis.set_tick_params(color=TEXT_DIM)
     cbar.outline.set_edgecolor("#1a2a3a")
-    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=TEXT_SECONDARY, fontsize=12)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=TEXT_SECONDARY, fontsize=8)
 
     # ── Top-right: Strait zoom ──
-    ax2 = fig.add_axes([0.53, 0.33, 0.44, 0.55])
+    ax2 = fig.add_axes([0.53, 0.38, 0.44, 0.48])
     ax2.set_facecolor(PANEL_BG)
     ax2.set_xlim(54.3, 57.3)
     ax2.set_ylim(24.5, 27.2)
@@ -315,51 +316,49 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
     zoom_lons, zoom_lats = lons[mask], lats[mask]
 
     if len(zoom_lons) > 0:
-        # Finer grid for zoom
         hist_zoom, _, _ = np.histogram2d(zoom_lons, zoom_lats,
                                          bins=[np.linspace(54.3, 57.3, 100),
                                                np.linspace(24.5, 27.2, 90)])
         vmax_zoom = np.percentile(hist_zoom[hist_zoom > 0], 95)
-        ax2.hexbin(zoom_lons, zoom_lats, gridsize=80, cmap=cmap, mincnt=1,
+        ax2.hexbin(zoom_lons, zoom_lats, gridsize=50, cmap=cmap, mincnt=1,
                    linewidths=0.05, edgecolors=PANEL_BG, zorder=3,
                    norm=mcolors.LogNorm(vmin=1, vmax=max(vmax_zoom, 10)))
 
-    _draw_gates(ax2, fontsize=14, zoom=True)
+    _draw_gates(ax2, fontsize=10, zoom=True)
 
     for lat, lon, label, size, color in [
-        (26.35, 56.30, "Strait of\nHormuz", 18, ACCENT),
-        (26.90, 56.60, "Bandar Abbas", 14, TEXT_SECONDARY),
-        (25.15, 55.15, "Dubai", 16, TEXT_SECONDARY),
-        (24.85, 56.35, "Fujairah", 14, TEXT_SECONDARY),
-        (26.60, 54.80, "IRAN", 20, "#667788"),
-        (24.65, 55.60, "UAE", 18, "#667788"),
-        (24.80, 57.10, "OMAN", 18, "#667788"),
+        (26.35, 56.30, "Strait of\nHormuz", 12, ACCENT),
+        (26.90, 56.60, "Bandar Abbas", 9, TEXT_SECONDARY),
+        (25.15, 55.15, "Dubai", 11, TEXT_SECONDARY),
+        (24.85, 56.35, "Fujairah", 9, TEXT_SECONDARY),
+        (26.60, 54.80, "IRAN", 13, "#667788"),
+        (24.65, 55.60, "UAE", 12, "#667788"),
+        (24.80, 57.10, "OMAN", 12, "#667788"),
     ]:
         if 54.3 <= lon <= 57.3 and 24.5 <= lat <= 27.2:
             ax2.text(lon, lat, label, fontsize=size, color=color, fontweight="bold",
                      ha="center", va="center", zorder=5, path_effects=te)
 
-    # Dead zone — shaded rectangle + annotation
+    # Dead zone
     dead_zone = mpatches.FancyBboxPatch(
         (56.05, 26.05), 0.55, 0.65, boxstyle="round,pad=0.05",
         facecolor=WARN, alpha=0.08, edgecolor=WARN,
-        linewidth=2, linestyle="--", zorder=6,
+        linewidth=1.5, linestyle="--", zorder=6,
     )
     ax2.add_patch(dead_zone)
     ax2.text(56.32, 26.82, "AIS DEAD ZONE",
-             fontsize=14, color=WARN, fontweight="bold",
+             fontsize=10, color=WARN, fontweight="bold",
              ha="center", va="bottom", zorder=7,
-             path_effects=[pe.withStroke(linewidth=3, foreground=PANEL_BG)])
-    ax2.text(56.32, 26.76, "No terrestrial coverage\nmid-strait (~30 nm offshore)",
-             fontsize=11, color="#cc5555", ha="center", va="top", zorder=7,
+             path_effects=[pe.withStroke(linewidth=2, foreground=PANEL_BG)])
+    ax2.text(56.32, 26.76, "No coverage mid-strait",
+             fontsize=8, color="#cc5555", ha="center", va="top", zorder=7,
              path_effects=[pe.withStroke(linewidth=2, foreground=PANEL_BG)])
 
-    ax2.set_title("Strait of Hormuz \u2014 Zoomed", fontsize=20,
-                  color=TEXT_PRIMARY, pad=16, loc="left", fontweight="bold")
+    ax2.set_title("Strait of Hormuz \u2014 Zoomed", fontsize=13,
+                  color=TEXT_PRIMARY, pad=8, loc="left", fontweight="bold")
     _style_axis(ax2)
 
-    # ── Bottom: Infographic bar ──
-    # Three charts with generous spacing. Font sizes: title>=16, labels>=14, values>=14
+    # ── Bottom: Infographic — 3 bar charts ──
 
     def _style_bar_chart(ax_bar):
         ax_bar.set_facecolor(PANEL_BG)
@@ -368,10 +367,10 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         ax_bar.spines["bottom"].set_edgecolor("#1a2a3a")
         ax_bar.spines["left"].set_edgecolor("#1a2a3a")
         ax_bar.xaxis.set_visible(False)
-        ax_bar.tick_params(colors=TEXT_SECONDARY, labelsize=18, pad=8)
+        ax_bar.tick_params(colors=TEXT_SECONDARY, labelsize=11, pad=4)
 
-    # --- Ports (4 items — needs less height) ---
-    ax_ports = fig.add_axes([0.04, 0.04, 0.24, 0.24])
+    # --- Ports (4 items) ---
+    ax_ports = fig.add_axes([0.04, 0.04, 0.24, 0.28])
     _style_bar_chart(ax_ports)
     port_names = list(info["ports"].keys())
     port_vals = list(info["ports"].values())
@@ -380,18 +379,17 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_ports.text(bar.get_width() + 3, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
-    ax_ports.set_title("Ships by Port Area", fontsize=22,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+                          fontsize=13, color=TEXT_PRIMARY, fontweight="bold")
+    ax_ports.set_title("Ships by Port Area", fontsize=14,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=8)
     ax_ports.set_xlim(0, max(port_vals) * 1.4 if port_vals else 10)
 
-    # --- Flags (8 items — needs more height) ---
-    ax_flags = fig.add_axes([0.36, 0.04, 0.28, 0.24])
+    # --- Flags (top 6 for clarity) ---
+    ax_flags = fig.add_axes([0.36, 0.04, 0.28, 0.28])
     _style_bar_chart(ax_flags)
-    flag_labels = [FLAG_NAMES.get(f, f) for f, _ in info["flags"]]
-    flag_vals = [c for _, c in info["flags"]]
-    flag_colors = ["#0077b6", "#00b4d8", "#48cae4", "#90e0ef",
-                   "#ade8f4", "#caf0f8", "#e0f7fa", "#fff176"]
+    flag_labels = [FLAG_NAMES.get(f, f) for f, _ in info["flags"][:6]]
+    flag_vals = [c for _, c in info["flags"][:6]]
+    flag_colors = ["#0077b6", "#00b4d8", "#48cae4", "#90e0ef", "#ade8f4", "#caf0f8"]
     bars = ax_flags.barh(flag_labels[::-1], flag_vals[::-1],
                          color=flag_colors[:len(flag_vals)][::-1],
                          alpha=0.85, height=0.55)
@@ -399,16 +397,16 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_flags.text(bar.get_width() + 1.5, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
-    ax_flags.set_title("Ships by Flag State", fontsize=22,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+                          fontsize=13, color=TEXT_PRIMARY, fontweight="bold")
+    ax_flags.set_title("Ships by Flag State", fontsize=14,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=8)
     ax_flags.set_xlim(0, max(flag_vals) * 1.3 if flag_vals else 10)
 
-    # --- Ship Types (6 items) ---
-    ax_types = fig.add_axes([0.70, 0.04, 0.28, 0.24])
+    # --- Ship Types (top 5) ---
+    ax_types = fig.add_axes([0.70, 0.04, 0.28, 0.28])
     _style_bar_chart(ax_types)
-    type_labels = [t for t, _ in info["types"] if t != "Unknown"][:6]
-    type_vals = [c for t, c in info["types"] if t != "Unknown"][:6]
+    type_labels = [t for t, _ in info["types"] if t != "Unknown"][:5]
+    type_vals = [c for t, c in info["types"] if t != "Unknown"][:5]
     type_bar_colors = [TYPE_COLORS_BAR.get(t, "#455a64") for t in type_labels]
     bars = ax_types.barh(type_labels[::-1], type_vals[::-1],
                          color=type_bar_colors[::-1], alpha=0.85, height=0.55)
@@ -416,9 +414,9 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
         if val > 0:
             ax_types.text(bar.get_width() + 1.5, bar.get_y() + bar.get_height() / 2,
                           str(val), va="center", ha="left",
-                          fontsize=20, color=TEXT_PRIMARY, fontweight="bold")
-    ax_types.set_title("Ships by Type", fontsize=22,
-                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=14)
+                          fontsize=13, color=TEXT_PRIMARY, fontweight="bold")
+    ax_types.set_title("Ships by Type", fontsize=14,
+                       color=TEXT_PRIMARY, loc="left", fontweight="bold", pad=8)
     ax_types.set_xlim(0, max(type_vals) * 1.3 if type_vals else 10)
 
     # ── Header ──
@@ -426,29 +424,28 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
     period = f"{info['earliest'][:10]} \u2192 {info['latest'][:10]}"
     fig.text(0.03, 0.97,
              "Strait of Hormuz \u2014 Vessel Traffic Density",
-             fontsize=28, fontweight="bold", color=TEXT_PRIMARY, va="top",
-             path_effects=[pe.withStroke(linewidth=4, foreground=BG)])
-    fig.text(0.03, 0.935,
-             f"{hours_label}  \u2502  {len(positions):,} clean positions  \u2502  "
-             f"{info['unique']} unique ships  \u2502  {period}",
-             fontsize=16, color=TEXT_SECONDARY, va="top")
-
-    # Key finding badge — large and unmissable
-    fig.text(0.60, 0.975, "STRAIT TRANSIT: 0", fontsize=22, fontweight="bold",
-             color=WARN, va="top",
+             fontsize=18, fontweight="bold", color=TEXT_PRIMARY, va="top",
              path_effects=[pe.withStroke(linewidth=3, foreground=BG)])
-    fig.text(0.60, 0.94,
-             f"{info['anomaly']:,} anomalous positions excluded (AIS speed \u2265 40 kn)",
-             fontsize=12, color="#aa5555", va="top")
+    fig.text(0.03, 0.93,
+             f"{hours_label}  \u2502  {len(positions):,} clean positions  \u2502  "
+             f"{info['unique']} ships  \u2502  {period}",
+             fontsize=11, color=TEXT_SECONDARY, va="top")
+
+    # Key finding badge
+    fig.text(0.65, 0.97, "STRAIT TRANSIT: 0", fontsize=16, fontweight="bold",
+             color=WARN, va="top",
+             path_effects=[pe.withStroke(linewidth=2, foreground=BG)])
+    fig.text(0.65, 0.935,
+             f"{info['anomaly']:,} anomalies excluded",
+             fontsize=9, color="#aa5555", va="top")
 
     # Attribution
     fig.text(0.99, 0.005,
-             "Data: aisstream.io (terrestrial AIS)  \u2502  "
-             "github.com/yasumorishima/hormuz-ship-tracker",
-             fontsize=10, color="#334455", ha="right", va="bottom")
+             "Data: aisstream.io  \u2502  github.com/yasumorishima/hormuz-ship-tracker",
+             fontsize=7, color="#334455", ha="right", va="bottom")
 
     output_path = output_dir / filename
-    fig.savefig(output_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(output_path, dpi=100, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
 
     file_size_mb = output_path.stat().st_size / (1024 * 1024)
