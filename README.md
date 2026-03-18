@@ -5,7 +5,7 @@ Continuously monitors shipping patterns using AIS data, with automated transit d
 
 Runs 24/7 on Raspberry Pi 5.
 
-![Live Map](docs/screenshot.png)
+![Traffic Density Heatmap](docs/heatmap.png)
 
 ### Latest Snapshot (auto-updated every 6 hours)
 
@@ -44,6 +44,11 @@ aisstream.io (WebSocket)
 - Land mask filtering (Natural Earth 10m polygons)
 - Track history visualization (6-hour trail per vessel)
 - Auto-snapshot with gate lines, transit stats, and crisis context
+- **Animated vessel replay** (`/replay`) — play/pause, speed control, timeline scrubbing
+- **Traffic density heatmap** — hexbin visualization with AIS dead zone annotation
+- **Timelapse GIF generator** — server-side animation with interpolated vessel movement
+- **AIS data quality annotations** — anomalous positions flagged in API and dashboard (speed 102.3 kn = protocol sentinel, 40+ kn = receiver glitch)
+- **Transit ship details** — per-ship profile with full position history and gate crossings
 - **Database migration tool** for timestamp/flag/destination backfill
 
 ## API Endpoints
@@ -62,6 +67,11 @@ aisstream.io (WebSocket)
 | `GET /api/analytics/destinations?hours=24` | Destination distribution |
 | `GET /api/analytics/gate` | Gate lines, anchorage zones, danger zone, crisis timeline |
 | `GET /api/analytics/summary` | Comprehensive daily summary |
+| `GET /api/analytics/data-quality` | AIS anomaly counts, known glitch sources, quality notes |
+| `GET /api/analytics/transit-ships` | Detailed list of ships that crossed gate lines |
+| `GET /api/ship/{mmsi}/profile` | Full ship profile with position history and transit events |
+| `GET /api/replay/frames?hours=96` | Position data bucketed by time for animated replay |
+| `GET /replay` | Animated vessel movement replay (Leaflet.js) |
 
 ## Quick Start
 
@@ -91,13 +101,12 @@ docker exec hormuz-tracker python src/migrate.py
 
 ## Roadmap
 
-- **Time-series trend analysis** — daily/weekly transit counts, anchored ratio over time to track how conditions evolve
 - **Satellite AIS integration** — terrestrial coverage misses mid-strait traffic; satellite data would fill the gap
 - **Historical baseline comparison** — establish "normal" traffic patterns to quantify deviations
+- **Time-series trend analysis** — daily/weekly transit counts, anchored ratio over time
 - **Automated daily report** — generate and push a text/image summary of the day's maritime activity
-- **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days to manage DB size
+- **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days
 - **Cloudflare Tunnel** — expose the dashboard publicly without a static IP
-- **Timelapse animation** — generate video of vessel movements over 24h/7d periods
 - **Additional gate lines** — Bab el-Mandeb, Suez approach, or other chokepoints using the same infrastructure
 
 ## Data Source
