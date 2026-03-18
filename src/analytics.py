@@ -285,6 +285,19 @@ async def detect_transits(lookback_minutes: int = 10) -> int:
                 p1 = positions[i]
                 p2 = positions[i + 1]
 
+                # Skip if either point has AIS-unavailable speed (102.3 kn)
+                # These cause phantom position jumps → false transit detections
+                s1 = p1.get("speed") or 0
+                s2 = p2.get("speed") or 0
+                if s1 >= AIS_SPEED_UNAVAILABLE or s2 >= AIS_SPEED_UNAVAILABLE:
+                    continue
+
+                # Skip if points are too far apart geographically (> ~55 km)
+                # This catches remaining AIS glitches not flagged by speed
+                if (abs(p2["lat"] - p1["lat"]) > 0.5
+                        or abs(p2["lon"] - p1["lon"]) > 0.5):
+                    continue
+
                 # Skip if points are too far apart in time (>30 min gap)
                 try:
                     t1 = datetime.fromisoformat(p1["received_at"])

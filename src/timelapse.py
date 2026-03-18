@@ -24,6 +24,8 @@ import matplotlib.patheffects as pe  # noqa: E402
 from PIL import Image  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 
+from land_filter import is_on_land  # noqa: E402
+
 DB_PATH = "/app/data/ais.db"
 OUTPUT_DIR = Path("/app/data")
 
@@ -157,24 +159,29 @@ def load_all_trajectories(db_path, start_ts, end_ts):
         conn.close()
 
 
+def _is_ais_unavailable(speed):
+    """Check if speed indicates AIS data unavailable (102.3 knots sentinel)."""
+    return speed is not None and speed > 100.0
+
+
 def interpolate_positions(trajectories, frame_epoch, max_age_seconds=1800):
     """For each vessel, interpolate its position at the given timestamp.
 
     Uses linear interpolation between the two nearest known positions.
-    If the vessel has no data within max_age_seconds, it is excluded.
+    Skips interpolation when:
+      - The vessel has no data within max_age_seconds
+      - The interpolated point would fall on land (prevents crossing peninsulas)
+      - Either endpoint has AIS-unavailable speed (102.3 kn = position unreliable)
+      - The two points are too far apart geographically (> 0.5 degrees)
 
     Returns list of vessel dicts with interpolated lat/lon.
     """
     vessels = []
     for mmsi, points in trajectories.items():
-        # Binary search for the two points bracketing frame_epoch
-        lo, hi = 0, len(points) - 1
-
-        # Find last point <= frame_epoch
         if points[0]["ts"] > frame_epoch + max_age_seconds:
-            continue  # vessel hasn't appeared yet
+            continue
         if points[-1]["ts"] < frame_epoch - max_age_seconds:
-            continue  # vessel disappeared too long ago
+            continue
 
         # Find bracketing indices
         before_idx = None
@@ -188,27 +195,52 @@ def interpolate_positions(trajectories, frame_epoch, max_age_seconds=1800):
         if before_idx is None and after_idx is None:
             continue
 
+        lat, lon, speed = None, None, None
+
         if before_idx is not None and after_idx is not None and before_idx != after_idx:
-            # Interpolate between before and after
             p0 = points[before_idx]
             p1 = points[after_idx]
             dt = p1["ts"] - p0["ts"]
-            if dt > 0 and dt < max_age_seconds * 2:
+
+            # Geographic distance between the two points
+            dlat = abs(p1["lat"] - p0["lat"])
+            dlon = abs(p1["lon"] - p0["lon"])
+
+            can_interpolate = (
+                dt > 0
+                and dt < max_age_seconds * 2
+                and not _is_ais_unavailable(p0["speed"])
+                and not _is_ais_unavailable(p1["speed"])
+                and dlat < 0.5 and dlon < 0.5  # ~55km max jump
+            )
+
+            if can_interpolate:
                 t = (frame_epoch - p0["ts"]) / dt
                 lat = p0["lat"] + t * (p1["lat"] - p0["lat"])
                 lon = p0["lon"] + t * (p1["lon"] - p0["lon"])
                 speed = p0["speed"] if p0["speed"] else p1["speed"]
+
+                # Check if interpolated point is on land → fall back to nearest
+                if is_on_land(lat, lon):
+                    nearest = p0 if abs(p0["ts"] - frame_epoch) < abs(p1["ts"] - frame_epoch) else p1
+                    lat, lon, speed = nearest["lat"], nearest["lon"], nearest["speed"]
             else:
-                # Gap too large, use nearest
+                # Use nearest known position (no interpolation)
                 nearest = p0 if abs(p0["ts"] - frame_epoch) < abs(p1["ts"] - frame_epoch) else p1
                 lat, lon, speed = nearest["lat"], nearest["lon"], nearest["speed"]
         else:
-            # Use nearest available point
             idx = before_idx if before_idx is not None else after_idx
             p = points[idx]
             if abs(p["ts"] - frame_epoch) > max_age_seconds:
                 continue
             lat, lon, speed = p["lat"], p["lon"], p["speed"]
+
+        # Final land check — skip positions on land entirely
+        if is_on_land(lat, lon):
+            continue
+        # Skip AIS-unavailable ghost positions
+        if _is_ais_unavailable(speed):
+            continue
 
         ref = points[before_idx if before_idx is not None else after_idx]
         vessels.append({
