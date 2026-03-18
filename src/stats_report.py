@@ -47,7 +47,7 @@ def get_type_label(code):
 
 def generate_stats(db_path=DB_PATH, output_path=OUTPUT_PATH):
     conn = sqlite3.connect(db_path)
-    now_utc = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    now_utc = datetime.now(tz=None).strftime("%Y-%m-%d %H:%M UTC")
 
     # ── Basic stats ──
     total = conn.execute("SELECT COUNT(*) FROM positions").fetchone()[0]

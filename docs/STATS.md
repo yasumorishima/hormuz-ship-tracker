@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-03-18 12:30 UTC*
+*Auto-updated: 2026-03-18 12:29 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
 | Collection period | 2026-03-14 → 2026-03-18 (4.2 days) |
-| Total positions | 43,576 |
-| Clean positions | 36,255 (83%) |
+| Total positions | 43,566 |
+| Clean positions | 36,245 (83%) |
 | Anomalous positions | 7,321 (16%) |
 | Unique vessels | 384 |
-| Avg positions/day | 10,303 |
+| Avg positions/day | 10,301 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 61 |
 
@@ -23,7 +23,7 @@
 | 2026-03-15 | 10,790 | 291 |
 | 2026-03-16 | 12,861 | 211 |
 | 2026-03-17 | 11,682 | 222 |
-| 2026-03-18 | 5,704 | 193 |
+| 2026-03-18 | 5,694 | 193 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -42,7 +42,7 @@ Average positions per hour across all days (clean data only):
   09:00   208  ████████████████
   10:00   324  ██████████████████████████
   11:00   267  █████████████████████
-  12:00   279  ██████████████████████
+  12:00   277  ██████████████████████
   13:00   372  █████████████████████████████
   14:00   473  █████████████████████████████████████
   15:00   464  █████████████████████████████████████
@@ -101,8 +101,8 @@ Average positions per hour across all days (clean data only):
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| PLC-03 | AE | Unknown | 1,399 | 2026-03-14 | 2026-03-18 |
-| TUG GULF DOLPHIN | AE | Unknown | 1,251 | 2026-03-14 | 2026-03-18 |
+| PLC-03 | AE | Unknown | 1,398 | 2026-03-14 | 2026-03-18 |
+| TUG GULF DOLPHIN | AE | Unknown | 1,250 | 2026-03-14 | 2026-03-18 |
 | AL JAMOH | AE | Unknown | 1,124 | 2026-03-14 | 2026-03-18 |
 | BLUE SHARK 13 | AE | Unknown | 1,073 | 2026-03-15 | 2026-03-18 |
 | BLUESHARK 14 | AE | Unknown | 1,028 | 2026-03-14 | 2026-03-18 |
@@ -112,7 +112,7 @@ Average positions per hour across all days (clean data only):
 | NASHWAN | AE | Unknown | 817 | 2026-03-15 | 2026-03-18 |
 | W KITHIRA | MH | Unknown | 781 | 2026-03-14 | 2026-03-18 |
 | HELLAS REVENGER | MT | Tanker | 751 | 2026-03-15 | 2026-03-18 |
-| BLISS | KY | Unknown | 724 | 2026-03-15 | 2026-03-18 |
+| BLISS | KY | Unknown | 723 | 2026-03-15 | 2026-03-18 |
 | JIMMY | MH | Military | 722 | 2026-03-15 | 2026-03-18 |
 | ALBERT OLDENDORFF | LR | Cargo | 668 | 2026-03-15 | 2026-03-18 |
 | HAM 318 | NL | Fish/Tow | 621 | 2026-03-15 | 2026-03-18 |
