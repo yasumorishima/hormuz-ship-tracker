@@ -172,7 +172,50 @@ docker exec hormuz-tracker python src/migrate.py
 - **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days
 - **Cloudflare Tunnel** — expose the dashboard publicly without a static IP
 - **Additional gate lines** — Bab el-Mandeb, Suez approach, or other chokepoints using the same infrastructure
-- **GCP BigQuery integration** — RPi5 SQLite から BigQuery へ定期エクスポート。SQL で長期トレンド分析・異常検知が可能に（GCP プロジェクト `data-platform-490901` に集約予定）
+- [x] **GCP BigQuery integration** — RPi5 SQLite → BigQuery エクスポート完了
+
+### GCP 分析基盤（BigQuery）
+
+RPi5で収集したAISデータをBigQueryに集約し、SQLで長期トレンド分析が可能です。
+
+| 項目 | 値 |
+|---|---|
+| GCP プロジェクト | `data-platform-490901` |
+| データセット | `hormuz` |
+| テーブル数 | 2（87,614行） |
+| 分析ビュー | 4 |
+| ストレージ | 13 MB |
+
+| テーブル | 内容 | 行数 |
+|---|---|---|
+| `positions` | AIS位置データ（MMSI, 緯度経度, 速度, 船名, 国旗等） | 87,508 |
+| `transit_events` | ゲート通過イベント（海峡/Dubai/Fujairah） | 106 |
+
+#### 分析ビュー
+
+| ビュー | 用途 |
+|---|---|
+| `v_daily_transit` | 日別・ゲート別・方向別のトランジット集計 |
+| `v_traffic_by_flag` | 国旗別の船舶数・トラフィック量・平均速度 |
+| `v_hourly_density` | 時間帯別トラフィック密度 |
+| `v_vessel_summary` | 船舶別サマリー（追跡時間・平均/最大速度） |
+
+#### 国旗別トラフィック（TOP 10）
+
+| Flag | Vessels | Positions | Avg Speed |
+|---|---|---|---|
+| PA (Panama) | 83 | 8,678 | 12.9 |
+| AE (UAE) | 60 | 21,052 | 4.8 |
+| MH (Marshall Islands) | 48 | 10,636 | 17.6 |
+| LR (Liberia) | 45 | 6,775 | 5.9 |
+| KN (Saint Kitts) | 26 | 2,162 | 9.3 |
+| SG (Singapore) | 23 | 3,245 | 16.1 |
+| HK (Hong Kong) | 17 | 1,703 | 25.5 |
+| KM (Comoros) | 13 | 1,424 | 4.4 |
+| NL (Netherlands) | 10 | 6,660 | 2.6 |
+| VC (St. Vincent) | 10 | 3,292 | 15.8 |
+
+> 便宜置籍船（PA/MH/LR/KN等）が上位を占めるのは国際海運の一般的な傾向です。UAE船籍は地元港湾のタグボート・補給船が多く、平均速度が低いのはそのためです
 
 ## Data Source
 
