@@ -172,6 +172,7 @@ docker exec hormuz-tracker python src/migrate.py
 - **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days
 - **Cloudflare Tunnel** — expose the dashboard publicly without a static IP
 - **Additional gate lines** — Bab el-Mandeb, Suez approach, or other chokepoints using the same infrastructure
+- **GCP BigQuery integration** — RPi5 SQLite から BigQuery へ定期エクスポート。SQL で長期トレンド分析・異常検知が可能に（GCP プロジェクト `data-platform-490901` に集約予定）
 
 ## Data Source
 
