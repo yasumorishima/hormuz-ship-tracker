@@ -60,6 +60,12 @@ aisstream.io (WebSocket)
       └─ Auto-snapshot → GitHub (every 6h)
 ```
 
+## Grafana Dashboard
+
+[Hormuz Ship Tracker](https://yasumorishima.grafana.net/d/8bf53042-a57c-475f-b8de-cddd8a00d236) — Daily transit trends, flag-country breakdown, hourly traffic density. Connected to BigQuery `data-platform-490901.hormuz`.
+
+![Hormuz Ship Tracker — Grafana Dashboard](docs/images/grafana-preview.png)
+
 ## Visualization Tools
 
 ### Traffic Density Heatmap (`src/heatmap.py`)
