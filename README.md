@@ -62,7 +62,7 @@ aisstream.io (WebSocket)
 
 ## Grafana Dashboard
 
-[Hormuz Ship Tracker](https://yasumorishima.grafana.net/d/8bf53042-a57c-475f-b8de-cddd8a00d236) — Daily transit trends, flag-country breakdown, hourly traffic density. Connected to BigQuery `data-platform-490901.hormuz`.
+[Hormuz Ship Tracker](https://yasumorishima.grafana.net/public-dashboards/f026a54edf9f476cbec9f6cde9d66362) — Daily transit trends, flag-country breakdown, hourly traffic density. Connected to BigQuery `data-platform-490901.hormuz`.
 
 ![Hormuz Ship Tracker — Grafana Dashboard](docs/images/grafana-preview.png)
 
