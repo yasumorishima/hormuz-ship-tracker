@@ -60,12 +60,6 @@ aisstream.io (WebSocket)
       └─ Auto-snapshot → GitHub (every 6h)
 ```
 
-## Grafana Dashboard
-
-[Hormuz Ship Tracker](https://yasumorishima.grafana.net/public-dashboards/f026a54edf9f476cbec9f6cde9d66362) — Daily transit trends, flag-country breakdown, hourly traffic density. Connected to BigQuery `data-platform-490901.hormuz`.
-
-![Hormuz Ship Tracker — Grafana Dashboard](docs/images/grafana-preview.png)
-
 ## Visualization Tools
 
 ### Traffic Density Heatmap (`src/heatmap.py`)
@@ -178,33 +172,7 @@ docker exec hormuz-tracker python src/migrate.py
 - **SQLite periodic purge** — retain summarized stats, drop raw positions older than N days
 - **Cloudflare Tunnel** — expose the dashboard publicly without a static IP
 - **Additional gate lines** — Bab el-Mandeb, Suez approach, or other chokepoints using the same infrastructure
-- [x] **GCP BigQuery integration** — RPi5 SQLite → BigQuery エクスポート完了
-
-### GCP 分析基盤（BigQuery）
-
-RPi5で収集したAISデータをBigQueryに集約し、SQLで長期トレンド分析が可能です。
-
-| 項目 | 値 |
-|---|---|
-| GCP プロジェクト | `data-platform-490901` |
-| データセット | `hormuz` |
-| テーブル数 | 2（87,614行） |
-| 分析ビュー | 4 |
-| ストレージ | 13 MB |
-
-| テーブル | 内容 | 行数 |
-|---|---|---|
-| `positions` | AIS位置データ（MMSI, 緯度経度, 速度, 船名, 国旗等） | 87,508 |
-| `transit_events` | ゲート通過イベント（海峡/Dubai/Fujairah） | 106 |
-
-#### 分析ビュー
-
-| ビュー | 用途 |
-|---|---|
-| `v_daily_transit` | 日別・ゲート別・方向別のトランジット集計 |
-| `v_traffic_by_flag` | 国旗別の船舶数・トラフィック量・平均速度 |
-| `v_hourly_density` | 時間帯別トラフィック密度 |
-| `v_vessel_summary` | 船舶別サマリー（追跡時間・平均/最大速度） |
+- [x] ~~**GCP BigQuery integration**~~ — **2026-04-19 退役**（Grafana 公開廃止、RPi5 Parquet `/mnt/ssd/hormuz_shared/` にバックアップ、SQLite が一次ソース）
 
 #### 国旗別トラフィック（TOP 10）
 
