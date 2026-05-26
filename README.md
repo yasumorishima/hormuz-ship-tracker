@@ -36,6 +36,8 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 - **Situation assessment** — data-driven status: NO TRANSIT / LIMITED / ACTIVE
 - **AIS data quality** — anomaly classification, false transit filtering, known glitch source tracking
 
+> **Data:** Dataset migration to public [Hugging Face Datasets](https://huggingface.co/yasumorishima) is planned.
+
 ## Architecture
 
 ```
