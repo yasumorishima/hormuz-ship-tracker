@@ -20,6 +20,7 @@ import pyarrow.parquet as pq
 from huggingface_hub import CommitOperationAdd, CommitOperationDelete, HfApi
 
 from ais_parse import COLUMNS
+from enrich import backfill_static
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +162,9 @@ def build_sqlite(paths: list[str], db_path: str, token: str | None = None) -> in
     conn.execute("CREATE INDEX idx_positions_timestamp ON positions(timestamp)")
     conn.execute("CREATE INDEX idx_positions_mmsi ON positions(mmsi)")
     conn.commit()
+    # A single window rarely carries both a vessel's position and its static
+    # description; this is what the Pi's months-long cache used to do.
+    backfill_static(conn)
     conn.close()
     return total
 

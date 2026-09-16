@@ -46,6 +46,9 @@ jobs:
       LOAD_HOURS: ${{ inputs.hours || '48' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The credential is not needed until the push, and pip runs first.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -79,6 +82,8 @@ jobs:
           ls -l docs/
 
       - name: Commit if anything changed
+        env:
+          PUSH_TOKEN: ${{ github.token }}
         run: |
           git config user.name 'hormuz-bot'
           git config user.email 'hormuz-bot@users.noreply.github.com'
@@ -90,10 +95,12 @@ jobs:
           fi
           VESSELS=$(grep -oP 'Active vessels.*?: \K[0-9]+' docs/snapshot_stats.txt || echo '?')
           git commit -m "snapshot: ${VESSELS} vessels at $(date -u '+%Y-%m-%d %H:%M UTC')"
-          # Anything else landing on the branch between checkout and push
+          # Passed on the command line rather than written into .git/config,
+          # and anything else landing on the branch between checkout and push
           # would otherwise redden the run.
-          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          REMOTE="https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --rebase --autostash "$REMOTE" "$GITHUB_REF_NAME"
+          git push "$REMOTE" "HEAD:$GITHUB_REF_NAME"
 
       - name: Re-assert the scheduled workflows
         if: always()

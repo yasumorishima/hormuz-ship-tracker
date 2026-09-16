@@ -148,11 +148,15 @@ class StreamParser:
             or static.get("ship_name", "")
         )
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(timezone.utc)
 
         # Normalize timestamp from aisstream.io format
         # e.g. "2026-03-14 06:57:51.594510977 +0000 UTC"
-        ts = normalize_timestamp(meta_data.get("time_utc", "")) or now
+        # The fallback drops the offset so that `timestamp` is one format
+        # throughout: naive UTC, as the archived rows already are. It is
+        # `received_at` that carries the offset.
+        ts = (normalize_timestamp(meta_data.get("time_utc", ""))
+              or now.replace(tzinfo=None).isoformat())
 
         # Flag: derive from MMSI (aisstream MetaData does not reliably
         # provide country_code)
@@ -173,7 +177,7 @@ class StreamParser:
             static.get("length"),
             static.get("width"),
             flag_code,
-            now,
+            now.isoformat(),
         )
 
     def summary(self) -> dict:

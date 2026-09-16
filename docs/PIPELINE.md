@@ -40,8 +40,16 @@ between windows is not observed at all.
 
 Consequences worth stating plainly:
 
-- Fleet composition, anchored ratio, port and flag breakdowns are unaffected —
-  they are counts over vessels present, and the sample keeps them.
+- Fleet composition, anchored ratio, port and flag breakdowns survive, but not
+  for free. A vessel's description — name, type, destination, dimensions —
+  arrives in its own frame every few minutes, so it frequently lands in a
+  different window from the positions it describes, and the Pi's answer was a
+  cache that lived for months. Here `src/enrich.py` does the equivalent when
+  the working database is built: per vessel, the most recent non-empty value
+  anywhere in the loaded range is copied onto the rows that lack it. Nothing is
+  invented — a value is only ever copied between rows of the same MMSI — but it
+  does mean the raw shards on the Hub carry more nulls than the Pi's database
+  did, and a vessel never described in the loaded range stays undescribed.
 - Gate-crossing transit detection does not run at all here. Nothing in the
   three workflows invokes `analytics.py`, and only `positions` is rebuilt, so
   `transit_events` does not exist on this path — the transit figures in

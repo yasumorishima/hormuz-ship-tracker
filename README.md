@@ -1,6 +1,6 @@
 # Strait of Hormuz — Maritime Monitor
 
-Real-time vessel tracking and maritime intelligence for the Persian Gulf, Strait of Hormuz, and Gulf of Oman.
+Vessel tracking and maritime intelligence for the Persian Gulf, Strait of Hormuz, and Gulf of Oman, from sampled AIS.
 Monitors shipping patterns using AIS data, with automated transit detection, vessel state classification, data quality analysis, and visualization tools.
 Collection, storage and publishing all run on free hosted infrastructure — GitHub Actions and a Hugging Face dataset, no machine of our own. See **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
