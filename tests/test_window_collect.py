@@ -7,6 +7,7 @@ run happens against a live stream with a quota. So the stream is faked here.
 
 import asyncio
 import json
+import os
 import sys
 import time
 import types
@@ -216,6 +217,40 @@ class WindowTest(unittest.IsolatedAsyncioTestCase):
         # matters is that the attempt was made, failed, and was recorded.
         self.assertGreaterEqual(summary["connect_errors"], 1,
                                 "the stalled handshake was not recorded")
+
+
+@unittest.skipIf(websockets is None, "websockets is not installed")
+class EmptyWindowTest(WindowTest):
+    """An empty window has two causes and only one of them is ours."""
+
+    async def run_main(self, handler, seconds=2.0):
+        await self._serve(handler)
+        argv = sys.argv
+        sys.argv = ["window_collect", "--probe", "--seconds", str(seconds)]
+        os.environ["AISSTREAM_API_KEY"] = "test"
+        try:
+            return await asyncio.get_running_loop().run_in_executor(
+                None, window_collect.main)
+        finally:
+            sys.argv = argv
+
+    async def test_a_confirmed_subscription_with_no_positions_is_not_a_failure(self):
+        async def handler(ws):
+            await ws.recv()
+            await ws.send('{"MessageType":"SubscriptionConfirmation",'
+                          '"Message":{"CompressionEnabled":true}}')
+            await hold(ws)
+
+        self.assertEqual(await self.run_main(handler), 0,
+                         "someone else's missing coverage reddened our run")
+
+    async def test_a_stream_that_says_nothing_at_all_is_a_failure(self):
+        async def handler(ws):
+            await ws.recv()
+            await hold(ws)
+
+        self.assertEqual(await self.run_main(handler), 1,
+                         "a silent stream with no confirmation should fail")
 
 
 if __name__ == "__main__":

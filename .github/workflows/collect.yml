@@ -25,6 +25,11 @@ on:
         required: false
         default: false
         type: boolean
+      bbox:
+        description: 'override the bounding box, as JSON, for a diagnostic run'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -66,6 +71,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # Via env, never interpolated into the script itself.
           WINDOW_SECONDS: ${{ inputs.seconds || '180' }}
+          AIS_BBOX: ${{ inputs.bbox }}
           PROBE_FLAG: ${{ inputs.probe && '--probe' || '' }}
         run: |
           set -o pipefail   # without this the exit status would be tee's

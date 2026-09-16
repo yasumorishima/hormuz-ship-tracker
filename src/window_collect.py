@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 import websockets
 
-from ais_parse import STREAM_URL, StreamParser, subscribe_message
+from ais_parse import HOME_BBOX, STREAM_URL, StreamParser, subscribe_message
 
 logging.basicConfig(
     level=logging.INFO,
@@ -94,12 +94,40 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
             await asyncio.sleep(min(backoff, RECONNECT_BACKOFF_MAX_SEC, left))
 
     summary = parser.summary()
+    summary["where"] = coverage(parser.coords)
     summary["rows"] = len(rows)
     summary["reconnects"] = reconnects
     summary["connect_errors"] = connect_errors
     summary["frame_errors"] = frame_errors
     summary["window_sec"] = seconds
     return rows, summary
+
+
+def coverage(coords) -> dict:
+    """Where the feed actually had something to say.
+
+    A count alone cannot distinguish "the box is not being applied" from
+    "there are no receivers left in this water", and those call for opposite
+    responses.
+    """
+    if not coords:
+        return {}
+    (lat0, lon0), (lat1, lon1) = HOME_BBOX
+    inside = sum(1 for la, lo in coords
+                 if min(lat0, lat1) <= la <= max(lat0, lat1)
+                 and min(lon0, lon1) <= lo <= max(lon0, lon1))
+    cells: dict[str, int] = {}
+    for la, lo in coords:
+        cell = f"{int(la // 10) * 10}N/{int(lo // 10) * 10}E"
+        cells[cell] = cells.get(cell, 0) + 1
+    busiest = sorted(cells.items(), key=lambda kv: -kv[1])[:8]
+    return {
+        "positions": len(coords),
+        "inside_the_strait_box": inside,
+        "lat_range": [min(c[0] for c in coords), max(c[0] for c in coords)],
+        "lon_range": [min(c[1] for c in coords), max(c[1] for c in coords)],
+        "busiest_10deg_cells": dict(busiest),
+    }
 
 
 def main() -> int:
@@ -109,7 +137,8 @@ def main() -> int:
     ap.add_argument("--probe", action="store_true",
                     help="report what the window saw and upload nothing")
     ap.add_argument("--min-rows", type=int, default=1,
-                    help="fail if the window yielded fewer rows than this")
+                    help="fail if the window yielded fewer rows than this, "
+                         "unless the stream simply had nothing to send")
     args = ap.parse_args()
 
     api_key = os.environ.get("AISSTREAM_API_KEY")
@@ -129,10 +158,24 @@ def main() -> int:
         import hf_store
         print(json.dumps({"shard": hf_store.upload_rows(rows, started)}, indent=2))
 
-    if len(rows) < args.min_rows:
-        print(f"window yielded {len(rows)} rows (< {args.min_rows})", file=sys.stderr)
-        return 1
-    return 0
+    if len(rows) >= args.min_rows:
+        return 0
+
+    # An empty window has two very different causes and only one of them is
+    # ours. If the subscription was confirmed and the stream then sent no
+    # positions, the feed has no receivers in this water — measured
+    # 2026-09-16: 19,261 positions worldwide in 180 s, none inside the strait.
+    # Reddening every fifteen minutes over someone else's coverage teaches us
+    # to stop reading the runs.
+    confirmed = summary["message_types"].get("SubscriptionConfirmation", 0)
+    if confirmed and summary["position_reports"] == 0:
+        print("::warning::the subscription was confirmed and the stream sent no "
+              "positions for this area: the feed has no coverage here right now, "
+              "which is not a fault in this pipeline", file=sys.stderr)
+        return 0
+
+    print(f"window yielded {len(rows)} rows (< {args.min_rows})", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
