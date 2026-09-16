@@ -137,7 +137,8 @@ def main() -> int:
     ap.add_argument("--probe", action="store_true",
                     help="report what the window saw and upload nothing")
     ap.add_argument("--min-rows", type=int, default=1,
-                    help="fail if the window yielded fewer rows than this")
+                    help="fail if the window yielded fewer rows than this, "
+                         "unless the stream simply had nothing to send")
     args = ap.parse_args()
 
     api_key = os.environ.get("AISSTREAM_API_KEY")
@@ -157,10 +158,24 @@ def main() -> int:
         import hf_store
         print(json.dumps({"shard": hf_store.upload_rows(rows, started)}, indent=2))
 
-    if len(rows) < args.min_rows:
-        print(f"window yielded {len(rows)} rows (< {args.min_rows})", file=sys.stderr)
-        return 1
-    return 0
+    if len(rows) >= args.min_rows:
+        return 0
+
+    # An empty window has two very different causes and only one of them is
+    # ours. If the subscription was confirmed and the stream then sent no
+    # positions, the feed has no receivers in this water — measured
+    # 2026-09-16: 19,261 positions worldwide in 180 s, none inside the strait.
+    # Reddening every fifteen minutes over someone else's coverage teaches us
+    # to stop reading the runs.
+    confirmed = summary["message_types"].get("SubscriptionConfirmation", 0)
+    if confirmed and summary["position_reports"] == 0:
+        print("::warning::the subscription was confirmed and the stream sent no "
+              "positions for this area: the feed has no coverage here right now, "
+              "which is not a fault in this pipeline", file=sys.stderr)
+        return 0
+
+    print(f"window yielded {len(rows)} rows (< {args.min_rows})", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
