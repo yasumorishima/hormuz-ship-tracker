@@ -81,6 +81,10 @@ windows are evenly spaced.
 | `AISSTREAM_API_KEY` | collect.yml | free key from https://aisstream.io/ |
 | `HF_TOKEN` | all three | a write token for the Hub dataset |
 
+Until both are set, the scheduled workflows post a warning and do nothing.
+An unconfigured repository is not a broken one, and a job that fails every
+fifteen minutes teaches you to ignore it.
+
 ## Running a window by hand
 
 Install `requirements-collect.txt`, then:
