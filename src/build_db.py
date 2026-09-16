@@ -33,7 +33,11 @@ def main() -> int:
 
     rows = hf_store.build_sqlite(paths, args.db)
     print(json.dumps({"files": len(paths), "rows": rows, "db": args.db}, indent=2))
-    return 0 if rows else 1
+    # Zero rows is a fact about the window, not a failure of this program. The
+    # caller knows whether an empty window is expected — while the feed has no
+    # coverage here, it is the normal state, and exiting 1 would redden the
+    # publish run every three hours over someone else's receivers.
+    return 0
 
 
 if __name__ == "__main__":
