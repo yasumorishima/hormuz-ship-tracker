@@ -68,9 +68,9 @@ So:
 | `recent` | `raw/<YYYY-MM-DD>/<HHMMSS>.parquet` — one file per collection window for days not yet compacted. Merged into `daily/` once the day is over. |
 
 A second config, `transit_events`, holds the 260 gate crossings inferred during
-the Raspberry Pi era. Until this card existed the viewer attributed that file
-to the same split as the positions, which is why its published row count was
-176,033 rather than 175,773. **Nothing appends to it now** — the current pipeline does
+the Raspberry Pi era. Until this card is published as the dataset's README, the
+viewer attributes that file to the same split as the positions, which is why
+the row count it reports is 176,033 rather than 175,773. **Nothing appends to it now** — the current pipeline does
 not run the transit detector.
 
 ## Columns
@@ -80,7 +80,7 @@ not run the transit detector.
 | `mmsi` | int64 | Maritime Mobile Service Identity — the vessel key |
 | `timestamp` | string | when the transponder reported, ISO 8601, **naive UTC** |
 | `latitude`, `longitude` | float64 | WGS 84 degrees |
-| `speed` | float64 | knots, nullable. **102.3 is the AIS "not available" sentinel**, and values above 40 are receiver glitches — filter both |
+| `speed` | float64 | knots, nullable. **102.3 is the AIS "not available" sentinel**, and 40 kn and above are receiver glitches — the published figures filter `speed >= 40`, which subsumes the sentinel |
 | `course`, `heading` | float64 | degrees, nullable |
 | `ship_name` | string | **empty string when unknown, never null** |
 | `ship_type` | float64 | AIS type code, nullable — hence float rather than int |
