@@ -75,8 +75,8 @@ class PageTest(unittest.TestCase):
         source = (ROOT / "src" / "ais_parse.py").read_text(encoding="utf-8")
         # The box is overridable for diagnostic runs, so match the default
         # inside the fallback rather than a bare assignment.
-        m = re.search(r'AIS_BBOX"\) or "(\[\[.+\]\])"', source)
-        self.assertIsNotNone(m, "the default BBOX is no longer readable from source")
+        m = re.search(r"^HOME_BBOX = (\[\[.+\]\])$", source, re.M)
+        self.assertIsNotNone(m, "HOME_BBOX is no longer a literal in ais_parse.py")
         self.assertIn(m.group(1), self.js,
                       "the page's bounding box has drifted from the collector's")
 

@@ -28,7 +28,8 @@ STREAM_URL = "wss://stream.aisstream.io/v0/stream"
 # nothing, and the only way to tell a wrong box from a quiet feed is to try
 # another box. aisstream's own example writes the corners north-first; this
 # one is south-first, which the Raspberry Pi collected on for months.
-BBOX = json.loads(os.environ.get("AIS_BBOX") or "[[22.0, 48.0], [30.5, 60.0]]")
+HOME_BBOX = [[22.0, 48.0], [30.5, 60.0]]
+BBOX = json.loads(os.environ.get("AIS_BBOX") or json.dumps(HOME_BBOX))
 
 MESSAGE_TYPES = ["PositionReport", "ShipStaticData"]
 

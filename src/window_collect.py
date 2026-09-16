@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 import websockets
 
-from ais_parse import BBOX, STREAM_URL, StreamParser, subscribe_message
+from ais_parse import HOME_BBOX, STREAM_URL, StreamParser, subscribe_message
 
 logging.basicConfig(
     level=logging.INFO,
@@ -112,7 +112,7 @@ def coverage(coords) -> dict:
     """
     if not coords:
         return {}
-    (lat0, lon0), (lat1, lon1) = BBOX
+    (lat0, lon0), (lat1, lon1) = HOME_BBOX
     inside = sum(1 for la, lo in coords
                  if min(lat0, lat1) <= la <= max(lat0, lat1)
                  and min(lon0, lon1) <= lo <= max(lon0, lon1))
@@ -123,7 +123,7 @@ def coverage(coords) -> dict:
     busiest = sorted(cells.items(), key=lambda kv: -kv[1])[:8]
     return {
         "positions": len(coords),
-        "inside_the_collection_box": inside,
+        "inside_the_strait_box": inside,
         "lat_range": [min(c[0] for c in coords), max(c[0] for c in coords)],
         "lon_range": [min(c[1] for c in coords), max(c[1] for c in coords)],
         "busiest_10deg_cells": dict(busiest),
