@@ -27,6 +27,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("window_collect")
 
+# How long to wait before reconnecting inside a window. It has to be short
+# relative to the window: the old value of 5 s ate the whole remainder of a
+# short window, so a drop meant no reconnect at all.
+RECONNECT_BACKOFF_SEC = 1.0
+
 
 async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dict]:
     """Hold the connection for `seconds`, then return the rows and the counters."""
@@ -65,7 +70,10 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
                 break
             reconnects += 1
             logger.warning("connection lost (%s) — retry %d", e, reconnects)
-            await asyncio.sleep(min(5, max(0.0, deadline - time.monotonic())))
+            left = deadline - time.monotonic()
+            if left <= 0:
+                break
+            await asyncio.sleep(min(RECONNECT_BACKOFF_SEC, left))
 
     summary = parser.summary()
     summary["rows"] = len(rows)

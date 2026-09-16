@@ -1,0 +1,4 @@
+# tests.yml. The parser and backfill tests need nothing; the window-loop test
+# stands up a local WebSocket server, and the last step parses the workflows.
+websockets==15.0.1
+pyyaml>=6.0
