@@ -1,7 +1,9 @@
 name: Tests
 
-# The parser tests stub out land_filter, so they need no third-party packages
-# and run in seconds. The compile check covers the rest of src/.
+# The parser and backfill tests stub out land_filter and need no third-party
+# packages. The window-loop test stands up a local WebSocket server in place
+# of aisstream.io, so the one part that cannot be checked by reading it is
+# checked before it ever runs against the live stream.
 
 on:
   push:
@@ -27,16 +29,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+
+      - run: pip install -r requirements-test.txt
 
       - name: Unit tests
-        run: python -m unittest discover -s tests -v
+        run: |
+          python - <<'PY'
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover("tests")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          # A skip here means the environment lost a package, not that the
+          # test was optional. Green-because-absent is the failure mode this
+          # step exists to prevent.
+          for case, reason in result.skipped:
+              print(f"::error::{case} was skipped: {reason}")
+          if result.testsRun == 0:
+              print("::error::no tests were discovered")
+          sys.exit(1 if (result.skipped
+                         or result.testsRun == 0
+                         or not result.wasSuccessful()) else 0)
+          PY
 
       - name: Every module compiles
         run: python -m compileall -q src tests
 
       - name: Workflows parse
         run: |
-          pip install --quiet pyyaml   # not in the runner's Python by default
           python - <<'PY'
           import glob, yaml
           for path in sorted(glob.glob(".github/workflows/*.yml")):
