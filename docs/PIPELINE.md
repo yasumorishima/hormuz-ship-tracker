@@ -74,6 +74,34 @@ Spaces run on compute and require a paid plan for personal accounts, so that
 route is not free and is not used here. Static Spaces are free, which is the
 option available for serving a map.
 
+## The feed has no coverage here at present
+
+Measured 2026-09-16, the day the collector first ran with a live key:
+
+| subscription | result |
+|---|---|
+| the collection box | 2 position reports in 13 minutes, both inside the land mask |
+| the same box, corners reversed | 0 |
+| `[[0, 30], [40, 80]]` — Arabian Sea to the Red Sea | 158 vessels in 90 s, all near Suez |
+| the whole world, 180 s | **19,261 positions, 12,312 vessels, 0 inside the strait** |
+
+The busiest ten-degree cells were `50N/0E` (7,543) and `50N/10E` (1,978):
+aisstream is a European terrestrial network at the moment. The key is fine —
+the subscription is confirmed, with compression negotiated — and the code is
+the same code that filled `positions.parquet`. There are no receivers in this
+water.
+
+This is also the likeliest explanation for the archive stopping on
+**2026-04-11**, which was recorded at the time as a suspected collector fault.
+
+So an empty window is a warning rather than a failure: the collector exits 0
+when the subscription was confirmed and no positions arrived, and `publish.yml`
+says "nothing to publish" and skips rendering. Ninety-six red runs a day over
+someone else's coverage would only teach us to stop reading them. A window
+that never gets a confirmation still fails.
+
+Collection keeps running, so data resumes by itself if coverage returns.
+
 ## Scheduling is best-effort
 
 GitHub delays scheduled workflows under load and drops them outright during

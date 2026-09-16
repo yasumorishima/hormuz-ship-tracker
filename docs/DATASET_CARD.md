@@ -40,6 +40,20 @@ a land mask. Bounding box `[[22.0, 48.0], [30.5, 60.0]]` — Kuwait to Muscat.
 Collected by [yasumorishima/hormuz-ship-tracker](https://github.com/yasumorishima/hormuz-ship-tracker),
 which is also where the code that wrote every row lives.
 
+## Collection is stalled, and it is not the collector
+
+aisstream.io accepts the subscription and then sends nothing for this area.
+Measured 2026-09-16: three minutes of the **whole world** on the same
+connection returned **19,261 positions from 12,312 vessels, none of them
+inside the strait**; the busiest cells were the North Sea (7,543) and the
+Baltic (1,978). Thirteen minutes subscribed directly to the strait produced
+two position reports. **The feed has no receivers in this water at present.**
+
+So the splits below hold what the Raspberry Pi collected and nothing newer.
+The collector still runs every fifteen minutes, so `raw/` fills by itself if
+coverage returns. This is also the likeliest reason the archive stops on
+2026-04-11.
+
 ## Read this before using it: the rows are a sample, not a track
 
 Until mid-2026 a Raspberry Pi held the AIS stream open around the clock and
