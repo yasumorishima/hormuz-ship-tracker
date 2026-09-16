@@ -70,11 +70,23 @@ jobs:
       - name: Rebuild the working database from the Hub
         if: env.CONFIGURED == 'true'
         run: |
+          set -o pipefail   # without this the exit status would be tee's
           mkdir -p work
-          python src/build_db.py --hours "$LOAD_HOURS" --db "$AIS_DB_PATH"
+          python src/build_db.py --hours "$LOAD_HOURS" --db "$AIS_DB_PATH"             | tee "$RUNNER_TEMP/build.json"
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json, os
+          with open(os.environ["RUNNER_TEMP"] + "/build.json") as f:
+              print("LOADED_ROWS=%d" % json.load(f)["rows"])
+          PY
+
+      - name: Nothing to publish
+        if: env.CONFIGURED == 'true' && env.LOADED_ROWS == '0'
+        run: |
+          echo "::warning::the last ${LOAD_HOURS}h of the dataset hold no positions, so there is nothing to render. While the feed has no coverage for this area that is the expected state, not a fault here."
+
 
       - name: Render snapshot, heatmap and stats
-        if: env.CONFIGURED == 'true'
+        if: env.CONFIGURED == 'true' && env.LOADED_ROWS != '0'
         run: |
           python src/snapshot.py "$AIS_DB_PATH" "$AIS_OUTPUT_DIR"
           # --hours must match what was loaded, or the caption claims more
@@ -84,7 +96,7 @@ jobs:
           python src/stats_report.py --db "$AIS_DB_PATH" --output docs/STATS.md
 
       - name: Copy whatever was rendered into docs/
-        if: env.CONFIGURED == 'true'
+        if: env.CONFIGURED == 'true' && env.LOADED_ROWS != '0'
         run: |
           # A renderer can decide there is nothing to draw and exit 0 without
           # writing a file; that is not a reason to fail the job here.
@@ -94,7 +106,7 @@ jobs:
           ls -l docs/
 
       - name: Commit if anything changed
-        if: env.CONFIGURED == 'true'
+        if: env.CONFIGURED == 'true' && env.LOADED_ROWS != '0'
         env:
           PUSH_TOKEN: ${{ github.token }}
         run: |
