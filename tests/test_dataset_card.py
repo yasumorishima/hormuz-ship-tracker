@@ -2,9 +2,14 @@
 
 These check that it stays true rather than that it exists: the globs it
 advertises have to match the paths the collector actually writes, and the
-round trip from a parser row to parquet and back has to preserve every column
-in order. A silent transposition there would corrupt the permanent record and
-nothing downstream would notice.
+schema has to stay identical to the archive it appends to — a column whose
+type drifts would split the dataset in two.
+
+The round trip here does **not** catch a column transposition, whatever it may
+look like: `rows_to_table` keys by name from `COLUMNS` and this reads back by
+`COLUMNS`, so the two cancel out. The place a transposition can happen is the
+positional tuple the parser returns, and that is asserted field by field in
+test_ais_parse.py.
 """
 
 import fnmatch
@@ -58,6 +63,19 @@ class CardTest(unittest.TestCase):
                 f"{path} is written but no split in the card matches it: {globs}",
             )
 
+    def test_the_first_split_of_each_config_has_a_concrete_path(self):
+        """Feature inference walks the splits in the order they are written.
+
+        `daily/` and `raw/` are empty until collection starts, and a config
+        whose leading splits all resolve to nothing fails to build — taking
+        the viewer with it. Putting the concrete file first is load-bearing,
+        not cosmetic.
+        """
+        for config in front_matter()["configs"]:
+            first = config["data_files"][0]["path"]
+            self.assertNotIn("*", first,
+                             f"{config['config_name']} leads with a glob: {first}")
+
     def test_every_advertised_glob_can_match_something(self):
         meta = front_matter()
         default = next(c for c in meta["configs"] if c["config_name"] == "default")
@@ -101,20 +119,32 @@ class ParquetRoundTripTest(unittest.TestCase):
             back = pq.read_table(path, columns=hf_store.COLUMNS)
 
         got = list(zip(*[back.column(c).to_pylist() for c in hf_store.COLUMNS]))
+        # Before zipping: zip() stops at the shorter side, so a lost trailing
+        # row would otherwise pass unnoticed.
+        self.assertEqual(len(got), len(rows), "the round trip changed the row count")
         # Floats because the schema says float64; the values must be equal.
         for original, restored in zip(rows, got):
             self.assertEqual(len(original), len(restored))
             for name, a, b in zip(hf_store.COLUMNS, original, restored):
                 self.assertEqual(a, b, f"column {name} changed in the round trip")
 
-    def test_missing_static_fields_survive_as_null(self):
+    def test_missing_numeric_fields_survive_as_null(self):
+        """Only the numeric static fields are ever null.
+
+        The parser gives `ship_name` and `destination` empty strings, so a
+        test that asserts None for those would be locking in a claim the card
+        must not make either.
+        """
         row = list(self.row())
-        for name in ("ship_name", "ship_type", "destination", "draught",
-                     "length", "width"):
+        for name in ("ship_type", "draught", "length", "width"):
             row[hf_store.COLUMNS.index(name)] = None
+        for name in ("ship_name", "destination"):
+            row[hf_store.COLUMNS.index(name)] = ""
         table = hf_store.rows_to_table([tuple(row)])
-        self.assertIsNone(table.column("ship_type").to_pylist()[0])
-        self.assertIsNone(table.column("ship_name").to_pylist()[0])
+        for name in ("ship_type", "draught", "length", "width"):
+            self.assertIsNone(table.column(name).to_pylist()[0], name)
+        for name in ("ship_name", "destination"):
+            self.assertEqual(table.column(name).to_pylist()[0], "", name)
 
     def test_the_schema_still_matches_the_archive_it_appends_to(self):
         """Measured from positions.parquet on the Hub: ship_type is float64

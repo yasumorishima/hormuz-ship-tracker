@@ -73,7 +73,10 @@ jobs:
         if: env.CONFIGURED == 'true'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python src/push_card.py
+          # Without this, `dry_run` skips the merge and then writes the card
+          # anyway, which is not what "change nothing" means.
+          DRY_RUN_FLAG: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: python src/push_card.py $DRY_RUN_FLAG
 
       - name: Summary
         if: always() && env.CONFIGURED == 'true'

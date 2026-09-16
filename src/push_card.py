@@ -12,11 +12,37 @@ import argparse
 import sys
 from pathlib import Path
 
+import yaml
 from huggingface_hub import hf_hub_download
+from huggingface_hub.errors import (
+    EntryNotFoundError,
+    HfHubHTTPError,
+    RepositoryNotFoundError,
+)
 
 import hf_store
 
 CARD = Path(__file__).resolve().parent.parent / "docs" / "DATASET_CARD.md"
+FENCE = "---\n"
+
+
+def front_matter(text: str):
+    """Return the parsed front matter, or a reason it cannot be used.
+
+    Checking only that the file starts with a fence would miss the one failure
+    the Hub cannot recover from: YAML that breaks below the first line uploads
+    happily and then renders as raw text with the viewer erroring.
+    """
+    parts = text.split(FENCE, 2)
+    if not text.startswith(FENCE) or len(parts) < 3:
+        return None, "the card has no YAML front matter; the Hub needs it"
+    try:
+        meta = yaml.safe_load(parts[1])
+    except yaml.YAMLError as e:
+        return None, f"the front matter is not valid YAML: {e}"
+    if not isinstance(meta, dict) or not meta.get("configs"):
+        return None, "the front matter declares no configs; the viewer needs them"
+    return meta, None
 
 
 def main() -> int:
@@ -25,8 +51,9 @@ def main() -> int:
     args = ap.parse_args()
 
     text = CARD.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
-        print("the card has no YAML front matter; the Hub needs it", file=sys.stderr)
+    meta, problem = front_matter(text)
+    if problem:
+        print(problem, file=sys.stderr)
         return 2
 
     api = hf_store._api()
@@ -37,11 +64,13 @@ def main() -> int:
         if Path(current).read_text(encoding="utf-8") == text:
             print("card is already up to date")
             return 0
-    except Exception:
+    except (EntryNotFoundError, RepositoryNotFoundError, HfHubHTTPError, OSError):
         pass  # no card there yet, or it cannot be read; push and find out
 
     if args.dry_run:
-        print(f"would push {len(text)} chars to {hf_store.REPO_ID}/README.md")
+        configs = [c.get("config_name") for c in meta["configs"]]
+        print(f"would push {len(text)} chars to {hf_store.REPO_ID}/README.md "
+              f"(configs: {', '.join(configs)})")
         return 0
 
     api.upload_file(

@@ -10,6 +10,7 @@ import logging
 import time
 from datetime import datetime, timezone
 
+from columns import COLUMNS
 from country_codes import mmsi_to_flag
 from destinations import normalize_destination
 from land_filter import is_on_land
@@ -25,13 +26,6 @@ MESSAGE_TYPES = ["PositionReport", "ShipStaticData"]
 
 # Per-vessel throttle: store at most one position per MMSI per this many seconds
 POSITION_INTERVAL_SEC = 120
-
-# Column order of the `positions` table, minus the autoincrement id.
-COLUMNS = [
-    "mmsi", "timestamp", "latitude", "longitude", "speed", "course", "heading",
-    "ship_name", "ship_type", "destination", "draught", "length", "width",
-    "flag", "received_at",
-]
 
 
 def subscribe_message(api_key: str, bbox=None) -> str:

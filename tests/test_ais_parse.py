@@ -113,6 +113,19 @@ class RowShapeTest(unittest.TestCase):
         self.assertEqual(got["width"], 22)     # C + D
         self.assertEqual(got["draught"], 12.3)
         self.assertEqual(got["timestamp"], "2026-09-16T06:57:51.594510")
+        # The string columns too: the tuple is positional, so a swap between
+        # any two of them is silent everywhere downstream. Values are distinct
+        # per column on purpose.
+        # MetaData's ShipName wins over the static frame's Name when both
+        # are present, which is what the parser does deliberately.
+        self.assertEqual(got["ship_name"], "TEST SHIP")
+        # normalize_destination canonicalises what the crew keyed in;
+        # "JEBEL ALI" is stored as "Jebel Ali".
+        self.assertEqual(got["destination"], "Jebel Ali")
+        self.assertEqual(got["flag"], "")   # 123456789 is not a real MMSI prefix
+        self.assertTrue(got["received_at"].endswith("+00:00"),
+                        "received_at should carry the UTC offset; timestamp should not")
+        self.assertNotIn("+", got["timestamp"])
 
     def test_on_land_positions_are_dropped(self):
         _stub.ON_LAND = True
