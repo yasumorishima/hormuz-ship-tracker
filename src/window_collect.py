@@ -35,6 +35,7 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
     rows: list[tuple] = []
     deadline = time.monotonic() + seconds
     reconnects = 0
+    frame_errors = 0
 
     while time.monotonic() < deadline:
         remaining = deadline - time.monotonic()
@@ -52,8 +53,10 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
                         break
                     try:
                         row = parser.feed(raw)
-                    except (ValueError, KeyError) as e:
-                        logger.warning("parse error: %s", e)
+                    except Exception as e:
+                        # One malformed frame must not cost the whole window.
+                        frame_errors += 1
+                        logger.warning("frame error: %s", e)
                         continue
                     if row is not None:
                         rows.append(row)
@@ -67,6 +70,7 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
     summary = parser.summary()
     summary["rows"] = len(rows)
     summary["reconnects"] = reconnects
+    summary["frame_errors"] = frame_errors
     summary["window_sec"] = seconds
     return rows, summary
 
@@ -90,11 +94,13 @@ def main() -> int:
     rows, summary = asyncio.run(collect_window(api_key, args.seconds))
     summary["started_utc"] = started.isoformat()
 
+    # Report what the window saw before attempting the upload: a failed
+    # upload must not take the measurement with it.
+    print(json.dumps(summary, indent=2, sort_keys=True))
+
     if not args.probe and rows:
         import hf_store
-        summary["shard"] = hf_store.upload_rows(rows, started)
-
-    print(json.dumps(summary, indent=2, sort_keys=True))
+        print(json.dumps({"shard": hf_store.upload_rows(rows, started)}, indent=2))
 
     if len(rows) < args.min_rows:
         print(f"window yielded {len(rows)} rows (< {args.min_rows})", file=sys.stderr)

@@ -6,13 +6,13 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 
 ![Traffic Density Heatmap](docs/heatmap.png)
 
-### At a Glance
+### At a Glance — 2026-03 archive
 
 | Positions | Vessels | Strait Transit | Top Port | Top Flag | Top Type |
 |---:|---:|---:|---|---|---|
 | 43,000+ | 384 | **0** | Dubai / Jebel Ali (196) | Panama (63) | Tanker (81) |
 
-**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 3h)*
+**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 3h, covering the last 48 hours)*. The table above is the 2026-03 collection on the Raspberry Pi, kept as `positions.parquet` in the [dataset](https://huggingface.co/datasets/yasumorishima/hormuz-ais). Transit counts are not computed on the hosted path — see [docs/PIPELINE.md](docs/PIPELINE.md).
 
 ### Latest Snapshot (auto-updated every 3 hours)
 
@@ -45,7 +45,10 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 aisstream.io (WebSocket, sampled in 180-sec windows by GitHub Actions)
   → Land Filter (Natural Earth 10m + Shapely)
   → Parquet shards on the Hugging Face dataset (record of truth)
-  → SQLite (rebuilt per run: positions, transit_events, analytics_state)
+  → SQLite (rebuilt per run: positions only)
+  → Rendering (snapshot, heatmap, stats) → commit to docs/
+
+Local Docker only — not part of the hosted pipeline:
   → Analytics Engine (5-min cycle)
       ├─ Multi-gate transit detection (3 gates)
       ├─ Vessel state classification
@@ -59,8 +62,7 @@ aisstream.io (WebSocket, sampled in 180-sec windows by GitHub Actions)
   → Visualization generators
       ├─ Heatmap (hexbin, 3-panel infographic)
       ├─ Timelapse GIF (interpolated movement)
-      ├─ Transit report (map + table)
-      └─ Auto-snapshot → GitHub (every 3h, publish.yml)
+      └─ Transit report (map + table)
 ```
 
 ## Visualization Tools

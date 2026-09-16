@@ -12,11 +12,14 @@ Layout:
 import logging
 import os
 import sqlite3
+import tempfile
 from datetime import datetime, timedelta, timezone
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 from huggingface_hub import CommitOperationAdd, CommitOperationDelete, HfApi
+
+from ais_parse import COLUMNS
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +48,8 @@ SCHEMA = pa.schema([
     ("received_at", pa.string()),
 ])
 
-COLUMNS = [f.name for f in SCHEMA]
+# The schema here and the row tuple the parser emits must not drift apart.
+assert [f.name for f in SCHEMA] == COLUMNS, "SCHEMA does not match ais_parse.COLUMNS"
 
 
 def _api(token: str | None = None) -> HfApi:
@@ -73,16 +77,19 @@ def upload_rows(rows: list[tuple], when: datetime, token: str | None = None) -> 
     """Write one window's rows as an immutable shard. Returns the path in repo."""
     path = shard_path(when)
     table = rows_to_table(rows)
-    local = f"/tmp/{when:%Y%m%d-%H%M%S}.parquet"
-    pq.write_table(table, local, compression="zstd")
-    _api(token).upload_file(
-        path_or_fileobj=local,
-        path_in_repo=path,
-        repo_id=REPO_ID,
-        repo_type=REPO_TYPE,
-        commit_message=f"window {when:%Y-%m-%d %H:%M}Z: {len(rows)} rows",
-    )
-    os.remove(local)
+    fd, local = tempfile.mkstemp(suffix=".parquet")
+    os.close(fd)
+    try:
+        pq.write_table(table, local, compression="zstd")
+        _api(token).upload_file(
+            path_or_fileobj=local,
+            path_in_repo=path,
+            repo_id=REPO_ID,
+            repo_type=REPO_TYPE,
+            commit_message=f"window {when:%Y-%m-%d %H:%M}Z: {len(rows)} rows",
+        )
+    finally:
+        os.remove(local)
     logger.info("uploaded %s (%d rows)", path, len(rows))
     return path
 
@@ -184,21 +191,22 @@ def merge_day(day: str, token: str | None = None, dry_run: bool = False) -> dict
             token=token or os.environ.get("HF_TOKEN")), columns=COLUMNS))
 
     merged = pa.concat_tables(tables).cast(SCHEMA).sort_by([("timestamp", "ascending")])
-    local = f"/tmp/{day}.parquet"
-    pq.write_table(merged, local, compression="zstd")
-
     result = {"day": day, "shards": len(shards), "rows": merged.num_rows,
               "target": target, "merged": not dry_run}
-    if dry_run:
-        os.remove(local)
-        return result
 
-    ops = [CommitOperationAdd(path_in_repo=target, path_or_fileobj=local)]
-    ops += [CommitOperationDelete(path_in_repo=s) for s in shards]
-    _api(token).create_commit(
-        repo_id=REPO_ID, repo_type=REPO_TYPE, operations=ops,
-        commit_message=f"compact {day}: {len(shards)} shards -> {merged.num_rows} rows",
-    )
-    os.remove(local)
+    fd, local = tempfile.mkstemp(suffix=".parquet")
+    os.close(fd)
+    try:
+        pq.write_table(merged, local, compression="zstd")
+        if dry_run:
+            return result
+        ops = [CommitOperationAdd(path_in_repo=target, path_or_fileobj=local)]
+        ops += [CommitOperationDelete(path_in_repo=shard) for shard in shards]
+        _api(token).create_commit(
+            repo_id=REPO_ID, repo_type=REPO_TYPE, operations=ops,
+            commit_message=f"compact {day}: {len(shards)} shards -> {merged.num_rows} rows",
+        )
+    finally:
+        os.remove(local)
     logger.info("merged %s: %d shards -> %d rows", day, len(shards), merged.num_rows)
     return result

@@ -143,7 +143,7 @@ def query_latest_positions(db_path: str) -> list[dict]:
             FROM positions
             WHERE id IN (
                 SELECT MAX(id) FROM positions
-                WHERE received_at > datetime('now', '-30 minutes')
+                WHERE received_at > strftime('%Y-%m-%dT%H:%M:%f', 'now', '-30 minutes')
                 GROUP BY mmsi
             )
         """).fetchall()
@@ -175,7 +175,7 @@ def query_stats(db_path: str) -> dict:
         total_records = conn.execute("SELECT COUNT(*) FROM positions").fetchone()[0]
         unique_vessels_24h = conn.execute(
             "SELECT COUNT(DISTINCT mmsi) FROM positions "
-            "WHERE received_at > datetime('now', '-24 hours')"
+            "WHERE received_at > strftime('%Y-%m-%dT%H:%M:%f', 'now', '-24 hours')"
         ).fetchone()[0]
 
         # Transit stats (if analytics tables exist)

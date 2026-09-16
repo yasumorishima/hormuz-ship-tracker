@@ -17,7 +17,7 @@ GitHub Actions (compact.yml, daily)
   → the add and the deletes are one commit
 
 GitHub Actions (publish.yml, every 3 h)
-  → rebuild a throwaway SQLite database from the recent parquet files
+  → rebuild a throwaway SQLite database (positions only) from recent parquet
   → snapshot.py / heatmap.py / stats_report.py, unchanged
   → commit docs/ back to this repository
 ```
@@ -42,9 +42,13 @@ Consequences worth stating plainly:
 
 - Fleet composition, anchored ratio, port and flag breakdowns are unaffected —
   they are counts over vessels present, and the sample keeps them.
-- Gate-crossing transit detection is weaker. A crossing is inferred from
-  consecutive positions on either side of a gate line; with an unobserved gap
-  between windows, some crossings are only bracketed, not traced.
+- Gate-crossing transit detection does not run at all here. Nothing in the
+  three workflows invokes `analytics.py`, and only `positions` is rebuilt, so
+  `transit_events` does not exist on this path — the transit figures in
+  `STATS.md` are zero by construction, not by observation. Even if the engine
+  were run, the sampling would weaken it: a crossing is inferred from
+  consecutive positions either side of a gate line, and the gap between
+  windows is unobserved.
 - Speed and course come from the transponder, not from differencing our own
   positions, so they are unaffected.
 

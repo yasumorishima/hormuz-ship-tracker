@@ -29,7 +29,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: hormuz-compact
+  # Shared with publish.yml: a shard deleted mid-publish fails its download.
+  group: hormuz-hub
   cancel-in-progress: false
 
 jobs:

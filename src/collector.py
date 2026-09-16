@@ -6,6 +6,7 @@ schedule, see ``window_collect.py``. Both share ``ais_parse.StreamParser``.
 """
 
 import asyncio
+import json
 import logging
 import os
 import time
@@ -98,7 +99,7 @@ async def collect():
                         row = parser.feed(raw)
                         if row is not None:
                             batch.append(row)
-                    except (ValueError, KeyError) as e:
+                    except (json.JSONDecodeError, KeyError) as e:
                         logger.warning("Parse error: %s", e)
 
                     # Flush batch periodically

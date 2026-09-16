@@ -132,10 +132,12 @@ class StreamParser:
             self.dropped_on_land += 1
             return None
 
-        # Per-vessel throttle
+        # Per-vessel throttle. `None`, not 0: time.monotonic() counts from
+        # boot, so a 0 sentinel throttles every vessel's first sighting in a
+        # process that starts early in a machine's life.
         now_mono = time.monotonic()
-        prev = self._last_stored.get(mmsi, 0)
-        if now_mono - prev < self.position_interval_sec:
+        prev = self._last_stored.get(mmsi)
+        if prev is not None and now_mono - prev < self.position_interval_sec:
             self.throttled += 1
             return None
         self._last_stored[mmsi] = now_mono
