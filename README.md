@@ -4,6 +4,20 @@ Vessel tracking and maritime intelligence for the Persian Gulf, Strait of Hormuz
 Monitors shipping patterns using AIS data, with automated transit detection, vessel state classification, data quality analysis, and visualization tools.
 Collection, storage and publishing all run on free hosted infrastructure — GitHub Actions and a Hugging Face dataset, no machine of our own. See **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
+> [!IMPORTANT]
+> **Nothing is being collected right now, and it is not the pipeline.**
+> aisstream.io accepts the subscription and then sends no positions for this
+> area. Measured 2026-09-16: three minutes of the **whole world** on the same
+> connection returned **19,261 positions from 12,312 vessels, none of them
+> inside the strait** — the busiest cells were the North Sea (7,543) and the
+> Baltic (1,978). Thirteen minutes subscribed directly to the strait produced
+> two position reports. The feed has no receivers in this water at present.
+>
+> The collector keeps running every fifteen minutes, so data resumes by itself
+> if coverage returns. Everything below the archive figures describes the
+> pipeline, which is live and tested; the images are the last ones the
+> Raspberry Pi produced.
+
 ![Traffic Density Heatmap](docs/heatmap.png)
 
 ### At a Glance — 2026-03 archive
@@ -12,16 +26,18 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 |---:|---:|---:|---|---|---|
 | 43,000+ | 384 | **0** | Dubai / Jebel Ali (196) | Panama (63) | Tanker (81) |
 
-**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 3h, covering the last 48 hours)*. The table above is the 2026-03 collection on the Raspberry Pi, kept as `positions.parquet` in the [dataset](https://huggingface.co/datasets/yasumorishima/hormuz-ais). Transit counts are not computed on the hosted path — see [docs/PIPELINE.md](docs/PIPELINE.md).
+**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(published every 3h when there is anything to publish, covering the last 48 hours)*. The table above is the 2026-03 collection on the Raspberry Pi, kept as `positions.parquet` in the [dataset](https://huggingface.co/datasets/yasumorishima/hormuz-ais). Transit counts are not computed on the hosted path — see [docs/PIPELINE.md](docs/PIPELINE.md).
 
-### Latest Snapshot (auto-updated every 3 hours)
+### Latest Snapshot — the last one collected, 2026-04
+
+Published every 3 hours when there is anything to publish; see the notice above.
 
 ![Latest Snapshot](docs/snapshot_latest.png)
 
-## Key Findings
+## Key Findings — from the 2026-03 archive
 
-- **0 confirmed Strait of Hormuz crossings** — no vessel was detected transiting through the strait gate line
-- **AIS dead zone mid-strait** — terrestrial AIS receivers on shore cannot cover the ~35 nm wide strait center; ships crossing are invisible without satellite AIS
+- **0 confirmed Strait of Hormuz crossings** — no vessel was detected crossing the gate line during that collection. Absence of a detection is not evidence that no crossing happened
+- **Coverage is terrestrial** — shore-based AIS reaches the horizon from the antenna, tens of nautical miles. The strait is about 33 km (21 miles) wide at its narrowest and wider along most of its length; **how much of it this data actually sees has not been measured**. Satellite AIS would answer that and is not free
 - **~17% of AIS data is anomalous** — speed 102.3 kn (protocol "not available" sentinel) and 40-99 kn (receiver glitches) produce false position jumps
 - **Dubai / Jebel Ali dominates traffic** — 196 unique ships detected near the port, with Panama (63), UAE (45), and Marshall Islands (40) as top flag states
 - **Tankers (81) and cargo (67)** are the most common vessel types
@@ -70,7 +86,7 @@ Local Docker only — not part of the hosted pipeline:
 ## Visualization Tools
 
 ### Traffic Density Heatmap (`src/heatmap.py`)
-3-panel layout: full Gulf hexbin + zoomed strait with AIS dead zone + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered. **Auto-updated every 3 hours.**
+3-panel layout: full Gulf hexbin + zoomed strait + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered. **Re-rendered every 3 hours when there is data to render.**
 
 ```bash
 docker exec hormuz-tracker python3 src/heatmap.py --hours 0 --filename heatmap.png

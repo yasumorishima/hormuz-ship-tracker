@@ -2,7 +2,7 @@
 
 Three-panel layout:
   Top-left:  Full Persian Gulf overview (hexbin density)
-  Top-right: Zoomed Strait of Hormuz with dead zone highlight
+  Top-right: Zoomed Strait of Hormuz, mid-strait marked
   Bottom:    Infographic bar — port counts, flag distribution, ship types
 
 Usage:
@@ -340,18 +340,21 @@ def generate_heatmap(db_path=DB_PATH, output_dir=OUTPUT_DIR,
             ax2.text(lon, lat, label, fontsize=size, color=color, fontweight="bold",
                      ha="center", va="center", zorder=5, path_effects=te)
 
-    # Dead zone
+    # Mid-strait. Shore-based AIS reaches the horizon from the antenna, so
+    # the middle of a strait is where a terrestrial network is least likely to
+    # hear anything — but this image has never measured that, and the label
+    # used to assert it as fact.
     dead_zone = mpatches.FancyBboxPatch(
         (56.05, 26.05), 0.55, 0.65, boxstyle="round,pad=0.05",
         facecolor=WARN, alpha=0.08, edgecolor=WARN,
         linewidth=1.5, linestyle="--", zorder=6,
     )
     ax2.add_patch(dead_zone)
-    ax2.text(56.32, 26.82, "AIS DEAD ZONE",
+    ax2.text(56.32, 26.82, "MID-STRAIT",
              fontsize=10, color=WARN, fontweight="bold",
              ha="center", va="bottom", zorder=7,
              path_effects=[pe.withStroke(linewidth=2, foreground=PANEL_BG)])
-    ax2.text(56.32, 26.76, "No coverage mid-strait",
+    ax2.text(56.32, 26.76, "coverage here not measured",
              fontsize=8, color="#cc5555", ha="center", va="top", zorder=7,
              path_effects=[pe.withStroke(linewidth=2, foreground=PANEL_BG)])
 
