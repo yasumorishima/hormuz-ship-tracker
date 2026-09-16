@@ -36,8 +36,9 @@ jobs:
 
       - name: Workflows parse
         run: |
+          pip install --quiet pyyaml   # not in the runner's Python by default
           python - <<'PY'
-          import glob, sys, yaml
+          import glob, yaml
           for path in sorted(glob.glob(".github/workflows/*.yml")):
               doc = yaml.safe_load(open(path))
               assert doc.get("jobs"), path
