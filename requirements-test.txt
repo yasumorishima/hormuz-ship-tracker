@@ -1,7 +1,14 @@
-# tests.yml. The parser and backfill tests need nothing; the window-loop test
-# stands up a local WebSocket server, and the last step parses the workflows.
+# tests.yml. A missing package here is a hard failure, not a skipped test:
+# the runner treats any skip as red, precisely so the suite cannot go green
+# because something was absent.
+
 # The exact version is load-bearing: the one-argument `async def handler(ws)`
 # in tests/test_window_collect.py is the modern asyncio signature. Do not
 # relax this to >=.
 websockets==15.0.1
+
+# tests/test_dataset_card.py reads the card's front matter and round-trips a
+# row through parquet against the schema the archive already uses.
+pyarrow>=16.0
+huggingface_hub>=0.25
 pyyaml>=6.0
