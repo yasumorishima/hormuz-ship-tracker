@@ -1,0 +1,5 @@
+# Windowed collector (.github/workflows/collect.yml)
+websockets==15.0.1
+shapely==2.0.7
+pyarrow>=16.0
+huggingface_hub>=0.25

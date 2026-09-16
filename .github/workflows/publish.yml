@@ -1,0 +1,81 @@
+name: Publish snapshot
+
+# Rebuilds a working database from the Hub dataset, re-renders the snapshot,
+# heatmap and stats, and commits them to docs/. This is also what keeps the
+# repository's push timer alive, so the scheduled workflows here do not get
+# disabled for inactivity.
+
+on:
+  schedule:
+    - cron: '13 */3 * * *'
+  workflow_dispatch:
+    inputs:
+      memo:
+        description: 'この実行の意図'
+        required: false
+        type: string
+      hours:
+        description: 'how far back to load'
+        required: false
+        default: '48'
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hormuz-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AIS_DB_PATH: ${{ github.workspace }}/work/ais.db
+      AIS_OUTPUT_DIR: ${{ github.workspace }}/work
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-publish.txt
+
+      - run: pip install -r requirements-publish.txt
+
+      - name: Rebuild the working database from the Hub
+        env:
+          LOAD_HOURS: ${{ inputs.hours || '48' }}
+        run: |
+          mkdir -p work
+          python src/build_db.py --hours "$LOAD_HOURS" --db "$AIS_DB_PATH"
+
+      - name: Render snapshot, heatmap and stats
+        run: |
+          python src/snapshot.py "$AIS_DB_PATH" "$AIS_OUTPUT_DIR"
+          python src/heatmap.py --db "$AIS_DB_PATH" --output-dir "$AIS_OUTPUT_DIR" \
+            --hours 0 --filename heatmap.png
+          python src/stats_report.py --db "$AIS_DB_PATH" --output docs/STATS.md
+
+      - name: Copy rendered files into docs/
+        run: |
+          cp work/snapshot.png docs/snapshot_latest.png
+          cp work/snapshot_stats.txt docs/snapshot_stats.txt
+          cp work/heatmap.png docs/heatmap.png
+
+      - name: Commit if anything changed
+        run: |
+          git config user.name 'hormuz-bot'
+          git config user.email 'hormuz-bot@users.noreply.github.com'
+          git add docs/snapshot_latest.png docs/snapshot_stats.txt \
+                  docs/heatmap.png docs/STATS.md
+          if git diff --cached --quiet; then
+            echo 'No change to publish'
+            exit 0
+          fi
+          VESSELS=$(grep -oP 'Active vessels.*?: \K[0-9]+' docs/snapshot_stats.txt || echo '?')
+          git commit -m "snapshot: ${VESSELS} vessels at $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

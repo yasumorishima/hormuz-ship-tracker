@@ -1,7 +1,8 @@
 # Strait of Hormuz — Maritime Monitor
 
 Real-time vessel tracking and maritime intelligence for the Persian Gulf, Strait of Hormuz, and Gulf of Oman.
-Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated transit detection, vessel state classification, data quality analysis, and visualization tools.
+Monitors shipping patterns using AIS data, with automated transit detection, vessel state classification, data quality analysis, and visualization tools.
+Collection, storage and publishing all run on free hosted infrastructure — GitHub Actions and a Hugging Face dataset, no machine of our own. See **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
 ![Traffic Density Heatmap](docs/heatmap.png)
 
@@ -11,9 +12,9 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 |---:|---:|---:|---|---|---|
 | 43,000+ | 384 | **0** | Dubai / Jebel Ali (196) | Panama (63) | Tanker (81) |
 
-**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 6h)*
+**[View full statistics →](docs/STATS.md)** — daily breakdown, hourly traffic pattern, top ships, flag states, destinations *(auto-updated every 3h)*
 
-### Latest Snapshot (auto-updated every 6 hours)
+### Latest Snapshot (auto-updated every 3 hours)
 
 ![Latest Snapshot](docs/snapshot_latest.png)
 
@@ -41,10 +42,10 @@ Monitors shipping patterns 24/7 using AIS data on Raspberry Pi 5, with automated
 ## Architecture
 
 ```
-aisstream.io (WebSocket)
+aisstream.io (WebSocket, sampled in 180-sec windows by GitHub Actions)
   → Land Filter (Natural Earth 10m + Shapely)
-  → Batch INSERT (5-sec flush, 2-min per-vessel throttle)
-  → SQLite (positions, transit_events, analytics_state)
+  → Parquet shards on the Hugging Face dataset (record of truth)
+  → SQLite (rebuilt per run: positions, transit_events, analytics_state)
   → Analytics Engine (5-min cycle)
       ├─ Multi-gate transit detection (3 gates)
       ├─ Vessel state classification
@@ -59,13 +60,13 @@ aisstream.io (WebSocket)
       ├─ Heatmap (hexbin, 3-panel infographic)
       ├─ Timelapse GIF (interpolated movement)
       ├─ Transit report (map + table)
-      └─ Auto-snapshot → GitHub (every 6h)
+      └─ Auto-snapshot → GitHub (every 3h, publish.yml)
 ```
 
 ## Visualization Tools
 
 ### Traffic Density Heatmap (`src/heatmap.py`)
-3-panel layout: full Gulf hexbin + zoomed strait with AIS dead zone + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered. **Auto-updated every 6 hours.**
+3-panel layout: full Gulf hexbin + zoomed strait with AIS dead zone + infographic bars (ports, flags, ship types). Anomalous positions pre-filtered. **Auto-updated every 3 hours.**
 
 ```bash
 docker exec hormuz-tracker python3 src/heatmap.py --hours 0 --filename heatmap.png
@@ -163,7 +164,9 @@ docker exec hormuz-tracker python src/migrate.py
 - Leaflet.js + Chart.js + CARTO dark tiles
 - matplotlib + Pillow + NumPy (visualization generators)
 - Shapely + Natural Earth 10m (land filtering)
-- Docker on Raspberry Pi 5
+- GitHub Actions (collection, compaction, publishing) — no self-hosted machine
+- Hugging Face Datasets (parquet, record of truth)
+- Docker (optional, for running the live dashboard locally)
 
 ## Roadmap
 

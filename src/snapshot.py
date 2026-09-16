@@ -5,6 +5,7 @@ plus a text stats summary. Designed to run inside the Docker container.
 """
 
 import json
+import os
 import sqlite3
 import sys
 from collections import Counter
@@ -20,8 +21,8 @@ from shapely.geometry import shape  # noqa: E402
 
 from land_filter import is_on_land  # noqa: E402
 
-DB_PATH = "/app/data/ais.db"
-OUTPUT_DIR = Path("/app/data")
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
+OUTPUT_DIR = Path(os.environ.get("AIS_OUTPUT_DIR", "/app/data"))
 
 # Resolve land_mask.geojson relative to this file
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"

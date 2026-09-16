@@ -1,6 +1,7 @@
 """FastAPI endpoints for the ship tracker + analytics."""
 
 import aiosqlite
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -51,7 +52,7 @@ def classify_anomalies(speed, lat, lon, prev_lat=None, prev_lon=None):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 
 SHIP_TYPE_LABELS = {
     range(20, 30): "WIG",

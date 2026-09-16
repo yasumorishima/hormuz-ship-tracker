@@ -11,6 +11,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sqlite3
 from pathlib import Path
 
@@ -23,8 +24,8 @@ import matplotlib.patches as mpatches  # noqa: E402
 import numpy as np  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 
-DB_PATH = "/app/data/ais.db"
-OUTPUT_DIR = Path("/app/data")
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
+OUTPUT_DIR = Path(os.environ.get("AIS_OUTPUT_DIR", "/app/data"))
 
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 _GEOJSON_PATH = _DATA_DIR / "land_mask.geojson"

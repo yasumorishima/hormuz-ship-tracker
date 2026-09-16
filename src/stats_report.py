@@ -8,11 +8,12 @@ Usage:
 """
 
 import argparse
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 OUTPUT_PATH = "/repo/docs/STATS.md"
 
 SHIP_TYPE_RANGES = {
