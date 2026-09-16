@@ -1,0 +1,6 @@
+# Jobs that only touch parquet and the Hub (compact.yml). No land mask, no
+# plotting: src/columns.py exists so this does not have to install Shapely to
+# know what the columns are called.
+pyarrow>=16.0
+huggingface_hub>=0.25
+pyyaml>=6.0   # src/push_card.py validates the card's front matter

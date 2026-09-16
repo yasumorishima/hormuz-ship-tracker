@@ -19,7 +19,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from huggingface_hub import CommitOperationAdd, CommitOperationDelete, HfApi
 
-from ais_parse import COLUMNS
+from columns import COLUMNS
 from enrich import backfill_static
 
 logger = logging.getLogger(__name__)
