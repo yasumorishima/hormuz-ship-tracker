@@ -150,6 +150,56 @@ class RowShapeTest(unittest.TestCase):
         self.assertEqual(s["distinct_mmsi_seen"], 2)
 
 
+class DiagnosticsTest(unittest.TestCase):
+    """A window that yields nothing has to say why.
+
+    The first live probe received one frame in 180 seconds and reported only
+    that it had received one frame, which is not enough to tell a refused key
+    from an accepted subscription that then went quiet.
+    """
+
+    def setUp(self):
+        _stub.ON_LAND = False
+
+    def test_message_types_are_counted(self):
+        parser = ais_parse.StreamParser(position_interval_sec=0)
+        parser.feed('{"MessageType":"SubscriptionConfirmation","Message":{}}')
+        parser.feed(position())
+        parser.feed(position(mmsi=222222222))
+        got = parser.summary()["message_types"]
+        self.assertEqual(got["SubscriptionConfirmation"], 1)
+        self.assertEqual(got["PositionReport"], 2)
+
+    def test_a_frame_that_is_not_a_position_is_kept_for_reading(self):
+        parser = ais_parse.StreamParser(position_interval_sec=0)
+        parser.feed('{"MessageType":"Error","Message":{"text":"nope"}}')
+        frames = parser.summary()["other_frames"]
+        self.assertEqual(len(frames), 1)
+        self.assertIn("nope", frames[0])
+
+    def test_only_the_first_few_are_kept(self):
+        parser = ais_parse.StreamParser(position_interval_sec=0)
+        for i in range(10):
+            parser.feed('{"MessageType":"Chatter","Message":{"n":%d}}' % i)
+        self.assertEqual(len(parser.summary()["other_frames"]), 3)
+        self.assertEqual(parser.summary()["message_types"]["Chatter"], 10)
+
+    def test_anything_key_shaped_is_redacted_before_it_is_logged(self):
+        """These frames go into a public workflow log."""
+        key = "a" * 40
+        parser = ais_parse.StreamParser(position_interval_sec=0)
+        parser.feed('{"MessageType":"Error","Message":{"echo":"%s"}}' % key)
+        frame = parser.summary()["other_frames"][0]
+        self.assertNotIn(key, frame)
+        self.assertIn("<redacted>", frame)
+
+    def test_short_hex_is_left_alone(self):
+        self.assertEqual(ais_parse.redact("abc123"), "abc123")
+
+    def test_a_frame_is_truncated(self):
+        self.assertEqual(len(ais_parse.redact("z" * 5000)), 300)
+
+
 class TimestampTest(unittest.TestCase):
     def test_aisstream_format(self):
         self.assertEqual(

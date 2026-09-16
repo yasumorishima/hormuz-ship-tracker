@@ -7,6 +7,7 @@ same ``positions`` rows, so the parsing lives here instead of in either caller.
 
 import json
 import logging
+import re
 import time
 from datetime import datetime, timezone
 
@@ -26,6 +27,15 @@ MESSAGE_TYPES = ["PositionReport", "ShipStaticData"]
 
 # Per-vessel throttle: store at most one position per MMSI per this many seconds
 POSITION_INTERVAL_SEC = 120
+
+# Anything that looks like a credential, before a frame reaches a public log.
+# aisstream keys are long hex strings, and a frame we did not expect is
+# exactly the kind of thing that might quote one back at us.
+_SECRETISH = re.compile(r"[0-9a-fA-F]{24,}")
+
+
+def redact(text, limit: int = 300) -> str:
+    return _SECRETISH.sub("<redacted>", str(text))[:limit]
 
 
 def subscribe_message(api_key: str, bbox=None) -> str:
@@ -82,12 +92,19 @@ class StreamParser:
         self.dropped_on_land = 0
         self.throttled = 0
         self.seen_mmsi: set[int] = set()
+        # What the stream actually sent. A window that yields nothing has to
+        # say whether it was refused, or confirmed and then silent, or never
+        # spoken to at all.
+        self.message_types: dict[str, int] = {}
+        self.other_frames: list[str] = []
 
     def feed(self, raw) -> tuple | None:
         """Consume one frame. Returns a row tuple, or None if nothing to store."""
         self.frames += 1
         msg = json.loads(raw)
         msg_type = msg.get("MessageType")
+        key = msg_type or "<no MessageType>"
+        self.message_types[key] = self.message_types.get(key, 0) + 1
 
         if msg_type == "ShipStaticData":
             self.static_reports += 1
@@ -106,6 +123,11 @@ class StreamParser:
             return None
 
         if msg_type != "PositionReport":
+            # Keep the first few verbatim. A SubscriptionConfirmation means
+            # the key was accepted; anything else is the reason nothing came.
+            if len(self.other_frames) < 3:
+                self.other_frames.append(redact(raw))
+                logger.info("unhandled frame: %s", self.other_frames[-1])
             return None
 
         self.position_reports += 1
@@ -183,4 +205,6 @@ class StreamParser:
             "distinct_mmsi_seen": len(self.seen_mmsi),
             "dropped_on_land": self.dropped_on_land,
             "throttled": self.throttled,
+            "message_types": self.message_types,
+            "other_frames": self.other_frames,
         }
