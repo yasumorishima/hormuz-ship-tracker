@@ -45,7 +45,11 @@ jobs:
           # step exists to prevent.
           for case, reason in result.skipped:
               print(f"::error::{case} was skipped: {reason}")
-          sys.exit(1 if (result.skipped or not result.wasSuccessful()) else 0)
+          if result.testsRun == 0:
+              print("::error::no tests were discovered")
+          sys.exit(1 if (result.skipped
+                         or result.testsRun == 0
+                         or not result.wasSuccessful()) else 0)
           PY
 
       - name: Every module compiles

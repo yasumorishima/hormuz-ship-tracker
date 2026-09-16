@@ -27,10 +27,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger("window_collect")
 
-# How long to wait before reconnecting inside a window. It has to be short
-# relative to the window: the old value of 5 s ate the whole remainder of a
-# short window, so a drop meant no reconnect at all.
+# How long to wait before reconnecting inside a window. The first retry has
+# to be short relative to the window — a flat 5 s ate the whole remainder of a
+# short one — but it has to grow, or a rejected key becomes a connection storm
+# against a free service: 180 attempts per window, 96 windows a day.
 RECONNECT_BACKOFF_SEC = 1.0
+RECONNECT_BACKOFF_MAX_SEC = 15.0
+
+# The library's own default is 10 s and is not bounded by anything we set, so
+# a peer that accepts the connection and never answers the handshake would
+# hold a short window past its deadline. Measured: a stalled handshake raises
+# TimeoutError after exactly this long. TimeoutError subclasses OSError, so
+# the existing handler already catches it.
+HANDSHAKE_TIMEOUT_SEC = 10.0
 
 
 async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dict]:
@@ -40,12 +49,16 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
     rows: list[tuple] = []
     deadline = time.monotonic() + seconds
     reconnects = 0
+    connect_errors = 0
     frame_errors = 0
 
     while time.monotonic() < deadline:
         remaining = deadline - time.monotonic()
         try:
-            async with websockets.connect(STREAM_URL) as ws:
+            async with websockets.connect(
+                STREAM_URL,
+                open_timeout=min(HANDSHAKE_TIMEOUT_SEC, max(0.1, remaining)),
+            ) as ws:
                 await ws.send(subscribe_message(api_key))
                 logger.info("connected — %.0fs left in window", remaining)
                 while True:
@@ -66,18 +79,24 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
                     if row is not None:
                         rows.append(row)
         except (websockets.exceptions.WebSocketException, OSError) as e:
-            if time.monotonic() >= deadline:
+            # Counted whether or not there is time to try again, so that an
+            # empty window says which kind of empty it was: never connected,
+            # or connected and silent. TimeoutError from a stalled handshake
+            # arrives here too — it subclasses OSError.
+            connect_errors += 1
+            left = deadline - time.monotonic()
+            if left <= 0:
+                logger.warning("connection ended at the deadline (%s)", e)
                 break
             reconnects += 1
             logger.warning("connection lost (%s) — retry %d", e, reconnects)
-            left = deadline - time.monotonic()
-            if left <= 0:
-                break
-            await asyncio.sleep(min(RECONNECT_BACKOFF_SEC, left))
+            backoff = RECONNECT_BACKOFF_SEC * 2 ** (reconnects - 1)
+            await asyncio.sleep(min(backoff, RECONNECT_BACKOFF_MAX_SEC, left))
 
     summary = parser.summary()
     summary["rows"] = len(rows)
     summary["reconnects"] = reconnects
+    summary["connect_errors"] = connect_errors
     summary["frame_errors"] = frame_errors
     summary["window_sec"] = seconds
     return rows, summary
