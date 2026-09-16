@@ -64,3 +64,86 @@ jobs:
               assert doc.get("jobs"), path
               print("ok", path)
           PY
+
+  publish-smoke:
+    # The rendering half of publish.yml has never run. It needs no secret —
+    # the dataset is public — so it can be exercised against the real archive
+    # on every change instead of being discovered broken at 00:13 UTC.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AIS_DB_PATH: ${{ github.workspace }}/work/ais.db
+      AIS_OUTPUT_DIR: ${{ github.workspace }}/work
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-publish.txt
+
+      - run: pip install -r requirements-publish.txt
+
+      - name: Rebuild from the published archive, unauthenticated
+        run: |
+          mkdir -p work
+          python src/build_db.py --hours 0 --include-archive --db "$AIS_DB_PATH"
+
+      - name: Render exactly what publish.yml renders
+        env:
+          # Deliberately not UTC. A runner is UTC, so a report that formats
+          # naive local time and labels it UTC would look correct here
+          # forever. Under JST a nine-hour skew shows up in the next step.
+          TZ: Asia/Tokyo
+        run: |
+          python src/snapshot.py "$AIS_DB_PATH" "$AIS_OUTPUT_DIR"
+          python src/heatmap.py --db "$AIS_DB_PATH" --output-dir "$AIS_OUTPUT_DIR" \
+            --hours 0 --filename heatmap.png
+          python src/stats_report.py --db "$AIS_DB_PATH" --output work/STATS.md
+
+      - name: The output has to be real, not merely present
+        run: |
+          python - <<'PY'
+          import re, sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          problems = []
+          for name, floor in (("snapshot.png", 50_000), ("heatmap.png", 50_000)):
+              p = Path("work") / name
+              if not p.exists():
+                  problems.append(f"{name} was not written")
+              elif p.stat().st_size < floor:
+                  problems.append(f"{name} is {p.stat().st_size} B, under {floor}")
+
+          stats = Path("work/STATS.md").read_text(encoding="utf-8")
+          for needle in ("Collection period", "Total positions", "Unique vessels"):
+              if needle not in stats:
+                  problems.append(f"STATS.md has no {needle!r}")
+
+          m = re.search(r"Total positions \| ([\d,]+)", stats)
+          if not m:
+              problems.append("STATS.md has no positions count")
+          elif int(m.group(1).replace(",", "")) < 100_000:
+              problems.append(f"only {m.group(1)} positions; the archive has ~175k")
+
+          # The timezone check the runner cannot make on its own.
+          m = re.search(r"Auto-updated: (\d{4}-\d\d-\d\d \d\d:\d\d) UTC", stats)
+          if not m:
+              problems.append("STATS.md has no Auto-updated stamp")
+          else:
+              stamped = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M").replace(
+                  tzinfo=timezone.utc)
+              drift = abs((datetime.now(timezone.utc) - stamped).total_seconds())
+              if drift > 900:
+                  problems.append(
+                      f"the stamp says {m.group(1)} UTC but UTC is "
+                      f"{datetime.now(timezone.utc):%Y-%m-%d %H:%M} "
+                      f"({drift/3600:.1f} h out) — local time labelled UTC")
+
+          for p in problems:
+              print(f"::error::{p}")
+          print("checked:", ", ".join(sorted(x.name for x in Path("work").iterdir())))
+          sys.exit(1 if problems else 0)
+          PY

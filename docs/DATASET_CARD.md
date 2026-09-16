@@ -63,12 +63,14 @@ So:
 
 | split | what it is |
 |---|---|
-| `train` | `positions.parquet` — the continuous Raspberry Pi collection, **176,033 rows**, 6.9 MB. One position per vessel every two minutes, with no windows to have gaps between. The name is historical: it is what the auto-detected split was called before this card existed, and renaming it would break existing callers. |
+| `train` | `positions.parquet` — the continuous Raspberry Pi collection: **175,773 rows**, 6.9 MB, **2026-03-14 to 2026-04-11** (28.2 days), **619 vessels**. One position per vessel every two minutes, with no windows to have gaps between. About **9% of rows are anomalous** on the speed filter described below. The name is historical: it is what the auto-detected split was called before this card existed, and renaming it would break existing callers. |
 | `daily` | `daily/<YYYY-MM-DD>.parquet` — one file per finished UTC day of the sampled era. |
 | `recent` | `raw/<YYYY-MM-DD>/<HHMMSS>.parquet` — one file per collection window for days not yet compacted. Merged into `daily/` once the day is over. |
 
-A second config, `transit_events`, holds gate crossings inferred during the
-Raspberry Pi era. **Nothing appends to it now** — the current pipeline does
+A second config, `transit_events`, holds the 260 gate crossings inferred during
+the Raspberry Pi era. Until this card existed the viewer attributed that file
+to the same split as the positions, which is why its published row count was
+176,033 rather than 175,773. **Nothing appends to it now** — the current pipeline does
 not run the transit detector.
 
 ## Columns

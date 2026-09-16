@@ -2,3 +2,7 @@
 data/*.db
 __pycache__/
 *.pyc
+
+# The scratch directory the hosted pipeline builds into. Nothing in it belongs
+# in the repository; publish.yml copies the few files it wants into docs/.
+work/
