@@ -1,0 +1,46 @@
+name: Tests
+
+# The parser tests stub out land_filter, so they need no third-party packages
+# and run in seconds. The compile check covers the rest of src/.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      memo:
+        description: 'この実行の意図'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Every module compiles
+        run: python -m compileall -q src tests
+
+      - name: Workflows parse
+        run: |
+          pip install --quiet pyyaml   # not in the runner's Python by default
+          python - <<'PY'
+          import glob, yaml
+          for path in sorted(glob.glob(".github/workflows/*.yml")):
+              doc = yaml.safe_load(open(path))
+              assert doc.get("jobs"), path
+              print("ok", path)
+          PY

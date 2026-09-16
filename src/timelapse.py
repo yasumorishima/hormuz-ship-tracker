@@ -10,6 +10,7 @@ Usage:
 import argparse
 import io
 import json
+import os
 import sqlite3
 import sys
 from collections import defaultdict
@@ -26,7 +27,7 @@ from shapely.geometry import shape  # noqa: E402
 
 from land_filter import is_on_land  # noqa: E402
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 OUTPUT_DIR = Path("/app/data")
 
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"

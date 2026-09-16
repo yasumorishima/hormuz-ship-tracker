@@ -5,6 +5,7 @@ plus a text stats summary. Designed to run inside the Docker container.
 """
 
 import json
+import os
 import sqlite3
 import sys
 from collections import Counter
@@ -20,8 +21,8 @@ from shapely.geometry import shape  # noqa: E402
 
 from land_filter import is_on_land  # noqa: E402
 
-DB_PATH = "/app/data/ais.db"
-OUTPUT_DIR = Path("/app/data")
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
+OUTPUT_DIR = Path(os.environ.get("AIS_OUTPUT_DIR", "/app/data"))
 
 # Resolve land_mask.geojson relative to this file
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -142,7 +143,7 @@ def query_latest_positions(db_path: str) -> list[dict]:
             FROM positions
             WHERE id IN (
                 SELECT MAX(id) FROM positions
-                WHERE received_at > datetime('now', '-30 minutes')
+                WHERE received_at > strftime('%Y-%m-%dT%H:%M:%f', 'now', '-30 minutes')
                 GROUP BY mmsi
             )
         """).fetchall()
@@ -174,7 +175,7 @@ def query_stats(db_path: str) -> dict:
         total_records = conn.execute("SELECT COUNT(*) FROM positions").fetchone()[0]
         unique_vessels_24h = conn.execute(
             "SELECT COUNT(DISTINCT mmsi) FROM positions "
-            "WHERE received_at > datetime('now', '-24 hours')"
+            "WHERE received_at > strftime('%Y-%m-%dT%H:%M:%f', 'now', '-24 hours')"
         ).fetchone()[0]
 
         # Transit stats (if analytics tables exist)

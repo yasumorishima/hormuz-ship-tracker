@@ -11,13 +11,14 @@ Core capabilities:
 import asyncio
 import logging
 import math
+import os
 from datetime import datetime, timezone
 
 import aiosqlite
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 
 # ── Virtual gate lines ──
 # Multiple gates to capture traffic patterns at different scales.

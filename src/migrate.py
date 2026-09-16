@@ -7,13 +7,14 @@ Usage (inside Docker container):
     python src/migrate.py
 """
 
+import os
 import sqlite3
 import sys
 
 from country_codes import mmsi_to_flag
 from destinations import normalize_destination
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 
 
 def migrate_timestamps(conn: sqlite3.Connection) -> int:

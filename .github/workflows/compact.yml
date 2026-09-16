@@ -1,0 +1,80 @@
+name: Compact shards
+
+# One small file per collection window is tens of thousands of files a year.
+# Once a day the finished days are merged into one file each and their shards
+# removed in the same commit. Today is never touched — it is still being
+# written into.
+
+on:
+  schedule:
+    - cron: '41 1 * * *'
+  workflow_dispatch:
+    inputs:
+      memo:
+        description: 'この実行の意図'
+        required: false
+        type: string
+      days:
+        description: 'how many finished days back to look at'
+        required: false
+        default: '3'
+        type: string
+      dry_run:
+        description: 'report what would be merged, change nothing'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  # Shared with publish.yml: a shard deleted mid-publish fails its download.
+  group: hormuz-hub
+  cancel-in-progress: false
+
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CONFIGURED: ${{ secrets.HF_TOKEN != '' }}
+    steps:
+      - name: Skip while HF_TOKEN is unset
+        if: env.CONFIGURED != 'true'
+        run: |
+          echo "::warning::HF_TOKEN is not set on this repository, so there is nothing this run can do. See docs/PIPELINE.md."
+
+      - uses: actions/checkout@v4
+        if: env.CONFIGURED == 'true'
+
+      - uses: actions/setup-python@v5
+        if: env.CONFIGURED == 'true'
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-publish.txt
+
+      - if: env.CONFIGURED == 'true'
+        run: pip install -r requirements-publish.txt
+
+      - name: Merge finished days
+        if: env.CONFIGURED == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          DAYS: ${{ inputs.days || '3' }}
+          DRY_RUN_FLAG: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          set -o pipefail
+          python src/compact.py --days "$DAYS" $DRY_RUN_FLAG \
+            | tee "$RUNNER_TEMP/compact.json"
+
+      - name: Summary
+        if: always() && env.CONFIGURED == 'true'
+        run: |
+          {
+            echo '### Compaction'
+            echo '```json'
+            cat "$RUNNER_TEMP/compact.json" 2>/dev/null || echo '(no output)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -8,11 +8,12 @@ Usage:
 """
 
 import argparse
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = "/app/data/ais.db"
+DB_PATH = os.environ.get("AIS_DB_PATH", "/app/data/ais.db")
 OUTPUT_PATH = "/repo/docs/STATS.md"
 
 SHIP_TYPE_RANGES = {
@@ -85,16 +86,23 @@ def generate_stats(db_path=DB_PATH, output_path=OUTPUT_PATH):
     """).fetchall()
     max_hourly = max((h[1] for h in hourly), default=1)
 
-    # ── Transits ──
-    transits_daily = conn.execute("""
-        SELECT DATE(crossed_at) as day, gate_name, direction, COUNT(*) as cnt
-        FROM transit_events
-        GROUP BY day, gate_name, direction ORDER BY day
-    """).fetchall()
-    total_transits = conn.execute("SELECT COUNT(*) FROM transit_events").fetchone()[0]
-    strait_transits = conn.execute(
-        "SELECT COUNT(*) FROM transit_events WHERE gate_name = 'Strait of Hormuz'"
-    ).fetchone()[0]
+    # ── Transits (only present when the analytics engine has run) ──
+    transits_daily = []
+    total_transits = 0
+    strait_transits = 0
+    try:
+        transits_daily = conn.execute("""
+            SELECT DATE(crossed_at) as day, gate_name, direction, COUNT(*) as cnt
+            FROM transit_events
+            GROUP BY day, gate_name, direction ORDER BY day
+        """).fetchall()
+        total_transits = conn.execute(
+            "SELECT COUNT(*) FROM transit_events").fetchone()[0]
+        strait_transits = conn.execute(
+            "SELECT COUNT(*) FROM transit_events WHERE gate_name = 'Strait of Hormuz'"
+        ).fetchone()[0]
+    except sqlite3.OperationalError:
+        pass  # table may not exist yet
 
     # ── Top flags ──
     flags = conn.execute("""
