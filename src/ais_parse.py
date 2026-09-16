@@ -7,6 +7,7 @@ same ``positions`` rows, so the parsing lives here instead of in either caller.
 
 import json
 import logging
+import os
 import re
 import time
 from datetime import datetime, timezone
@@ -20,8 +21,14 @@ logger = logging.getLogger(__name__)
 
 STREAM_URL = "wss://stream.aisstream.io/v0/stream"
 
-# Persian Gulf + Gulf of Oman — full coverage
-BBOX = [[22.0, 48.0], [30.5, 60.0]]
+# Persian Gulf + Gulf of Oman — full coverage.
+#
+# Overridable so a diagnostic run can ask a different question of the stream
+# without a code change: a subscription can be accepted and then deliver
+# nothing, and the only way to tell a wrong box from a quiet feed is to try
+# another box. aisstream's own example writes the corners north-first; this
+# one is south-first, which the Raspberry Pi collected on for months.
+BBOX = json.loads(os.environ.get("AIS_BBOX") or "[[22.0, 48.0], [30.5, 60.0]]")
 
 MESSAGE_TYPES = ["PositionReport", "ShipStaticData"]
 
