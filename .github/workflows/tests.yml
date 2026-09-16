@@ -64,3 +64,130 @@ jobs:
               assert doc.get("jobs"), path
               print("ok", path)
           PY
+
+  publish-smoke:
+    # The rendering half of publish.yml has never run. It needs no secret —
+    # the dataset is public — so it can be exercised against the real archive
+    # on every change instead of being discovered broken at 00:13 UTC.
+    #
+    # It has to take the same branches publish.yml takes. Rendering "all of
+    # time" or an empty 30-minute window is a different code path, and a job
+    # that only proves the empty path works proves nothing.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      AIS_DB_PATH: ${{ github.workspace }}/work/ais.db
+      AIS_OUTPUT_DIR: ${{ github.workspace }}/work
+      LOAD_HOURS: '48'          # the same default publish.yml uses
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-publish.txt
+
+      - run: pip install -r requirements-publish.txt
+
+      - name: Rebuild from the published archive, unauthenticated
+        run: |
+          mkdir -p work
+          python src/build_db.py --hours "$LOAD_HOURS" --include-archive \
+            --db "$AIS_DB_PATH"
+
+      - name: Take the same window publish.yml will take
+        run: |
+          # "Recent" is measured back from this instead of from now, so the
+          # marker, legend and type-count paths actually run over an archive
+          # whose newest row is months old.
+          python - <<'PY' >> "$GITHUB_ENV"
+          import os, sqlite3
+          db = os.environ["AIS_DB_PATH"]
+          newest = sqlite3.connect(db).execute(
+              "SELECT MAX(received_at) FROM positions").fetchone()[0]
+          assert newest, "the archive came back empty"
+          print(f"AIS_WINDOW_ORIGIN={newest}")
+          PY
+
+      - name: Render exactly what publish.yml renders
+        env:
+          # Deliberately not UTC. A runner is UTC, so a report that formats
+          # naive local time and labels it UTC would look correct here
+          # forever. Under JST a nine-hour skew shows up in the next step.
+          TZ: Asia/Tokyo
+        run: |
+          # The timezone check below is worthless if TZ never reached Python,
+          # so fail loudly here rather than quietly passing on a UTC box.
+          python -c "import sys, time; sys.exit(0 if time.localtime().tm_gmtoff == 32400 else 1)" \
+            || { echo '::error::TZ=Asia/Tokyo did not take effect'; exit 1; }
+          python src/snapshot.py "$AIS_DB_PATH" "$AIS_OUTPUT_DIR"
+          python src/heatmap.py --db "$AIS_DB_PATH" --output-dir "$AIS_OUTPUT_DIR" \
+            --hours "$LOAD_HOURS" --filename heatmap.png
+          python src/stats_report.py --db "$AIS_DB_PATH" --output work/STATS.md
+
+      - name: The output has to be real, not merely present
+        run: |
+          python - <<'PY'
+          import re, sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          problems = []
+          work = Path("work")
+
+          for name, floor in (("snapshot.png", 50_000), ("heatmap.png", 50_000)):
+              p = work / name
+              if not p.exists():
+                  problems.append(f"{name} was not written")
+              elif p.stat().st_size < floor:
+                  problems.append(f"{name} is {p.stat().st_size} B, under {floor}")
+
+          # A basemap alone clears the size floor, so the floor cannot tell a
+          # map of the fleet from a map of nothing. This can.
+          summary = work / "snapshot_stats.txt"
+          if not summary.exists():
+              problems.append("snapshot_stats.txt was not written")
+          else:
+              m = re.search(r"Active vessels \(30 min\): (\d+)", summary.read_text())
+              if not m:
+                  problems.append("snapshot_stats.txt has no active-vessel count")
+              elif int(m.group(1)) == 0:
+                  problems.append("the snapshot drew no vessels; the marker, "
+                                  "legend and type-count paths never ran")
+
+          stats_path = work / "STATS.md"
+          if not stats_path.exists():
+              # stats_report exits 0 after printing "No data available."
+              problems.append("STATS.md was not written")
+          else:
+              stats = stats_path.read_text(encoding="utf-8")
+              for needle in ("Collection period", "Total positions", "Unique vessels"):
+                  if needle not in stats:
+                      problems.append(f"STATS.md has no {needle!r}")
+
+              m = re.search(r"Total positions \| ([\d,]+)", stats)
+              if not m:
+                  problems.append("STATS.md has no positions count")
+              elif int(m.group(1).replace(",", "")) < 100_000:
+                  problems.append(f"only {m.group(1)} positions; the archive has ~175k")
+
+              # The timezone check the runner cannot make on its own.
+              m = re.search(r"Auto-updated: (\d{4}-\d\d-\d\d \d\d:\d\d) UTC", stats)
+              if not m:
+                  problems.append("STATS.md has no Auto-updated stamp")
+              else:
+                  stamped = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M").replace(
+                      tzinfo=timezone.utc)
+                  drift = abs((datetime.now(timezone.utc) - stamped).total_seconds())
+                  if drift > 900:
+                      problems.append(
+                          f"the stamp says {m.group(1)} UTC but UTC is "
+                          f"{datetime.now(timezone.utc):%Y-%m-%d %H:%M} "
+                          f"({drift / 3600:.1f} h out) — local time labelled UTC")
+
+          for p in problems:
+              print(f"::error::{p}")
+          print("checked:", ", ".join(sorted(x.name for x in work.iterdir())))
+          sys.exit(1 if problems else 0)
+          PY
