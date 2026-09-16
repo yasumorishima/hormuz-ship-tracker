@@ -24,6 +24,13 @@ GitHub Actions (publish.yml, every 3 h)
 
 Dataset: [yasumorishima/hormuz-ais](https://huggingface.co/datasets/yasumorishima/hormuz-ais)
 
+The map at
+[yasumorishima.github.io/hormuz-ship-tracker](https://yasumorishima.github.io/hormuz-ship-tracker/)
+is not part of this loop. It is a static page on GitHub Pages that reads the
+newest file in the dataset directly from the browser, so it is as fresh as the
+last collection window rather than as fresh as the last publish, and it stays
+up whether or not any of these workflows ran.
+
 ## Why a window instead of a stream
 
 aisstream.io only pushes. There is no endpoint that answers "which vessels are

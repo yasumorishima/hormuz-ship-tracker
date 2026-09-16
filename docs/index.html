@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strait of Hormuz — AIS monitor</title>
+<meta name="description" content="Sampled AIS vessel positions in the Persian Gulf, Strait of Hormuz and Gulf of Oman, read straight from the public Hugging Face dataset.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root {
+    --bg: #0f1419; --panel: #171e26; --line: #2a3642;
+    --ink: #e6edf3; --dim: #93a4b5; --accent: #4aa8ff; --warn: #ffb648;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { padding: 10px 16px; background: var(--panel);
+    border-bottom: 1px solid var(--line); }
+  h1 { margin: 0 0 2px; font-size: 16px; font-weight: 600; letter-spacing: .01em; }
+  h1 span { color: var(--dim); font-weight: 400; }
+  #status { color: var(--dim); }
+  #status b { color: var(--ink); font-weight: 600; }
+  .caveat { margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--warn);
+    background: #241d0f; color: #f0dcbb; font-size: 13px; }
+  a { color: var(--accent); }
+  #map { flex: 1; min-height: 320px; background: #0a1a27; }  /* the sea */
+  footer { padding: 8px 16px; background: var(--panel); border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 12px; }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--panel); color: var(--ink); }
+  .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
+  .leaflet-popup-content dt { color: var(--dim); float: left; clear: left;
+    width: 84px; font-size: 12px; }
+  .leaflet-popup-content dd { margin: 0 0 2px 84px; }
+  .legend { background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px 10px; color: var(--ink); font-size: 12px; line-height: 1.7; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 6px; vertical-align: middle; }
+  @media (max-width: 640px) { h1 { font-size: 15px; } header { padding: 8px 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Strait of Hormuz <span>— AIS monitor</span></h1>
+  <div id="status">Loading positions from the dataset…</div>
+  <div class="caveat" id="caveat">
+    These are <strong>samples, not tracks</strong>. The collector opens the AIS
+    stream for 180&nbsp;seconds about every 15&nbsp;minutes; the gaps between
+    windows are not observed, and shore-based receivers do not cover the middle
+    of the strait. An absent vessel is unknown, not absent.
+    <a href="https://github.com/yasumorishima/hormuz-ship-tracker/blob/master/docs/PIPELINE.md">How this is collected</a>
+  </div>
+</header>
+<div id="map"></div>
+<footer>
+  Data: <a href="https://huggingface.co/datasets/yasumorishima/hormuz-ais">yasumorishima/hormuz-ais</a>,
+  read directly in your browser — nothing is proxied.
+  AIS via <a href="https://aisstream.io/">aisstream.io</a>.
+  Coastline: <a href="https://www.naturalearthdata.com/">Natural Earth</a> 10m, public domain.
+  Map: <a href="https://leafletjs.com/">Leaflet</a>.
+  Code: <a href="https://github.com/yasumorishima/hormuz-ship-tracker">hormuz-ship-tracker</a>.
+  Also here:
+  <a href="https://github.com/yasumorishima/hormuz-ship-tracker/blob/master/docs/STATS.md">statistics</a>,
+  <a href="heatmap.png">heatmap</a>,
+  <a href="snapshot_latest.png">latest snapshot</a>.
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script type="module">
+import { asyncBufferFromUrl, parquetReadObjects }
+  from 'https://cdn.jsdelivr.net/npm/hyparquet@1.31.0/+esm';
+import { compressors }
+  from 'https://cdn.jsdelivr.net/npm/hyparquet-compressors@1.1.1/+esm';
+
+const REPO = 'yasumorishima/hormuz-ais';
+const TREE = `https://huggingface.co/api/datasets/${REPO}/tree/main?recursive=true`;
+const FILE = p => `https://huggingface.co/datasets/${REPO}/resolve/main/${p}`;
+
+// Matches the collector's bounding box (src/ais_parse.py).
+const BBOX = [[22.0, 48.0], [30.5, 60.0]];
+
+// The AIS "not available" sentinel, and the receiver glitches above it. Same
+// filter the rendered snapshots use, so the map and the PNGs agree.
+const isAnomalous = v => v.speed === null || v.speed === undefined || v.speed >= 40;
+
+const TYPES = [
+  { name: 'Tanker',    colour: '#ff6b6b', test: t => t >= 80 && t <= 89 },
+  { name: 'Cargo',     colour: '#4aa8ff', test: t => t >= 70 && t <= 79 },
+  { name: 'Tug / pilot', colour: '#9b7bff', test: t => t >= 50 && t <= 59 },
+  { name: 'Passenger', colour: '#4ade80', test: t => t >= 60 && t <= 69 },
+  { name: 'Fishing',   colour: '#ffd166', test: t => t === 30 },
+  { name: 'Other / unknown', colour: '#8fa3b6', test: () => true },
+];
+const typeOf = t => TYPES.find(x => x.test(Number(t)));
+
+const status = document.getElementById('status');
+const say = html => { status.innerHTML = html; };
+
+const map = L.map('map', { preferCanvas: true, attributionControl: false })
+  .fitBounds(BBOX);
+map.createPane('land');
+map.getPane('land').style.zIndex = 250;
+
+// No tile provider. CARTO's keyless dark tiles now stamp "API KEY REQUIRED"
+// across the map, every alternative worth using wants a key too, and a key is
+// a paid dependency waiting to happen. The coastline is what a vessel map
+// actually needs, and this repository already ships it: the same Natural
+// Earth polygons the rendered snapshots are drawn on. Public domain, 72 kB,
+// served from this site, nothing to expire.
+fetch('land_mask.geojson')
+  .then(r => r.json())
+  .then(gj => L.geoJSON(gj, {
+    pane: 'land',
+    style: { color: '#5b7a99', weight: 1, fillColor: '#222c38', fillOpacity: 1 },
+  }).addTo(map))
+  .catch(e => console.error('land mask did not load', e));
+
+L.rectangle(BBOX, { color: '#4aa8ff', weight: 1, dashArray: '5 5', fill: false })
+  .addTo(map).bindTooltip('Collection area');
+
+/** Newest file worth drawing, and an honest label for it. */
+function chooseSource(entries) {
+  const files = entries.filter(e => e.type === 'file' && e.path.endsWith('.parquet'));
+  const newest = prefix => files
+    .filter(f => f.path.startsWith(prefix))
+    .sort((a, b) => a.path < b.path ? 1 : -1)[0];
+
+  const shard = newest('raw/');
+  if (shard) return { path: shard.path, kind: 'window' };
+  const day = newest('daily/');
+  if (day) return { path: day.path, kind: 'day' };
+  if (files.some(f => f.path === 'positions.parquet')) {
+    return { path: 'positions.parquet', kind: 'archive' };
+  }
+  return null;
+}
+
+/** Latest row per vessel, anomalies dropped. */
+function latestPerVessel(rows) {
+  const seen = new Map();
+  for (const r of rows) {
+    if (r.latitude === null || r.longitude === null) continue;
+    if (isAnomalous(r)) continue;
+    const prev = seen.get(r.mmsi);
+    if (!prev || String(r.timestamp) > String(prev.timestamp)) seen.set(r.mmsi, r);
+  }
+  return [...seen.values()];
+}
+
+const COLUMNS = ['mmsi', 'timestamp', 'latitude', 'longitude', 'speed',
+                 'course', 'ship_name', 'ship_type', 'destination', 'flag'];
+
+function ago(iso) {
+  // `timestamp` is naive UTC; `Z` makes that explicit to Date.
+  const t = Date.parse(String(iso).endsWith('Z') ? iso : iso + 'Z');
+  if (Number.isNaN(t)) return null;
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 90) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 48) return `${hours} h ago`;
+  return `${Math.round(hours / 24)} days ago`;
+}
+
+const KIND = {
+  window: 'the most recent 180-second collection window',
+  day: 'the most recent compacted day',
+  archive: 'the 2026-03 to 2026-04 archive, collected continuously on a Raspberry Pi',
+};
+
+function draw(vessels) {
+  const layer = L.layerGroup().addTo(map);
+  for (const v of vessels) {
+    const t = typeOf(v.ship_type);
+    const speed = v.speed === null || v.speed === undefined
+      ? 'unknown' : `${Number(v.speed).toFixed(1)} kn`;
+    const dl = [
+      ['Type', t.name], ['Speed', speed],
+      ['Course', v.course === null || v.course === undefined
+        ? 'unknown' : `${Math.round(Number(v.course))}°`],
+      ['Destination', v.destination || '—'],
+      ['Flag', v.flag || 'unrecognised prefix'],
+      ['MMSI', v.mmsi], ['Reported', `${v.timestamp} UTC`],
+    ].map(([k, val]) => `<dt>${k}</dt><dd>${String(val)
+      .replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</dd>`).join('');
+    L.circleMarker([v.latitude, v.longitude], {
+      radius: 4, color: t.colour, weight: 1, fillColor: t.colour, fillOpacity: 0.75,
+    }).bindPopup(`<strong>${(v.ship_name || 'Unnamed').replace(/[<>&]/g, '')}</strong><dl>${dl}</dl>`)
+      .addTo(layer);
+  }
+  return layer;
+}
+
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = () => {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = TYPES.map(t =>
+    `<i style="background:${t.colour}"></i>${t.name}`).join('<br>');
+  return div;
+};
+
+async function load() {
+  const listing = await fetch(TREE).then(r => {
+    if (!r.ok) throw new Error(`the dataset listing returned ${r.status}`);
+    return r.json();
+  });
+  const source = chooseSource(listing);
+  if (!source) throw new Error('the dataset holds no parquet files yet');
+
+  say(`Reading <b>${source.path}</b>…`);
+  const file = await asyncBufferFromUrl({ url: FILE(source.path) });
+  const rows = await parquetReadObjects({ file, compressors, columns: COLUMNS });
+  const vessels = latestPerVessel(rows);
+
+  draw(vessels);
+  legend.addTo(map);
+
+  const newest = vessels.reduce(
+    (a, v) => (a === null || String(v.timestamp) > a ? String(v.timestamp) : a), null);
+  const age = newest ? ago(newest) : null;
+  say(`<b>${vessels.length}</b> vessels from ${KIND[source.kind]}`
+    + (age ? `, reported <b>${age}</b>` : '')
+    + ` — <code>${source.path}</code>, read from the dataset in your browser.`
+    + (source.kind === 'archive'
+      ? ' <b>Collection has not started yet</b>, so this is history, not now.' : ''));
+}
+
+load().catch(e => {
+  say(`Could not draw the map: ${e.message}. The data is still there — `
+    + `<a href="https://huggingface.co/datasets/${REPO}">browse the dataset</a>.`);
+  console.error(e);
+});
+</script>
+</body>
+</html>

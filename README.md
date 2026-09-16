@@ -37,6 +37,8 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 - **Situation assessment** — data-driven status: NO TRANSIT / LIMITED / ACTIVE
 - **AIS data quality** — anomaly classification, false transit filtering, known glitch source tracking
 
+> **Live map:** [yasumorishima.github.io/hormuz-ship-tracker](https://yasumorishima.github.io/hormuz-ship-tracker/) — reads the dataset in your browser, no server of ours in the path.
+>
 > **Data:** Published as a public Hugging Face Dataset → [yasumorishima/hormuz-ais](https://huggingface.co/datasets/yasumorishima/hormuz-ais).
 
 ## Architecture
