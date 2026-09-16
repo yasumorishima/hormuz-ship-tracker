@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 import websockets
 
-from ais_parse import STREAM_URL, StreamParser, subscribe_message
+from ais_parse import BBOX, STREAM_URL, StreamParser, subscribe_message
 
 logging.basicConfig(
     level=logging.INFO,
@@ -94,12 +94,40 @@ async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dic
             await asyncio.sleep(min(backoff, RECONNECT_BACKOFF_MAX_SEC, left))
 
     summary = parser.summary()
+    summary["where"] = coverage(parser.coords)
     summary["rows"] = len(rows)
     summary["reconnects"] = reconnects
     summary["connect_errors"] = connect_errors
     summary["frame_errors"] = frame_errors
     summary["window_sec"] = seconds
     return rows, summary
+
+
+def coverage(coords) -> dict:
+    """Where the feed actually had something to say.
+
+    A count alone cannot distinguish "the box is not being applied" from
+    "there are no receivers left in this water", and those call for opposite
+    responses.
+    """
+    if not coords:
+        return {}
+    (lat0, lon0), (lat1, lon1) = BBOX
+    inside = sum(1 for la, lo in coords
+                 if min(lat0, lat1) <= la <= max(lat0, lat1)
+                 and min(lon0, lon1) <= lo <= max(lon0, lon1))
+    cells: dict[str, int] = {}
+    for la, lo in coords:
+        cell = f"{int(la // 10) * 10}N/{int(lo // 10) * 10}E"
+        cells[cell] = cells.get(cell, 0) + 1
+    busiest = sorted(cells.items(), key=lambda kv: -kv[1])[:8]
+    return {
+        "positions": len(coords),
+        "inside_the_collection_box": inside,
+        "lat_range": [min(c[0] for c in coords), max(c[0] for c in coords)],
+        "lon_range": [min(c[1] for c in coords), max(c[1] for c in coords)],
+        "busiest_10deg_cells": dict(busiest),
+    }
 
 
 def main() -> int:

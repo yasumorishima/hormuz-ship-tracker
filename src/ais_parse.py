@@ -104,6 +104,9 @@ class StreamParser:
         # spoken to at all.
         self.message_types: dict[str, int] = {}
         self.other_frames: list[str] = []
+        # Every coordinate seen, before the land filter, so a diagnostic run
+        # can say *where* the feed has coverage rather than only how much.
+        self.coords: list[tuple] = []
 
     def feed(self, raw) -> tuple | None:
         """Consume one frame. Returns a row tuple, or None if nothing to store."""
@@ -150,6 +153,8 @@ class StreamParser:
             return None
 
         self.seen_mmsi.add(mmsi)
+        if len(self.coords) < 20000:
+            self.coords.append((lat, lon))
 
         if is_on_land(lat, lon):
             self.dropped_on_land += 1
