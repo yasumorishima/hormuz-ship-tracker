@@ -132,7 +132,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for wf in collect.yml compact.yml publish.yml; do
+          for wf in collect.yml compact.yml publish.yml sar-collect.yml; do
             gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable" \
               && echo "enabled $wf" || echo "::warning::could not re-assert $wf"
           done

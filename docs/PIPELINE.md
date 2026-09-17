@@ -135,3 +135,140 @@ AISSTREAM_API_KEY=... HF_TOKEN=... python src/window_collect.py --seconds 180
 The probe output reports frames, position reports, distinct MMSI seen, how many
 were dropped on land and how many rows were kept. That is the measurement that
 decides how long a window needs to be.
+
+## Radar, because the feed has no receivers here
+
+AIS only exists if somebody is listening. Sentinel-1 does not need anybody to
+be listening, and it does not need the ship to be transmitting either. Since
+the feed went quiet, `sar-collect.yml` runs a second collector beside the
+first one; the AIS jobs are untouched and resume on their own if coverage
+comes back.
+
+### What the satellites actually give
+
+Measured 2026-09-17 by asking Planetary Computer's STAC endpoint:
+
+| | |
+|---|---|
+| Scenes covering the centre of the strait (56.40E, 26.55N) | 8 in 16 days — about one every two days |
+| Scenes touching the AOI box | 43 in 30 days |
+| Satellites | S1C and S1D, ascending near 14:16Z and descending near 02:10Z |
+| Latency | the 2026-09-16T02:06Z scene was queryable the same day |
+| Account needed | none: both the STAC search and the SAS signing answer anonymously |
+| One scene | a 702 MB COG, 1024-pixel tiles, ZSTD, six overview levels, byte ranges served |
+
+So a 200 km box can be cut out of a 702 MB file in well under a minute, and
+the whole thing is free and keyless. What it is not is continuous: a scene is
+an instant, two days apart, not a track.
+
+### Where the work actually is
+
+Not in finding bright things on dark water — in not calling the land a ship.
+Measured on S1C 2026-09-16T02:06Z over the strait, same threshold throughout,
+counting objects of vessel size and shape standing in what each mask calls
+water:
+
+| Coastline | vessels at 200 m | at 500 m | at 1,000 m |
+|---|---:|---:|---:|
+| Natural Earth 10m (what the AIS side uses) | 612 | 508 | 357 |
+| GSHHG full resolution | 407 | 199 | 155 |
+| **ESA WorldCover 10m** | **233** | **176** | **125** |
+
+The totals understate it, because most of that water is nowhere near a coast.
+Split by distance to land, at a 200 m buffer, in vessels per 100 km²:
+
+| km from land | Natural Earth | WorldCover |
+|---|---:|---:|
+| 0.2 – 1 | 162.6 | **36.4** |
+| 1 – 2 | 56.2 | **4.9** |
+| 2 – 5 | 19.3 | **4.0** |
+| 5 – 10 | 6.5 | **4.9** |
+| beyond 10 | 0.97 | 0.84 |
+
+In open water the two masks agree, as they must — out there the coastline is
+not in the picture at all. Everything the second mask buys is within a few
+kilometres of the shore, and there it is a factor of three to four. Natural
+Earth generalises the Musandam fjords away, so their water reads as land and
+the ridges beside them read as sea; `data/land_mask.geojson` puts the head of
+Khawr ash Shamm on dry ground, and `tests/test_sar_mask.py` asserts that it
+does, because that is the reason a second mask file exists at all.
+
+WorldCover was chosen over GSHHG on two counts: it leaves fewer objects
+standing at every buffer, and it is CC BY 4.0, where GSHHG is LGPL v3 —
+`LICENSE.TXT` and `COPYING.LESSERv3` inside the distribution, not public
+domain as is often repeated. `data/sar_water_mask.tif` is 435 KiB: one bit per
+10 m pixel over the AOI, built by `scripts/generate_sar_water_mask.py`.
+
+Terrain is not corrected in a GRD product, so a 1,800 m ridge is laid over
+toward the sensor by roughly h/tan(theta) — one to three kilometres. Rather
+than dilate the coast by three kilometres and lose every anchorage, each
+detection carries `dist_to_land_km` and the decision is left open. Measured on
+the same scene, detections run at 36 per 100 km² within a kilometre of the
+shore against 0.8 beyond ten, so the near-shore band is mixed and says so.
+
+### Does it find ships? Measured against AIS
+
+The strait cannot answer that question: the published archive holds 143 rows
+inside the SAR box in 28 days, because the terrestrial feed barely reached it.
+Off Dubai it holds 140,555, so that is where the detector was checked, on two
+scenes from inside the archive's own window.
+
+| Scene | AIS vessels in scored water | found within 300 m |
+|---|---:|---:|
+| S1C 2026-03-18T02:14:46Z (descending) | 16 | **16** |
+| S1C 2026-03-15T14:24:00Z (ascending) | 8 | **8** |
+
+Positions are dead-reckoned from the nearest report within two minutes. The
+denominator is the vessels the detector was allowed to see: eight of the 24
+in the first scene were berthed inside the coast buffer. `K_SIGMA` was chosen
+on these numbers — 8 and 10 both give 24 of 24, 12 loses one, and 10 returns
+a sixth fewer candidates than 8, so 10 it is.
+
+Two things this does **not** measure. It says nothing about precision: the
+archive is a sample of transmitting vessels, not a census, so an unmatched
+detection is not a false alarm — it may be a buoy, a rig, or a ship with its
+transponder off, which is the interesting case. And it was measured off Dubai,
+not in the strait.
+
+### What gets stored
+
+Two tables, keyed by scene, under the detector's version:
+
+```
+sar/det/v1/<scene_id>.parquet      one row per candidate
+sar/scenes/v1/<scene_id>.parquet   one row for the scene
+```
+
+There is no ledger of what has been processed: a scene is done when its scene
+row exists. A ledger can disagree with the files; this cannot. The scene row
+is written even when nothing was found, so "no vessels" and "never looked"
+stay different — the absence that made the AIS side's transit count silently
+zero.
+
+Every candidate keeps what it was measured on — `bg_median_dn`, `bg_mad_dn`,
+`snr`, `area_px`, `length_m`, `dist_to_land_km` — and the ones that failed the
+shape test are kept too, with `is_vessel` false and a `reject_reason`. A
+looser detector can then be run over the table instead of over 700 MB scenes,
+and the version in the path means the new answers sit beside the old ones
+rather than on top of them.
+
+### Catching up
+
+`sar-collect.yml` looks back 72 hours and takes at most four scenes, against
+about 1.4 scenes a day reaching the AOI. That absorbs a missed firing or two.
+It does not absorb a long outage: a scene older than the window is never
+picked up on its own, because the ledger is the set of files that exist and
+nothing hunts for gaps. After several days down, run it by hand with a longer
+`hours` — the scenes already done are skipped, so the only cost is the search.
+
+### Running it by hand
+
+```bash
+pip install -r requirements-sar.txt
+
+# what would be processed, without writing to the Hub
+python src/sar_collect.py --hours 72 --dry-run
+
+# one real scene, no credentials, asserting what was measured
+python scripts/sar_smoke.py
+```
