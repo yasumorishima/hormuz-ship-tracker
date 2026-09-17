@@ -66,7 +66,8 @@ def main(argv=None) -> int:
                 len(todo))
 
     summary = {"window_hours": args.hours, "scenes_found": len(scenes),
-               "scenes_processed": 0, "dry_run": args.dry_run, "rows": []}
+               "scenes_processed": 0, "dry_run": args.dry_run,
+               "rows": [], "failed": []}
     if not todo:
         # Not an error: the satellites pass every couple of days, so most runs
         # legitimately have nothing to do.
@@ -76,7 +77,18 @@ def main(argv=None) -> int:
     land = sar_scene.load_land_mask()
     for scene in todo:
         logger.info("processing %s (%s)", scene["scene_id"], scene["acq_time"])
-        row = process(scene, land, dry_run=args.dry_run)
+        try:
+            row = process(scene, land, dry_run=args.dry_run)
+        except Exception as exc:                      # noqa: BLE001
+            # Carry on to the next scene rather than ending the run. `todo` is
+            # newest first, so a scene that can never be read would otherwise
+            # sit at the head of the queue and block everything behind it for
+            # as long as it stays inside the window. Nothing is written for it,
+            # so it is retried rather than recorded as done.
+            logger.error("%s failed: %s", scene["scene_id"], exc)
+            summary["failed"].append({"scene_id": scene["scene_id"],
+                                      "error": f"{type(exc).__name__}: {exc}"})
+            continue
         summary["rows"].append({k: row[k] for k in (
             "scene_id", "acq_time", "orbit_state", "aoi_covered_frac",
             "scored_water_km2", "sea_median_dn", "n_candidates", "n_vessels",
@@ -84,7 +96,10 @@ def main(argv=None) -> int:
         summary["scenes_processed"] += 1
 
     print(json.dumps(summary, indent=2, default=str))
-    return 0
+    # Red when anything failed, even if other scenes went through: a run that
+    # silently drops one scene a day is how a gap gets old enough to fall out
+    # of the window for good.
+    return 1 if summary["failed"] else 0
 
 
 if __name__ == "__main__":

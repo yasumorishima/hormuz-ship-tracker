@@ -3,8 +3,8 @@
 The file exists because the mask the AIS side uses is too coarse for imagery:
 Natural Earth 10m generalises the Musandam fjords away, so their water reads
 as land and the ridges beside them read as sea. Measured on one scene, within
-a kilometre of the shore, that difference is 128 vessel-sized objects per
-100 km² against 40. The point at the head of Khawr ash Shamm below is where the
+a kilometre of the shore, that difference is 163 vessel-sized objects per
+100 km² against 36. The point at the head of Khawr ash Shamm below is where the
 two masks disagree, and it is asserted in both directions so that swapping the
 file back would be caught.
 """
@@ -22,11 +22,22 @@ import sar_scene  # noqa: E402
 from sar_columns import AOI_EAST, AOI_NORTH, AOI_SOUTH, AOI_WEST  # noqa: E402
 
 # lon, lat. Each was read off the mask before being written down here.
+#
+# The first group is deep inside its own kind: those points say the mask is
+# the right mask. The second group sits 250 to 450 m from the coastline, and
+# those are the ones that say it is in the right place — a mask shifted by a
+# kilometre keeps every deep point correct and moves every edge point across.
 LAND = [("Musandam ridge", 56.28, 26.18), ("Qeshm island", 55.85, 26.85),
         ("Hormuz island", 56.46, 27.06), ("Larak island", 56.36, 26.87),
-        ("Khasab town", 56.24, 26.20), ("Bandar Abbas shore", 56.28, 27.18)]
+        ("Khasab town", 56.24, 26.20), ("Bandar Abbas shore", 56.28, 27.18),
+        # 389 m and 255 m inside their own coasts
+        ("north of Hormuz island", 56.4525, 27.1947),
+        ("west Musandam shore", 56.3911, 25.9057)]
 WATER = [("strait centre", 56.40, 26.55), ("inbound lane", 56.55, 26.62),
-         ("Gulf of Oman", 57.20, 25.80)]
+         ("Gulf of Oman", 57.20, 25.80),
+         # 410 m and 292 m off their nearest land
+         ("off the Musandam coast", 56.3315, 26.2837),
+         ("inshore of Ras al Khaimah", 56.3157, 25.7591)]
 # Water, about 130 m from the rock on either side, inside a fjord.
 FJORD = ("Khawr ash Shamm", 56.35, 26.20)
 

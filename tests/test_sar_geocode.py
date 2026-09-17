@@ -16,6 +16,8 @@ import unittest
 import numpy as np
 import rasterio
 from rasterio.control import GroundControlPoint
+from rasterio.enums import Resampling
+from rasterio.vrt import WarpedVRT
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -96,6 +98,33 @@ class ReadPlacesTargetsCorrectly(unittest.TestCase):
         sea = image[image > 0]
         self.assertGreater(image.max(), 10 * float(np.median(sea)),
                            "no contrast survived the warp")
+
+    def test_only_the_overlap_is_read(self):
+        """A scene is 700 MB; the AOI is a corner of it.
+
+        Nothing else here fails if the window is dropped and the whole warped
+        scene is read instead — the numbers come out the same, only slowly and
+        at a hundred times the bytes. So the window is asserted on its own.
+        """
+        _synthetic_scene(self.path)
+        # An AOI a twentieth of the scene across, inside it.
+        sar_scene.AOI_WEST, sar_scene.AOI_EAST = 10.10, 10.12
+        sar_scene.AOI_NORTH, sar_scene.AOI_SOUTH = 40.30, 40.28
+        with rasterio.open(self.path) as src:
+            gcps, gcp_crs = src.gcps
+            with WarpedVRT(src, src_crs=gcp_crs, crs="EPSG:4326",
+                           resampling=Resampling.average) as vrt:
+                window = sar_scene.aoi_window(vrt, sar_scene.aoi_bounds())
+                self.assertIsNotNone(window)
+                share = (window.width * window.height) / (vrt.width * vrt.height)
+                self.assertLess(share, 0.05,
+                                f"the window is {share:.1%} of the scene; "
+                                f"the read is not being cut down")
+                for value in (window.col_off, window.row_off,
+                              window.width, window.height):
+                    self.assertEqual(value, int(value),
+                                     "a fractional window and the transform "
+                                     "built from it will disagree")
 
     def test_a_scene_that_misses_the_aoi_reads_as_empty(self):
         _synthetic_scene(self.path)

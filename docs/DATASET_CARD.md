@@ -56,10 +56,10 @@ newer. The collector still runs every fifteen minutes, so `raw/` fills by
 itself if coverage returns. This is also the likeliest reason the archive
 stops on 2026-04-11.
 
-Since 2026-09-17 the same water is watched a second way, with radar — see
-**Radar detections** below. Radar needs nobody to be listening and the ship
-does not have to be transmitting, so the two are not the same measurement and
-are kept in separate files.
+The same water is now watched a second way, with radar — see **Radar
+detections** below. Radar needs nobody to be listening and the ship does not
+have to be transmitting, so the two are not the same measurement and are kept
+in separate files.
 
 ## Read this before using it: the rows are a sample, not a track
 
@@ -176,6 +176,13 @@ sar/det/v1/<scene_id>.parquet      one row per candidate
 sar/scenes/v1/<scene_id>.parquet   one row for the scene, written even when
                                    nothing was found
 ```
+
+These are **not** in the `configs` above, so the dataset viewer and a plain
+`load_dataset` will not show them; read them by path with `hf_hub_download`
+or a glob. Keeping them out of the AIS configs is deliberate — they are a
+different measurement with a different schema — and they are listed here
+rather than advertised as a split so that nothing claims to hold rows before
+a scene has been processed.
 
 They are deliberately **not** joined to the AIS rows and carry no `mmsi`: a
 radar return is a bright object, not an identity. Matching the two by time and

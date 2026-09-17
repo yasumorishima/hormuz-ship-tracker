@@ -39,14 +39,17 @@ BOUNDS = (56.0, 26.2, 56.8, 26.9)
 # the code; the width is for a different GDAL's resampling, not for a
 # different sea. Measured on 2026-09-17 with rasterio 1.4:
 #   covered 0.611, sea median 49.0 DN, scored water 3,539 km2,
-#   84 candidates of which 43 vessels, longest 526.0 m.
+#   49 candidates of which 29 vessels and 20 too small, longest 425.2 m.
 BANDS = {
     "aoi_covered_frac": (0.50, 0.75),
     "sea_median_dn": (25.0, 100.0),
     "scored_water_km2": (3000.0, 4600.0),
     "candidates": (20, 2000),
     "vessels": (10, 400),
+    # Only the lower bound of this one can break: a vessel is a vessel by
+    # virtue of being under MAX_LENGTH_M, so the upper is structural.
     "longest_m": (100.0, 600.0),
+    "rejected": (1, 2000),
 }
 
 
@@ -93,6 +96,11 @@ def measure():
         "median_dist_to_land_km": round(
             float(np.median([r["dist_to_land_km"] for r in ships])), 2) if ships else None,
         "longest_m": round(max((r["length_m"] for r in ships), default=0.0), 1),
+        # Candidates that failed the shape test and were kept anyway. The
+        # design says a later, looser detector should be able to run from the
+        # table; that is only true while the rejects are in it. Measured 20
+        # on this scene, all of them too small.
+        "rejected": len(rows) - len(ships),
     }
 
 
@@ -115,14 +123,14 @@ def main(argv=None) -> int:
     if got["detections_on_masked_land"]:
         problems.append(f"{got['detections_on_masked_land']} detections sit on "
                         f"pixels the mask calls land")
-    # Measured 125 against 43 on this scene: the coarse outline leaves nearly
-    # three times as many objects standing. If that gap closes, either the
+    # Measured 112 against 29 on this scene: the coarse outline leaves nearly
+    # four times as many objects standing. If that gap closes, either the
     # shipped mask stopped resolving the fjords or the two files became the
     # same, and in both cases the second file has stopped earning its place.
     if got["vessels_with_the_ais_mask"] < 1.3 * got["vessels"]:
         problems.append(
             f"the AIS mask gives {got['vessels_with_the_ais_mask']} vessels "
-            f"against {got['vessels']} (measured 125 against 43); the two masks "
+            f"against {got['vessels']} (measured 112 against 29); the two masks "
             f"are no longer meaningfully different here")
 
     for problem in problems:

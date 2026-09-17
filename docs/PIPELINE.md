@@ -170,20 +170,20 @@ water:
 
 | Coastline | vessels at 200 m | at 500 m | at 1,000 m |
 |---|---:|---:|---:|
-| Natural Earth 10m (what the AIS side uses) | 774 | 711 | 554 |
-| GSHHG full resolution | 606 | 456 | 365 |
-| **ESA WorldCover 10m** | **447** | **424** | **335** |
+| Natural Earth 10m (what the AIS side uses) | 612 | 508 | 357 |
+| GSHHG full resolution | 407 | 199 | 155 |
+| **ESA WorldCover 10m** | **233** | **176** | **125** |
 
 The totals understate it, because most of that water is nowhere near a coast.
 Split by distance to land, at a 200 m buffer, in vessels per 100 km²:
 
 | km from land | Natural Earth | WorldCover |
 |---|---:|---:|
-| 0.2 – 1 | 128.3 | **40.0** |
-| 1 – 2 | 54.2 | **12.4** |
-| 2 – 5 | 32.1 | **7.5** |
-| 5 – 10 | 9.2 | **6.4** |
-| beyond 10 | 3.77 | 3.91 |
+| 0.2 – 1 | 162.6 | **36.4** |
+| 1 – 2 | 56.2 | **4.9** |
+| 2 – 5 | 19.3 | **4.0** |
+| 5 – 10 | 6.5 | **4.9** |
+| beyond 10 | 0.97 | 0.84 |
 
 In open water the two masks agree, as they must — out there the coastline is
 not in the picture at all. Everything the second mask buys is within a few
@@ -196,15 +196,15 @@ does, because that is the reason a second mask file exists at all.
 WorldCover was chosen over GSHHG on two counts: it leaves fewer objects
 standing at every buffer, and it is CC BY 4.0, where GSHHG is LGPL v3 —
 `LICENSE.TXT` and `COPYING.LESSERv3` inside the distribution, not public
-domain as is often repeated. `data/sar_water_mask.tif` is 417 KB: one bit per
+domain as is often repeated. `data/sar_water_mask.tif` is 435 KiB: one bit per
 10 m pixel over the AOI, built by `scripts/generate_sar_water_mask.py`.
 
 Terrain is not corrected in a GRD product, so a 1,800 m ridge is laid over
 toward the sensor by roughly h/tan(theta) — one to three kilometres. Rather
 than dilate the coast by three kilometres and lose every anchorage, each
 detection carries `dist_to_land_km` and the decision is left open. Measured on
-the same scene, detections run at 40 per 100 km² within a kilometre of the
-shore against 3.9 beyond ten, so the near-shore band is mixed and says so.
+the same scene, detections run at 36 per 100 km² within a kilometre of the
+shore against 0.8 beyond ten, so the near-shore band is mixed and says so.
 
 ### Does it find ships? Measured against AIS
 
@@ -251,6 +251,15 @@ shape test are kept too, with `is_vessel` false and a `reject_reason`. A
 looser detector can then be run over the table instead of over 700 MB scenes,
 and the version in the path means the new answers sit beside the old ones
 rather than on top of them.
+
+### Catching up
+
+`sar-collect.yml` looks back 72 hours and takes at most four scenes, against
+about 1.4 scenes a day reaching the AOI. That absorbs a missed firing or two.
+It does not absorb a long outage: a scene older than the window is never
+picked up on its own, because the ledger is the set of files that exist and
+nothing hunts for gaps. After several days down, run it by hand with a longer
+`hours` — the scenes already done are skipped, so the only cost is the search.
 
 ### Running it by hand
 

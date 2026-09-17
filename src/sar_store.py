@@ -29,6 +29,9 @@ from sar_columns import (DETECTION_COLUMNS, DETECTOR_VERSION, SCENE_COLUMNS)
 
 logger = logging.getLogger(__name__)
 
+# The same dataset the AIS side writes to; src/hf_store.py has its own copy of
+# this default and the two have to stay equal. They are kept separate so that a
+# job which only merges parquet does not have to import the raster stack.
 REPO_ID = os.environ.get("HF_DATASET_REPO", "yasumorishima/hormuz-ais")
 REPO_TYPE = "dataset"
 
@@ -39,6 +42,7 @@ DETECTION_SCHEMA = pa.schema([
     ("grid_row", pa.int32()), ("grid_col", pa.int32()),
     ("dist_to_land_km", pa.float32()),
     ("area_px", pa.int32()), ("length_m", pa.float32()), ("width_m", pa.float32()),
+    ("orientation_deg", pa.float32()),
     ("peak_dn", pa.float32()), ("mean_dn", pa.float32()),
     ("bg_median_dn", pa.float32()), ("bg_mad_dn", pa.float32()), ("snr", pa.float32()),
     ("is_vessel", pa.bool_()), ("reject_reason", pa.string()),
@@ -91,9 +95,18 @@ def list_files(token: str | None = None) -> list[str]:
 
 
 def _table(rows: list[dict], schema: pa.Schema) -> pa.Table:
+    """Column-orient the rows, refusing to invent any of them.
+
+    `row.get(name)` would turn a field the detector stopped producing into a
+    column of nulls that reads as "measured, and empty". A KeyError here is
+    the difference between a bug and a dataset.
+    """
     names = [f.name for f in schema]
-    cols = {name: [row.get(name) for row in rows] for name in names}
-    return pa.table(cols, schema=schema)
+    missing = {name for row in rows for name in names if name not in row}
+    if missing:
+        raise KeyError(f"rows are missing {sorted(missing)}")
+    return pa.table({name: [row[name] for row in rows] for name in names},
+                    schema=schema)
 
 
 def scene_row(scene: dict, stats: dict, covered: float, runtime_s: float,

@@ -120,13 +120,24 @@ def sign(href: str, timeout: int = 30) -> str:
     return _get_json(SIGN_URL + href, timeout=timeout)["href"]
 
 
-def _aoi_window(vrt, bounds) -> Window | None:
-    """The part of the warped scene that overlaps the AOI, or None."""
+def aoi_window(vrt, bounds) -> Window | None:
+    """The part of the warped scene that overlaps the AOI, or None.
+
+    Rounded to whole pixels here rather than left to `read`, so that the
+    transform built from it describes the pixels that were actually read.
+    Reading a fractional window and then placing it with the unrounded
+    transform puts everything half a pixel out: measured at 13 to 18 m on a
+    synthetic scene, which no assertion with a two-pixel tolerance would see.
+    """
     want = from_bounds(*bounds, transform=vrt.transform)
     try:
-        return want.intersection(Window(0, 0, vrt.width, vrt.height))
+        overlap = want.intersection(Window(0, 0, vrt.width, vrt.height))
     except WindowError:
         return None
+    col_off, row_off = int(np.floor(overlap.col_off)), int(np.floor(overlap.row_off))
+    return Window(col_off, row_off,
+                  int(np.ceil(overlap.col_off + overlap.width)) - col_off,
+                  int(np.ceil(overlap.row_off + overlap.height)) - row_off)
 
 
 def read_aoi(source: str, bounds=None, res: float | None = None
@@ -159,7 +170,7 @@ def read_aoi(source: str, bounds=None, res: float | None = None
         if gcps:
             kwargs["src_crs"] = gcp_crs
         with WarpedVRT(src, **kwargs) as vrt:
-            window = _aoi_window(vrt, bounds)
+            window = aoi_window(vrt, bounds)
             if window is None or window.width < 1 or window.height < 1:
                 logger.info("scene does not reach the AOI")
                 return dst, 0.0

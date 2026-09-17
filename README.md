@@ -14,8 +14,8 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 > feed has no receivers in this water at present.
 >
 > The AIS collector keeps running every fifteen minutes, so it resumes by
-> itself if coverage returns. **Since 2026-09-17 a second collector watches the
-> same water with radar**, which needs nobody to be listening and nothing to be
+> itself if coverage returns. **A second collector now watches the same water
+> with radar**, which needs nobody to be listening and nothing to be
 > transmitting — see [Radar](#radar-when-nobody-is-listening) below. The images
 > in this section are the last ones the Raspberry Pi produced from AIS.
 
@@ -56,8 +56,8 @@ ship with its transponder off, and this data cannot tell them apart.
 
 The hard part is not finding bright things on dark water; it is not calling
 the land a ship. Ten kilometres out, the coarse coastline the AIS side uses
-and a 10 m one agree exactly — 3.77 against 3.91 detections per 100 km². Within
-a kilometre of the shore they do not: **128 against 40**. That file, the
+and a 10 m one agree — 0.97 against 0.84 detections per 100 km². Within a
+kilometre of the shore they do not: **163 against 36**. That file, the
 detector, what is stored and what is not claimed are all in
 **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 

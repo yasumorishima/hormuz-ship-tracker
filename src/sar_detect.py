@@ -8,11 +8,11 @@ land a ship.
 Three things decide that, in order of how much they matter (measured on
 S1C 2026-09-16T02:06Z over the strait, with the same threshold throughout):
 
-  * the coastline. Ten kilometres from land the two available outlines agree
-    to within 4%, because out there neither is in the picture. Within a
-    kilometre of the shore, Natural Earth 10m leaves 128 vessel-sized objects
-    per 100 km² standing on the ridges of the Musandam fjords where ESA
-    WorldCover 10m leaves 40. It is not a tuning parameter.
+  * the coastline. Ten kilometres from land the two available outlines agree,
+    because out there neither is in the picture. Within a kilometre of the
+    shore, Natural Earth 10m leaves 163 vessel-sized objects per 100 km²
+    standing on the ridges of the Musandam fjords where ESA WorldCover 10m
+    leaves 36. It is not a tuning parameter.
   * a margin off the coast. Terrain is not corrected in a GRD product, so a
     1,800 m ridge is laid over toward the sensor by roughly h/tan(theta).
     Detections are kept with their distance to land rather than thrown away,
@@ -37,9 +37,10 @@ BLOCK = 256
 MIN_BLOCK_FILL = 0.10          # a block with less water than this is borrowed
 
 # A detection has to stand this many robust deviations over its background.
-# Calibrated against AIS: see tests and docs/PIPELINE.md.
-K_SIGMA = 8.0
-MIN_AREA_PX = 3                # 1,200 m^2 at 20 m
+# Calibrated against AIS: 8 and 10 both find 24 of 24, 12 loses one, and 10
+# leaves a sixth fewer candidates than 8. See docs/PIPELINE.md.
+K_SIGMA = 10.0
+MIN_AREA_PX = 3                # about 1,330 m^2 on this grid
 MAX_LENGTH_M = 600.0           # longer than any ship afloat
 COAST_BUFFER_M = 200.0         # below this the mask's own error dominates
 
@@ -62,7 +63,10 @@ def _block_stat(image: np.ndarray, valid: np.ndarray, block: int = BLOCK
         for bx in range(nx):
             xs = slice(bx * block, min((bx + 1) * block, w))
             cell = image[ys, xs][valid[ys, xs]]
-            if cell.size < MIN_BLOCK_FILL * block * block:
+            # Against the block's own area, not a full one: the last row and
+            # column of blocks are narrower, and measuring them against 256 x
+            # 256 would send every edge block off to borrow a neighbour's.
+            if cell.size < MIN_BLOCK_FILL * (ys.stop - ys.start) * (xs.stop - xs.start):
                 continue
             m = float(np.median(cell))
             med[by, bx] = m
@@ -86,16 +90,25 @@ def _fill_and_zoom(coarse: np.ndarray, shape: tuple[int, int],
 
 def background(image: np.ndarray, valid: np.ndarray
                ) -> tuple[np.ndarray, np.ndarray]:
-    """Per-pixel background level and robust spread, as float32 arrays."""
+    """Per-pixel background level and median absolute deviation.
+
+    The MAD is returned as measured. The floor that keeps the threshold
+    finite belongs where the threshold is formed, not here: a stored
+    `bg_mad_dn` that had silently been raised to the floor would not be the
+    measurement the table promises.
+    """
     med, mad = _block_stat(image, valid)
-    bg = _fill_and_zoom(med, image.shape)
-    # 1.4826 puts the MAD on the same footing as a standard deviation for a
-    # normal distribution. Sea clutter is not normal, so K_SIGMA is calibrated
-    # against AIS rather than read off a table; the scaling only keeps the
-    # number in a familiar range.
-    sd = _fill_and_zoom(mad, image.shape) * 1.4826
-    np.maximum(sd, 1.0, out=sd)
-    return bg, sd
+    return _fill_and_zoom(med, image.shape), _fill_and_zoom(mad, image.shape)
+
+
+def spread(mad: np.ndarray) -> np.ndarray:
+    """The MAD on the footing of a standard deviation, floored away from zero.
+
+    1.4826 is the normal-distribution conversion. Sea clutter is not normal,
+    so K_SIGMA is calibrated against AIS rather than read off a table; the
+    scaling only keeps the number in a familiar range.
+    """
+    return np.maximum(mad * 1.4826, 1.0)
 
 
 def shape_of(mask_piece: np.ndarray, pixel_m: tuple[float, float]
@@ -103,25 +116,38 @@ def shape_of(mask_piece: np.ndarray, pixel_m: tuple[float, float]
     """Length, width and orientation of one blob, from its second moments.
 
     A bounding box would call a 300 m ship lying diagonally a 420 m one, and
-    ship length is the field most likely to be compared against something
-    else later, so it is worth the moments. The two axes are scaled to metres
-    before the covariance, because the grid's cells are not square.
+    length is the field most likely to be compared against something else, so
+    it is worth the moments.
+
+    The inversion is the one for a rectangle, not an ellipse. A run of n
+    pixels has variance (n^2 - 1) / 12, so n = sqrt(12 v + 1); the ellipse
+    form (4 sqrt(v)) reports a hull 18-22% longer than it is, measured on
+    known rectangles from 300 m to 900 m. Ships are closer to rectangles than
+    to ellipses, and 20% is more than the difference between ship classes.
+
+    The moments are taken in pixels and converted afterwards along the axis
+    that was found, because the grid's cells are not square: a 300 m hull lying
+    east-west covers a different number of pixels than the same hull lying
+    north-south.
     """
     row_m, col_m = pixel_m
     ys, xs = np.nonzero(mask_piece)
     if ys.size < 2:
         return max(row_m, col_m), min(row_m, col_m), 0.0
-    coords = np.stack([(ys - ys.mean()) * row_m,
-                       (xs - xs.mean()) * col_m]).astype(np.float64)
+    coords = np.stack([ys - ys.mean(), xs - xs.mean()]).astype(np.float64)
     cov = coords @ coords.T / coords.shape[1]
     vals, vecs = np.linalg.eigh(cov)
     vals = np.clip(vals, 0.0, None)
-    # 2 sqrt(lambda) is the half-axis of the equivalent uniform ellipse; twice
-    # that spans it. Add one cell so a single-pixel blob is one pixel long.
-    length = 4.0 * np.sqrt(vals[1]) + max(row_m, col_m)
-    width = 4.0 * np.sqrt(vals[0]) + min(row_m, col_m)
+
+    def extent(variance, vector):
+        pixels = np.sqrt(12.0 * variance + 1.0)
+        metres_per_pixel = np.hypot(vector[0] * row_m, vector[1] * col_m)
+        return float(pixels * metres_per_pixel)
+
+    length = extent(vals[1], vecs[:, 1])
+    width = extent(vals[0], vecs[:, 0])
     angle = float(np.degrees(np.arctan2(vecs[1, 1], vecs[0, 1])))
-    return float(length), float(width), angle
+    return length, width, angle
 
 
 def detect(image: np.ndarray, land: np.ndarray, transform,
@@ -138,14 +164,21 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
     row_m, col_m = pixel_m
     cell_km2 = row_m * col_m / 1e6
     valid = image > 0
-    dist_m = ndimage.distance_transform_edt(~land, sampling=(row_m, col_m))
+    if land.any():
+        dist_m = ndimage.distance_transform_edt(~land, sampling=(row_m, col_m))
+    else:
+        # distance_transform_edt on an all-True input does not return infinity,
+        # it returns the distance to the corner of the array. Nothing would
+        # look wrong; every row would just carry a made-up dist_to_land_km.
+        dist_m = np.full(image.shape, np.inf, dtype=np.float32)
     water = valid & (dist_m > coast_buffer_m)
     if not water.any():
         return [], {"scored_water_km2": 0.0, "sea_median_dn": float("nan"),
                     "n_candidates": 0, "n_vessels": 0}
 
     img = image.astype(np.float32)
-    bg, sd = background(img, water)
+    bg, mad = background(img, water)
+    sd = spread(mad)
     lab, _ = ndimage.label((img > bg + k_sigma * sd) & water)
 
     rows = []
@@ -165,6 +198,7 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
         lon, lat = transform * (cx + 0.5, cy + 0.5)
         values = img[sl][piece]
         row_bg = float(bg[sl][piece].mean())
+        row_mad = float(mad[sl][piece].mean())
         row_sd = float(sd[sl][piece].mean())
         reason = ""
         if area < MIN_AREA_PX:
@@ -177,7 +211,8 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
             "dist_to_land_km": float(dist_m[row_i, col_i] / 1000.0),
             "area_px": area, "length_m": length, "width_m": width,
             "peak_dn": float(values.max()), "mean_dn": float(values.mean()),
-            "bg_median_dn": row_bg, "bg_mad_dn": row_sd / 1.4826,
+            "bg_median_dn": row_bg, "bg_mad_dn": row_mad,
+            "orientation_deg": angle,
             "snr": float((values.max() - row_bg) / row_sd),
             "is_vessel": reason == "", "reject_reason": reason,
         })

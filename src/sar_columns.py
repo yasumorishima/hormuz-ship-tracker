@@ -34,8 +34,8 @@ DETECTION_COLUMNS = [
     "latitude", "longitude", "grid_row", "grid_col", "dist_to_land_km",
     # what was measured there, so a later detector can re-decide without
     # fetching the 700 MB scene again
-    "area_px", "length_m", "width_m", "peak_dn", "mean_dn",
-    "bg_median_dn", "bg_mad_dn", "snr",
+    "area_px", "length_m", "width_m", "orientation_deg",
+    "peak_dn", "mean_dn", "bg_median_dn", "bg_mad_dn", "snr",
     # how it was decided
     "is_vessel", "reject_reason", "detector_version", "aoi_version",
 ]
