@@ -49,10 +49,17 @@ inside the strait**; the busiest cells were the North Sea (7,543) and the
 Baltic (1,978). Thirteen minutes subscribed directly to the strait produced
 two position reports. **The feed has no receivers in this water at present.**
 
-So the splits below hold what the Raspberry Pi collected and nothing newer.
-The collector still runs every fifteen minutes, so `raw/` fills by itself if
-coverage returns. This is also the likeliest reason the archive stops on
-2026-04-11.
+Measured again 2026-09-17: 9,547 vessels worldwide, none inside the strait.
+
+So the AIS splits below hold what the Raspberry Pi collected and nothing
+newer. The collector still runs every fifteen minutes, so `raw/` fills by
+itself if coverage returns. This is also the likeliest reason the archive
+stops on 2026-04-11.
+
+Since 2026-09-17 the same water is watched a second way, with radar — see
+**Radar detections** below. Radar needs nobody to be listening and the ship
+does not have to be transmitting, so the two are not the same measurement and
+are kept in separate files.
 
 ## Read this before using it: the rows are a sample, not a track
 
@@ -157,6 +164,39 @@ import pandas as pd
 df = pd.read_parquet("hf://datasets/yasumorishima/hormuz-ais/positions.parquet")
 ```
 
+## Radar detections
+
+Sentinel-1 covers the centre of the strait about once every two days. Each
+scene is cut down to the strait, bright compact objects are picked out against
+a local background, and the result is written as two tables under the
+detector's version:
+
+```
+sar/det/v1/<scene_id>.parquet      one row per candidate
+sar/scenes/v1/<scene_id>.parquet   one row for the scene, written even when
+                                   nothing was found
+```
+
+They are deliberately **not** joined to the AIS rows and carry no `mmsi`: a
+radar return is a bright object, not an identity. Matching the two by time and
+position is a piece of analysis, not a fact in the data.
+
+What the detections are worth, measured against this dataset's own AIS: on two
+scenes off Dubai — the one patch of water where the archive is dense — 23 of
+the 23 vessels AIS placed in scored water were found within 300 m. That is
+recall and nothing else. The archive samples transmitting vessels, so a
+detection with no AIS beside it is **not** a false alarm; it may be a buoy, a
+rig, or a ship with its transponder off. Each row keeps what it was measured
+on (`bg_median_dn`, `bg_mad_dn`, `snr`, `area_px`, `length_m`,
+`dist_to_land_km`) and the candidates that failed the shape test are kept too,
+with `is_vessel` false and a `reject_reason`, so the judgement can be redone
+without the imagery.
+
+Detections within a kilometre of the shore are mixed: terrain is not corrected
+in these products, so a ridge is laid over toward the satellite by a kilometre
+or more. `dist_to_land_km` is on every row precisely so that this can be
+filtered rather than hidden.
+
 ## Provenance and terms
 
 Positions are AIS broadcasts, received through aisstream.io's free WebSocket
@@ -167,3 +207,9 @@ domain).
 
 AIS is self-reported. Vessels can and do transmit wrong names, wrong
 destinations, wrong dimensions, and can switch their transponder off.
+
+The radar tables are derived from **modified Copernicus Sentinel data (2026)**,
+processed through Microsoft Planetary Computer. The water mask used to build
+them is **ESA WorldCover 10m v200 (2021), CC BY 4.0** — © ESA WorldCover
+project 2021 / Contains modified Copernicus Sentinel data (2021) processed by
+ESA WorldCover consortium.
