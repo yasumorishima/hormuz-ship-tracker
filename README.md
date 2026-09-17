@@ -5,18 +5,19 @@ Monitors shipping patterns using AIS data, with automated transit detection, ves
 Collection, storage and publishing all run on free hosted infrastructure — GitHub Actions and a Hugging Face dataset, no machine of our own. See **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
 > [!IMPORTANT]
-> **Nothing is being collected right now, and it is not the pipeline.**
+> **No AIS is being collected right now, and it is not the pipeline.**
 > aisstream.io accepts the subscription and then sends no positions for this
 > area. Measured 2026-09-16: three minutes of the **whole world** on the same
-> connection returned **19,261 positions from 12,312 vessels, none of them
-> inside the strait** — the busiest cells were the North Sea (7,543) and the
-> Baltic (1,978). Thirteen minutes subscribed directly to the strait produced
-> two position reports. The feed has no receivers in this water at present.
+> connection returned 19,261 positions from 12,312 vessels, **none inside the
+> strait**. Measured again 2026-09-17: 9,547 vessels, **none inside the
+> strait**. Both times the traffic was in the North Sea and the Baltic. The
+> feed has no receivers in this water at present.
 >
-> The collector keeps running every fifteen minutes, so data resumes by itself
-> if coverage returns. Everything below the archive figures describes the
-> pipeline, which is live and tested; the images are the last ones the
-> Raspberry Pi produced.
+> The AIS collector keeps running every fifteen minutes, so it resumes by
+> itself if coverage returns. **Since 2026-09-17 a second collector watches the
+> same water with radar**, which needs nobody to be listening and nothing to be
+> transmitting — see [Radar](#radar-when-nobody-is-listening) below. The images
+> in this section are the last ones the Raspberry Pi produced from AIS.
 
 ![Traffic Density Heatmap](docs/heatmap.png)
 
@@ -33,6 +34,31 @@ Collection, storage and publishing all run on free hosted infrastructure — Git
 Published every 3 hours when there is anything to publish; see the notice above.
 
 ![Latest Snapshot](docs/snapshot_latest.png)
+
+## Radar, when nobody is listening
+
+AIS is a broadcast: no receiver nearby, no data. Sentinel-1 is a radar
+satellite, so it sees a steel hull on dark water whether or not the ship is
+transmitting — including the ships that would rather not be seen, which in
+this strait is not a hypothetical.
+
+Measured 2026-09-17: **eight scenes covered the centre of the strait in
+sixteen days**, about one every two days, from two satellites; the imagery is
+free, needs no account, and the newest scene was available the same day. A 200
+km box is cut out of each 702 MB file by byte range, and vessel-sized bright
+objects are picked out against a local background.
+
+Checked against AIS itself, on two scenes from inside this repository's own
+archive and in the one patch of water where that archive is dense: **23 of the
+23 vessels AIS placed in scored water were found**, all within 300 m. That
+measures recall only — an unmatched radar detection may be a buoy, a rig, or a
+ship with its transponder off, and this data cannot tell them apart.
+
+The hard part is not finding bright things on dark water; it is not calling
+the land a ship. On one scene the coastline the AIS side uses leaves **533**
+vessel-sized objects standing on the ridges of the Musandam fjords, where a
+10 m coastline leaves **30**. That file, the detector, what is stored and what
+is not claimed are all in **[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
 ## Key Findings — from the 2026-03 archive
 

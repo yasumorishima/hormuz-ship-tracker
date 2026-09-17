@@ -191,3 +191,30 @@ jobs:
           print("checked:", ", ".join(sorted(x.name for x in work.iterdir())))
           sys.exit(1 if problems else 0)
           PY
+
+  sar-smoke:
+    # The SAR unit tests build their own scenes, so they cannot notice if
+    # Planetary Computer changes what it serves, if a scene's georeferencing
+    # moves, or if the shipped water mask stops lining up with the imagery.
+    # The imagery is public and needs no account, so one real scene can be
+    # run on every change instead of being found broken at 04:41 UTC.
+    #
+    # It asserts what was measured rather than that something was produced:
+    # the sea's level, how much water was scored, how many vessels came out,
+    # that none of them sit on masked land, and that the coarse AIS outline
+    # still leaves nearly twice as many objects standing as the fine one.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-sar.txt
+
+      - run: pip install -r requirements-sar.txt
+
+      - name: Detect vessels in one real Sentinel-1 scene
+        run: python scripts/sar_smoke.py
