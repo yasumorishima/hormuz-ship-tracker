@@ -6,9 +6,9 @@ Why a second mask, when data/land_mask.geojson already exists: that one is
 Natural Earth 10m simplified to about 100 m, which is fine for deciding
 whether an AIS report came from a building, and not fine for imagery. It
 generalises the Musandam fjords away, so their water reads as land and the
-ridges beside them read as sea. Measured on one Sentinel-1 scene with one
-threshold, 500 m off the coast: 533 vessel-sized objects standing on the rocks
-with that outline, 30 with this one.
+ridges beside them read as sea. Measured on one Sentinel-1 scene, within a
+kilometre of the shore: 128 vessel-sized objects per 100 km² with that
+outline, 40 with this one. Ten kilometres out the two agree.
 
 Source: ESA WorldCover v200 (2021), 10 m, CC BY 4.0, read anonymously from
 Planetary Computer. Class 80 is permanent water; class 0 is nodata. Nodata is

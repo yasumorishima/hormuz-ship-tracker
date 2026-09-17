@@ -17,6 +17,7 @@ Two consequences drive the code below:
 
 import json
 import logging
+import math
 import time
 import urllib.request
 from pathlib import Path
@@ -244,3 +245,23 @@ def read_scene(href: str, bounds=None, res: float | None = None,
             if attempt < attempts:
                 time.sleep(pause)
     raise RuntimeError(f"could not read the scene after {attempts} attempts") from last
+
+
+def pixel_metres(bounds=None, res: float | None = None) -> tuple[float, float]:
+    """Ground size of one grid cell, as (north-south, east-west) in metres.
+
+    The grid is in degrees, so its cells are not square on the ground: at the
+    middle of this AOI a 0.0002 degree step is 22.2 m of latitude and 19.9 m
+    of longitude. Using one number for both would overstate east-west
+    distances by about 12%, which moves the coast buffer, the length that
+    rejects a candidate, and the water area every rate is divided by.
+
+    The longitude scale is taken at the middle latitude of the box. Across
+    this AOI that is good to 0.7%; a projected grid would be exact and would
+    cost the fixed, comparable pixel indices stored with every detection.
+    """
+    west, south, east, north = bounds or aoi_bounds()
+    res = res or AOI_RES_DEG
+    metre_per_degree = 111_320.0
+    middle = math.radians((south + north) / 2.0)
+    return res * metre_per_degree, res * metre_per_degree * math.cos(middle)

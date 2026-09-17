@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import sar_detect  # noqa: E402
 
-RES_M = 20.0
+PIXEL_M = (22.2, 19.9)   # a degree grid's cells are not square
 SHAPE = (1200, 1200)
 LOOKS = 4          # GRD is multi-looked; intensity is roughly Gamma(L)
 TRANSFORM = Affine(0.0002, 0.0, 55.0, 0.0, -0.0002, 26.0)
@@ -54,7 +54,7 @@ def scene_with_targets(seed=20260917):
 def run(image, land=None, **kwargs):
     if land is None:
         land = np.zeros(SHAPE, dtype=bool)
-    return sar_detect.detect(image, land, TRANSFORM, RES_M, **kwargs)
+    return sar_detect.detect(image, land, TRANSFORM, PIXEL_M, **kwargs)
 
 
 def near(rows, row, col, tol=3):
@@ -69,7 +69,10 @@ class DetectorFindsShipsAndNotSea(unittest.TestCase):
     def test_every_planted_target_is_found(self):
         """Recall is what a global background costs: measured 6/6 against 3/6."""
         rows, _ = run(self.image, coast_buffer_m=0.0)
-        found = [t for t in self.truth if near(rows, *t)]
+        # Accepted ones only: a target found and then rejected on shape is not
+        # found, and counting the rejects would hide exactly that.
+        accepted = [r for r in rows if r["is_vessel"]]
+        found = [t for t in self.truth if near(accepted, *t)]
         self.assertEqual(len(found), len(self.truth),
                          f"missed {set(self.truth) - set(found)}")
 
@@ -109,7 +112,7 @@ class DetectorFindsShipsAndNotSea(unittest.TestCase):
         inside = [r for r in rows if 100 <= r["grid_row"] < 400 and 400 <= r["grid_col"] < 700]
         self.assertEqual(inside, [], "detections were reported on masked land")
         self.assertLess(stats["scored_water_km2"],
-                        SHAPE[0] * SHAPE[1] * RES_M * RES_M / 1e6)
+                        SHAPE[0] * SHAPE[1] * PIXEL_M[0] * PIXEL_M[1] / 1e6)
 
     def test_rejects_are_kept_with_a_reason(self):
         """A table that only holds what passed cannot be re-judged later."""
@@ -136,7 +139,7 @@ class DetectorFindsShipsAndNotSea(unittest.TestCase):
         rows, stats = run(image, coast_buffer_m=0.0)
         self.assertEqual([r for r in rows if r["grid_col"] < 600], [])
         self.assertAlmostEqual(stats["scored_water_km2"],
-                               SHAPE[0] * 600 * RES_M * RES_M / 1e6, delta=1.0)
+                               SHAPE[0] * 600 * PIXEL_M[0] * PIXEL_M[1] / 1e6, delta=1.0)
 
 
 if __name__ == "__main__":

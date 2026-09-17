@@ -18,18 +18,13 @@ from datetime import datetime, timedelta, timezone
 import sar_detect
 import sar_scene
 import sar_store
-from sar_columns import AOI_RES_DEG, MASK_SOURCE
+from sar_columns import MASK_SOURCE
 
 logger = logging.getLogger("sar_collect")
 
 # Under this there is not enough of the AOI in the scene to be worth the
 # arithmetic, but it is still recorded so it is not fetched again.
 MIN_COVERED = 0.02
-
-
-def metres_per_pixel() -> float:
-    """The AOI grid is in degrees; the detector wants metres."""
-    return AOI_RES_DEG * 111_320.0
 
 
 def process(scene: dict, land, dry_run: bool = False, token: str | None = None) -> dict:
@@ -41,7 +36,7 @@ def process(scene: dict, land, dry_run: bool = False, token: str | None = None) 
         detections = []
     else:
         detections, stats = sar_detect.detect(image, land, sar_scene.aoi_grid()[0],
-                                              metres_per_pixel())
+                                              sar_scene.pixel_metres())
         row = sar_store.scene_row(scene, stats, covered, time.monotonic() - started,
                                   status="ok", mask_source=MASK_SOURCE)
         detections = sar_store.decorate(detections, scene)

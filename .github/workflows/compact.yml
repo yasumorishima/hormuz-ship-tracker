@@ -47,6 +47,11 @@ jobs:
 
       - uses: actions/checkout@v4
         if: env.CONFIGURED == 'true'
+        with:
+          # Nothing here pushes, and the job installs third-party packages
+          # afterwards; leaving the token in .git/config would put it within
+          # reach of install-time code for no benefit.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         if: env.CONFIGURED == 'true'

@@ -182,8 +182,8 @@ radar return is a bright object, not an identity. Matching the two by time and
 position is a piece of analysis, not a fact in the data.
 
 What the detections are worth, measured against this dataset's own AIS: on two
-scenes off Dubai — the one patch of water where the archive is dense — 23 of
-the 23 vessels AIS placed in scored water were found within 300 m. That is
+scenes off Dubai — the one patch of water where the archive is dense — 24 of
+the 24 vessels AIS placed in scored water were found within 300 m. That is
 recall and nothing else. The archive samples transmitting vessels, so a
 detection with no AIS beside it is **not** a false alarm; it may be a buoy, a
 rig, or a ship with its transponder off. Each row keeps what it was measured

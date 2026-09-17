@@ -25,6 +25,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes, and the job installs third-party packages
+          # afterwards; leaving the token in .git/config would put it within
+          # reach of install-time code for no benefit.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -81,6 +86,11 @@ jobs:
       LOAD_HOURS: '48'          # the same default publish.yml uses
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes, and the job installs third-party packages
+          # afterwards; leaving the token in .git/config would put it within
+          # reach of install-time code for no benefit.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -207,6 +217,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes, and the job installs third-party packages
+          # afterwards; leaving the token in .git/config would put it within
+          # reach of install-time code for no benefit.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:

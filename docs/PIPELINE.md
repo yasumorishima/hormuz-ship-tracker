@@ -168,18 +168,30 @@ Measured on S1C 2026-09-16T02:06Z over the strait, same threshold throughout,
 counting objects of vessel size and shape standing in what each mask calls
 water:
 
-| Coastline | 200 m off the coast | 500 m | 1,000 m |
+| Coastline | vessels at 200 m | at 500 m | at 1,000 m |
 |---|---:|---:|---:|
-| Natural Earth 10m (what the AIS side uses) | 698 | 533 | 292 |
-| GSHHG full resolution | 122 | 39 | 30 |
-| **ESA WorldCover 10m** | **45** | **30** | **22** |
+| Natural Earth 10m (what the AIS side uses) | 774 | 711 | 554 |
+| GSHHG full resolution | 606 | 456 | 365 |
+| **ESA WorldCover 10m** | **447** | **424** | **335** |
 
-The fraction of "sea" brighter than 270 DN falls from 0.21% to 0.0084% between
-the first row and the last. Natural Earth generalises the Musandam fjords
-away, so their water reads as land and the ridges beside them read as sea;
-`data/land_mask.geojson` puts the head of Khawr ash Shamm on dry ground, and
-`tests/test_sar_mask.py` asserts that it does, because that is the reason a
-second mask file exists at all.
+The totals understate it, because most of that water is nowhere near a coast.
+Split by distance to land, at a 200 m buffer, in vessels per 100 km²:
+
+| km from land | Natural Earth | WorldCover |
+|---|---:|---:|
+| 0.2 – 1 | 128.3 | **40.0** |
+| 1 – 2 | 54.2 | **12.4** |
+| 2 – 5 | 32.1 | **7.5** |
+| 5 – 10 | 9.2 | **6.4** |
+| beyond 10 | 3.77 | 3.91 |
+
+In open water the two masks agree, as they must — out there the coastline is
+not in the picture at all. Everything the second mask buys is within a few
+kilometres of the shore, and there it is a factor of three to four. Natural
+Earth generalises the Musandam fjords away, so their water reads as land and
+the ridges beside them read as sea; `data/land_mask.geojson` puts the head of
+Khawr ash Shamm on dry ground, and `tests/test_sar_mask.py` asserts that it
+does, because that is the reason a second mask file exists at all.
 
 WorldCover was chosen over GSHHG on two counts: it leaves fewer objects
 standing at every buffer, and it is CC BY 4.0, where GSHHG is LGPL v3 —
@@ -191,9 +203,8 @@ Terrain is not corrected in a GRD product, so a 1,800 m ridge is laid over
 toward the sensor by roughly h/tan(theta) — one to three kilometres. Rather
 than dilate the coast by three kilometres and lose every anchorage, each
 detection carries `dist_to_land_km` and the decision is left open. Measured on
-the same scene, detections run at 7.8 per 100 km² within a kilometre of the
-shore against 0.31 to 0.45 further out, so the near-shore band is mixed and
-says so.
+the same scene, detections run at 40 per 100 km² within a kilometre of the
+shore against 3.9 beyond ten, so the near-shore band is mixed and says so.
 
 ### Does it find ships? Measured against AIS
 
@@ -204,14 +215,14 @@ scenes from inside the archive's own window.
 
 | Scene | AIS vessels in scored water | found within 300 m |
 |---|---:|---:|
-| S1C 2026-03-18T02:14:46Z (descending) | 15 | **15** |
+| S1C 2026-03-18T02:14:46Z (descending) | 16 | **16** |
 | S1C 2026-03-15T14:24:00Z (ascending) | 8 | **8** |
 
 Positions are dead-reckoned from the nearest report within two minutes. The
-denominator is the vessels the detector was allowed to see: nine of the 24 in
-the first scene were berthed inside the coast buffer. `K_SIGMA` was chosen on
-these numbers — 6, 8 and 10 all give 23 of 23, and 10 returns a third fewer
-candidates than 6, so 10 it is.
+denominator is the vessels the detector was allowed to see: eight of the 24
+in the first scene were berthed inside the coast buffer. `K_SIGMA` was chosen
+on these numbers — 8 and 10 both give 24 of 24, 12 loses one, and 10 returns
+a sixth fewer candidates than 8, so 10 it is.
 
 Two things this does **not** measure. It says nothing about precision: the
 archive is a sample of transmitting vessels, not a census, so an unmatched

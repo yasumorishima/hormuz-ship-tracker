@@ -61,6 +61,11 @@ jobs:
           echo "::warning::HF_TOKEN is not set on this repository, so there is nowhere to write. See docs/PIPELINE.md."
 
       - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes, and the job installs third-party packages
+          # afterwards; leaving the token in .git/config would put it within
+          # reach of install-time code for no benefit.
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:

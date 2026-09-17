@@ -49,16 +49,17 @@ km box is cut out of each 702 MB file by byte range, and vessel-sized bright
 objects are picked out against a local background.
 
 Checked against AIS itself, on two scenes from inside this repository's own
-archive and in the one patch of water where that archive is dense: **23 of the
-23 vessels AIS placed in scored water were found**, all within 300 m. That
+archive and in the one patch of water where that archive is dense: **24 of the
+24 vessels AIS placed in scored water were found**, all within 300 m. That
 measures recall only — an unmatched radar detection may be a buoy, a rig, or a
 ship with its transponder off, and this data cannot tell them apart.
 
 The hard part is not finding bright things on dark water; it is not calling
-the land a ship. On one scene the coastline the AIS side uses leaves **533**
-vessel-sized objects standing on the ridges of the Musandam fjords, where a
-10 m coastline leaves **30**. That file, the detector, what is stored and what
-is not claimed are all in **[docs/PIPELINE.md](docs/PIPELINE.md)**.
+the land a ship. Ten kilometres out, the coarse coastline the AIS side uses
+and a 10 m one agree exactly — 3.77 against 3.91 detections per 100 km². Within
+a kilometre of the shore they do not: **128 against 40**. That file, the
+detector, what is stored and what is not claimed are all in
+**[docs/PIPELINE.md](docs/PIPELINE.md)**.
 
 ## Key Findings — from the 2026-03 archive
 

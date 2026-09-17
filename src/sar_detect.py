@@ -8,9 +8,11 @@ land a ship.
 Three things decide that, in order of how much they matter (measured on
 S1C 2026-09-16T02:06Z over the strait, with the same threshold throughout):
 
-  * the coastline. Natural Earth 10m leaves 533 vessel-sized objects standing
-    on the ridges of the Musandam fjords; ESA WorldCover 10m leaves 30. It is
-    not a close call and it is not a tuning parameter.
+  * the coastline. Ten kilometres from land the two available outlines agree
+    to within 4%, because out there neither is in the picture. Within a
+    kilometre of the shore, Natural Earth 10m leaves 128 vessel-sized objects
+    per 100 km² standing on the ridges of the Musandam fjords where ESA
+    WorldCover 10m leaves 40. It is not a tuning parameter.
   * a margin off the coast. Terrain is not corrected in a GRD product, so a
     1,800 m ridge is laid over toward the sensor by roughly h/tan(theta).
     Detections are kept with their distance to land rather than thrown away,
@@ -96,39 +98,47 @@ def background(image: np.ndarray, valid: np.ndarray
     return bg, sd
 
 
-def shape_of(mask_piece: np.ndarray, res_m: float) -> tuple[float, float, float]:
+def shape_of(mask_piece: np.ndarray, pixel_m: tuple[float, float]
+             ) -> tuple[float, float, float]:
     """Length, width and orientation of one blob, from its second moments.
 
     A bounding box would call a 300 m ship lying diagonally a 420 m one, and
     ship length is the field most likely to be compared against something
-    else later, so it is worth the moments.
+    else later, so it is worth the moments. The two axes are scaled to metres
+    before the covariance, because the grid's cells are not square.
     """
+    row_m, col_m = pixel_m
     ys, xs = np.nonzero(mask_piece)
     if ys.size < 2:
-        return res_m, res_m, 0.0
-    coords = np.stack([ys - ys.mean(), xs - xs.mean()]).astype(np.float64)
+        return max(row_m, col_m), min(row_m, col_m), 0.0
+    coords = np.stack([(ys - ys.mean()) * row_m,
+                       (xs - xs.mean()) * col_m]).astype(np.float64)
     cov = coords @ coords.T / coords.shape[1]
     vals, vecs = np.linalg.eigh(cov)
     vals = np.clip(vals, 0.0, None)
     # 2 sqrt(lambda) is the half-axis of the equivalent uniform ellipse; twice
-    # that spans it. Add one pixel so a single-pixel blob is one pixel long.
-    length = (4.0 * np.sqrt(vals[1]) + 1.0) * res_m
-    width = (4.0 * np.sqrt(vals[0]) + 1.0) * res_m
+    # that spans it. Add one cell so a single-pixel blob is one pixel long.
+    length = 4.0 * np.sqrt(vals[1]) + max(row_m, col_m)
+    width = 4.0 * np.sqrt(vals[0]) + min(row_m, col_m)
     angle = float(np.degrees(np.arctan2(vecs[1, 1], vecs[0, 1])))
     return float(length), float(width), angle
 
 
-def detect(image: np.ndarray, land: np.ndarray, transform, res_m: float,
-           k_sigma: float = K_SIGMA, coast_buffer_m: float = COAST_BUFFER_M
-           ) -> tuple[list[dict], dict]:
+def detect(image: np.ndarray, land: np.ndarray, transform,
+           pixel_m: tuple[float, float], k_sigma: float = K_SIGMA,
+           coast_buffer_m: float = COAST_BUFFER_M) -> tuple[list[dict], dict]:
     """Every compact bright object over water, with what it was measured on.
 
-    Candidates are returned whether or not they pass the shape test, with
-    `is_vessel` and `reject_reason` saying which. Throwing the rejects away
-    would make a later, looser detector impossible to run from the table.
+    `pixel_m` is (north-south, east-west) in metres; see
+    `sar_scene.pixel_metres`. Candidates are returned whether or not they pass
+    the shape test, with `is_vessel` and `reject_reason` saying which.
+    Throwing the rejects away would make a later, looser detector impossible
+    to run from the table.
     """
+    row_m, col_m = pixel_m
+    cell_km2 = row_m * col_m / 1e6
     valid = image > 0
-    dist_m = ndimage.distance_transform_edt(~land, sampling=(res_m, res_m))
+    dist_m = ndimage.distance_transform_edt(~land, sampling=(row_m, col_m))
     water = valid & (dist_m > coast_buffer_m)
     if not water.any():
         return [], {"scored_water_km2": 0.0, "sea_median_dn": float("nan"),
@@ -142,10 +152,17 @@ def detect(image: np.ndarray, land: np.ndarray, transform, res_m: float,
     for i, sl in enumerate(ndimage.find_objects(lab), start=1):
         piece = lab[sl] == i
         area = int(piece.sum())
-        length, width, angle = shape_of(piece, res_m)
-        cy = float(sl[0].start + (sl[0].stop - sl[0].start) / 2)
-        cx = float(sl[1].start + (sl[1].stop - sl[1].start) / 2)
-        lon, lat = transform * (cx, cy)
+        length, width, angle = shape_of(piece, pixel_m)
+        # The centroid of the component, not the middle of its bounding box:
+        # a blob can be concave, and this same point is what indexes the
+        # distance field, so the two must not be allowed to disagree.
+        ys, xs = np.nonzero(piece)
+        cy = sl[0].start + float(ys.mean())
+        cx = sl[1].start + float(xs.mean())
+        row_i, col_i = int(round(cy)), int(round(cx))
+        # The transform's origin is a pixel corner, so the centre of the
+        # pixel holding the centroid is half a cell further on.
+        lon, lat = transform * (cx + 0.5, cy + 0.5)
         values = img[sl][piece]
         row_bg = float(bg[sl][piece].mean())
         row_sd = float(sd[sl][piece].mean())
@@ -156,8 +173,8 @@ def detect(image: np.ndarray, land: np.ndarray, transform, res_m: float,
             reason = "too_long"
         rows.append({
             "latitude": lat, "longitude": lon,
-            "grid_row": int(round(cy)), "grid_col": int(round(cx)),
-            "dist_to_land_km": float(dist_m[int(cy), int(cx)] / 1000.0),
+            "grid_row": row_i, "grid_col": col_i,
+            "dist_to_land_km": float(dist_m[row_i, col_i] / 1000.0),
             "area_px": area, "length_m": length, "width_m": width,
             "peak_dn": float(values.max()), "mean_dn": float(values.mean()),
             "bg_median_dn": row_bg, "bg_mad_dn": row_sd / 1.4826,
@@ -166,7 +183,7 @@ def detect(image: np.ndarray, land: np.ndarray, transform, res_m: float,
         })
 
     stats = {
-        "scored_water_km2": float(water.sum()) * res_m * res_m / 1e6,
+        "scored_water_km2": float(water.sum()) * cell_km2,
         "sea_median_dn": float(np.median(img[water])),
         "n_candidates": len(rows),
         "n_vessels": sum(r["is_vessel"] for r in rows),

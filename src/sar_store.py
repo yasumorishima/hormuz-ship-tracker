@@ -139,6 +139,10 @@ def upload(scene_id: str, detections: list[dict], scene: dict,
     missing — the state that would make "processed" mean two different things.
     """
     paths = [det_path(scene_id, version), scene_path(scene_id, version)]
+    # The version in the path and the version in the rows are the same claim,
+    # so they are made once here rather than trusted to agree.
+    detections = [dict(row, detector_version=version) for row in detections]
+    scene = dict(scene, detector_version=version)
     tables = [_table(detections, DETECTION_SCHEMA), _table([scene], SCENE_SCHEMA)]
     operations, temps = [], []
     try:

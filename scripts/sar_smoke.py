@@ -34,13 +34,12 @@ ITEM_URL = ("https://planetarycomputer.microsoft.com/api/stac/v1/collections/"
             f"sentinel-1-grd/items/{SCENE_ID}")
 # A bite of the production grid over the strait itself, small enough for CI.
 BOUNDS = (56.0, 26.2, 56.8, 26.9)
-RES_M = 0.0002 * 111_320.0
 
 # name -> (low, high). The scene is pinned, so these are deterministic given
 # the code; the width is for a different GDAL's resampling, not for a
 # different sea. Measured on 2026-09-17 with rasterio 1.4:
-#   covered 0.611, sea median 49.0 DN, scored water 3,960 km2,
-#   106 candidates of which 58 vessels, longest 554.7 m.
+#   covered 0.611, sea median 49.0 DN, scored water 3,539 km2,
+#   84 candidates of which 43 vessels, longest 526.0 m.
 BANDS = {
     "aoi_covered_frac": (0.50, 0.75),
     "sea_median_dn": (25.0, 100.0),
@@ -73,10 +72,11 @@ def measure():
     transform, width, height = sar_scene.aoi_grid(BOUNDS)
     land = sar_scene.load_land_mask(bounds=BOUNDS)
 
-    rows, stats = sar_detect.detect(image, land, transform, RES_M)
+    pixel_m = sar_scene.pixel_metres(BOUNDS)
+    rows, stats = sar_detect.detect(image, land, transform, pixel_m)
     ships = [r for r in rows if r["is_vessel"]]
     control_land = ais_mask_on(BOUNDS, (height, width), transform)
-    control_rows, _ = sar_detect.detect(image, control_land, transform, RES_M)
+    control_rows, _ = sar_detect.detect(image, control_land, transform, pixel_m)
     control_ships = [r for r in control_rows if r["is_vessel"]]
 
     on_land = sum(bool(land[r["grid_row"], r["grid_col"]]) for r in rows)
@@ -115,14 +115,14 @@ def main(argv=None) -> int:
     if got["detections_on_masked_land"]:
         problems.append(f"{got['detections_on_masked_land']} detections sit on "
                         f"pixels the mask calls land")
-    # Measured 118 against 58 on this scene: the coarse outline leaves twice
-    # as many objects standing. If that gap closes, either the shipped mask
-    # stopped resolving the fjords or the two files became the same, and in
-    # both cases the second file has stopped earning its place.
+    # Measured 125 against 43 on this scene: the coarse outline leaves nearly
+    # three times as many objects standing. If that gap closes, either the
+    # shipped mask stopped resolving the fjords or the two files became the
+    # same, and in both cases the second file has stopped earning its place.
     if got["vessels_with_the_ais_mask"] < 1.3 * got["vessels"]:
         problems.append(
             f"the AIS mask gives {got['vessels_with_the_ais_mask']} vessels "
-            f"against {got['vessels']} (measured 118 against 58); the two masks "
+            f"against {got['vessels']} (measured 125 against 43); the two masks "
             f"are no longer meaningfully different here")
 
     for problem in problems:

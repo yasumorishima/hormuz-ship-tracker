@@ -2,9 +2,9 @@
 
 The file exists because the mask the AIS side uses is too coarse for imagery:
 Natural Earth 10m generalises the Musandam fjords away, so their water reads
-as land and the ridges beside them read as sea. Measured on one scene with
-one threshold, that difference is 533 vessel-sized objects standing on the
-rocks against 30. The point at the head of Khawr ash Shamm below is where the
+as land and the ridges beside them read as sea. Measured on one scene, within
+a kilometre of the shore, that difference is 128 vessel-sized objects per
+100 km² against 40. The point at the head of Khawr ash Shamm below is where the
 two masks disagree, and it is asserted in both directions so that swapping the
 file back would be caught.
 """
