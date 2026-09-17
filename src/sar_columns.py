@@ -36,13 +36,16 @@ DETECTION_COLUMNS = [
     # fetching the 700 MB scene again
     "area_px", "length_m", "width_m", "orientation_deg",
     "peak_dn", "mean_dn", "bg_median_dn", "bg_mad_dn", "snr",
-    # how it was decided
-    "is_vessel", "reject_reason", "detector_version", "aoi_version",
+    # how it was decided. `vessel_sized` is exactly what it says: the object
+    # is the size and shape of a vessel. Whether it is one is not measured
+    # here — recall was checked against AIS, precision was not, and near the
+    # shore real hulls and displaced rock are mixed.
+    "vessel_sized", "reject_reason", "detector_version", "aoi_version",
 ]
 
 SCENE_COLUMNS = [
     "scene_id", "acq_time", "platform", "orbit_state", "polarization",
     "aoi_covered_frac", "scored_water_km2", "sea_median_dn",
-    "n_candidates", "n_vessels", "detector_version", "aoi_version",
+    "n_candidates", "n_vessel_sized", "detector_version", "aoi_version",
     "mask_source", "processed_at", "runtime_s", "status",
 ]

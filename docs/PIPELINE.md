@@ -246,11 +246,17 @@ stay different — the absence that made the AIS side's transit count silently
 zero.
 
 Every candidate keeps what it was measured on — `bg_median_dn`, `bg_mad_dn`,
-`snr`, `area_px`, `length_m`, `dist_to_land_km` — and the ones that failed the
-shape test are kept too, with `is_vessel` false and a `reject_reason`. A
-looser detector can then be run over the table instead of over 700 MB scenes,
-and the version in the path means the new answers sit beside the old ones
-rather than on top of them.
+`snr`, `area_px`, `length_m`, `orientation_deg`, `dist_to_land_km` — and the
+ones that failed the shape test are kept too, with `vessel_sized` false and a
+`reject_reason`. A looser detector can then be run over the table instead of
+over 700 MB scenes, and the version in the path means the new answers sit
+beside the old ones rather than on top of them.
+
+The flag is `vessel_sized`, not `is_vessel`. Recall was measured; precision was
+not, and cannot be from this data. Measured on the first run, over the whole
+AOI: of 2,931 candidates in one scene, 1,633 were vessel-sized, 1,240 too
+small and 58 too long — and 48% of the vessel-sized ones were within a
+kilometre of the shore. A count of them is not a count of ships.
 
 ### Catching up
 

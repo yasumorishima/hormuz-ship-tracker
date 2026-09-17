@@ -37,6 +37,11 @@ on:
         required: false
         default: false
         type: boolean
+      redo:
+        description: 'process scenes already done, overwriting their files'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -82,10 +87,11 @@ jobs:
           HOURS: ${{ inputs.hours || '72' }}
           MAX_SCENES: ${{ inputs.max_scenes || '4' }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+          REDO: ${{ inputs.redo && '--redo' || '' }}
         run: |
           set -o pipefail
           python src/sar_collect.py --hours "$HOURS" --max-scenes "$MAX_SCENES" \
-            $DRY_RUN | tee "$RUNNER_TEMP/sar.json"
+            $DRY_RUN $REDO | tee "$RUNNER_TEMP/sar.json"
 
       - name: Summary
         if: always()

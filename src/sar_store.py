@@ -45,7 +45,7 @@ DETECTION_SCHEMA = pa.schema([
     ("orientation_deg", pa.float32()),
     ("peak_dn", pa.float32()), ("mean_dn", pa.float32()),
     ("bg_median_dn", pa.float32()), ("bg_mad_dn", pa.float32()), ("snr", pa.float32()),
-    ("is_vessel", pa.bool_()), ("reject_reason", pa.string()),
+    ("vessel_sized", pa.bool_()), ("reject_reason", pa.string()),
     ("detector_version", pa.string()), ("aoi_version", pa.string()),
 ])
 
@@ -54,7 +54,7 @@ SCENE_SCHEMA = pa.schema([
     ("orbit_state", pa.string()), ("polarization", pa.string()),
     ("aoi_covered_frac", pa.float32()), ("scored_water_km2", pa.float32()),
     ("sea_median_dn", pa.float32()),
-    ("n_candidates", pa.int32()), ("n_vessels", pa.int32()),
+    ("n_candidates", pa.int32()), ("n_vessel_sized", pa.int32()),
     ("detector_version", pa.string()), ("aoi_version", pa.string()),
     ("mask_source", pa.string()), ("processed_at", pa.string()),
     ("runtime_s", pa.float32()), ("status", pa.string()),
@@ -120,7 +120,7 @@ def scene_row(scene: dict, stats: dict, covered: float, runtime_s: float,
         "scored_water_km2": stats.get("scored_water_km2", 0.0),
         "sea_median_dn": stats.get("sea_median_dn", float("nan")),
         "n_candidates": stats.get("n_candidates", 0),
-        "n_vessels": stats.get("n_vessels", 0),
+        "n_vessel_sized": stats.get("n_vessel_sized", 0),
         "detector_version": DETECTOR_VERSION, "aoi_version": AOI_VERSION,
         "mask_source": mask_source,
         "processed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -168,7 +168,7 @@ def upload(scene_id: str, detections: list[dict], scene: dict,
         _api(token).create_commit(
             repo_id=REPO_ID, repo_type=REPO_TYPE, operations=operations,
             commit_message=(f"sar {version} {scene_id}: "
-                            f"{scene['n_vessels']} vessels of "
+                            f"{scene['n_vessel_sized']} vessels of "
                             f"{scene['n_candidates']} candidates"))
     finally:
         for local in temps:
