@@ -31,7 +31,7 @@ DETECTION = {
     "dist_to_land_km": 11.9, "area_px": 42, "length_m": 210.0, "width_m": 33.0,
     "orientation_deg": 12.5, "peak_dn": 4100.0, "mean_dn": 900.0,
     "bg_median_dn": 49.0, "bg_mad_dn": 8.0, "snr": 341.0,
-    "is_vessel": True, "reject_reason": "",
+    "vessel_sized": True, "reject_reason": "",
 }
 
 
@@ -66,7 +66,7 @@ class RowsBecomeTablesWithoutInventingAnything(unittest.TestCase):
     def scene_row(self, **over):
         row = sar_store.scene_row(
             SCENE, {"scored_water_km2": 3538.9, "sea_median_dn": 49.0,
-                    "n_candidates": 84, "n_vessels": 43},
+                    "n_candidates": 84, "n_vessel_sized": 43},
             covered=0.611, runtime_s=61.0, mask_source="ESA WorldCover")
         row.update(over)
         return row
@@ -113,7 +113,7 @@ class RowsBecomeTablesWithoutInventingAnything(unittest.TestCase):
             back = pq.read_table(path)
         self.assertEqual(back.schema, sar_store.DETECTION_SCHEMA)
         got = back.to_pylist()[0]
-        for name in ("scene_id", "grid_row", "area_px", "is_vessel", "reject_reason"):
+        for name in ("scene_id", "grid_row", "area_px", "vessel_sized", "reject_reason"):
             self.assertEqual(got[name], rows[0][name], name)
         self.assertAlmostEqual(got["length_m"], rows[0]["length_m"], places=3)
 

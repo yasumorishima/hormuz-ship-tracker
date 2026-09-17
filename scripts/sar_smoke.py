@@ -77,10 +77,10 @@ def measure():
 
     pixel_m = sar_scene.pixel_metres(BOUNDS)
     rows, stats = sar_detect.detect(image, land, transform, pixel_m)
-    ships = [r for r in rows if r["is_vessel"]]
+    ships = [r for r in rows if r["vessel_sized"]]
     control_land = ais_mask_on(BOUNDS, (height, width), transform)
     control_rows, _ = sar_detect.detect(image, control_land, transform, pixel_m)
-    control_ships = [r for r in control_rows if r["is_vessel"]]
+    control_ships = [r for r in control_rows if r["vessel_sized"]]
 
     on_land = sum(bool(land[r["grid_row"], r["grid_col"]]) for r in rows)
     return {

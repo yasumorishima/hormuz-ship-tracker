@@ -2,6 +2,7 @@
 
     python src/sar_collect.py --hours 72
     python src/sar_collect.py --hours 72 --dry-run     # no Hub write
+    python src/sar_collect.py --hours 72 --redo        # do them again
 
 Runs to completion whatever the sea is doing: a scene that only clips the
 corner of the AOI, or one with no vessels in it, still gets a scene row. The
@@ -52,6 +53,8 @@ def main(argv=None) -> int:
     ap.add_argument("--max-scenes", type=int, default=4,
                     help="stop after this many, so one run cannot sit for an hour")
     ap.add_argument("--dry-run", action="store_true", help="process but do not upload")
+    ap.add_argument("--redo", action="store_true",
+                    help="process scenes already done, overwriting their files")
     args = ap.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -59,7 +62,8 @@ def main(argv=None) -> int:
     start = (now - timedelta(hours=args.hours)).isoformat(timespec="seconds")
     scenes = sar_scene.search(start, now.isoformat(timespec="seconds"))
 
-    already = set() if args.dry_run else sar_store.processed(sar_store.list_files())
+    already = (set() if args.dry_run or args.redo
+               else sar_store.processed(sar_store.list_files()))
     todo = [s for s in scenes if s["scene_id"] not in already][:args.max_scenes]
     logger.info("%d scenes in the window, %d already done, %d to do",
                 len(scenes), len(scenes) - len([s for s in scenes if s["scene_id"] not in already]),
@@ -91,7 +95,7 @@ def main(argv=None) -> int:
             continue
         summary["rows"].append({k: row[k] for k in (
             "scene_id", "acq_time", "orbit_state", "aoi_covered_frac",
-            "scored_water_km2", "sea_median_dn", "n_candidates", "n_vessels",
+            "scored_water_km2", "sea_median_dn", "n_candidates", "n_vessel_sized",
             "runtime_s", "status")})
         summary["scenes_processed"] += 1
 

@@ -71,7 +71,7 @@ class DetectorFindsShipsAndNotSea(unittest.TestCase):
         rows, _ = run(self.image, coast_buffer_m=0.0)
         # Accepted ones only: a target found and then rejected on shape is not
         # found, and counting the rejects would hide exactly that.
-        accepted = [r for r in rows if r["is_vessel"]]
+        accepted = [r for r in rows if r["vessel_sized"]]
         found = [t for t in self.truth if near(accepted, *t)]
         self.assertEqual(len(found), len(self.truth),
                          f"missed {set(self.truth) - set(found)}")
@@ -121,10 +121,10 @@ class DetectorFindsShipsAndNotSea(unittest.TestCase):
         rows, stats = run(image, coast_buffer_m=0.0)
         long_ones = [r for r in rows if r["length_m"] > sar_detect.MAX_LENGTH_M]
         self.assertTrue(long_ones, "the 800 m bar should have been a candidate")
-        self.assertTrue(all(not r["is_vessel"] and r["reject_reason"] == "too_long"
+        self.assertTrue(all(not r["vessel_sized"] and r["reject_reason"] == "too_long"
                             for r in long_ones))
-        self.assertEqual(stats["n_vessels"], sum(r["is_vessel"] for r in rows))
-        self.assertGreater(stats["n_candidates"], stats["n_vessels"])
+        self.assertEqual(stats["n_vessel_sized"], sum(r["vessel_sized"] for r in rows))
+        self.assertGreater(stats["n_candidates"], stats["n_vessel_sized"])
 
     def test_coordinates_come_back_on_the_given_grid(self):
         rows, _ = run(self.image, coast_buffer_m=0.0)

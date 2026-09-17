@@ -157,7 +157,7 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
 
     `pixel_m` is (north-south, east-west) in metres; see
     `sar_scene.pixel_metres`. Candidates are returned whether or not they pass
-    the shape test, with `is_vessel` and `reject_reason` saying which.
+    the shape test, with `vessel_sized` and `reject_reason` saying which.
     Throwing the rejects away would make a later, looser detector impossible
     to run from the table.
     """
@@ -174,7 +174,7 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
     water = valid & (dist_m > coast_buffer_m)
     if not water.any():
         return [], {"scored_water_km2": 0.0, "sea_median_dn": float("nan"),
-                    "n_candidates": 0, "n_vessels": 0}
+                    "n_candidates": 0, "n_vessel_sized": 0}
 
     img = image.astype(np.float32)
     bg, mad = background(img, water)
@@ -214,15 +214,15 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
             "bg_median_dn": row_bg, "bg_mad_dn": row_mad,
             "orientation_deg": angle,
             "snr": float((values.max() - row_bg) / row_sd),
-            "is_vessel": reason == "", "reject_reason": reason,
+            "vessel_sized": reason == "", "reject_reason": reason,
         })
 
     stats = {
         "scored_water_km2": float(water.sum()) * cell_km2,
         "sea_median_dn": float(np.median(img[water])),
         "n_candidates": len(rows),
-        "n_vessels": sum(r["is_vessel"] for r in rows),
+        "n_vessel_sized": sum(r["vessel_sized"] for r in rows),
     }
     logger.info("%d candidates, %d vessels, %.0f km2 of scored water",
-                stats["n_candidates"], stats["n_vessels"], stats["scored_water_km2"])
+                stats["n_candidates"], stats["n_vessel_sized"], stats["scored_water_km2"])
     return rows, stats

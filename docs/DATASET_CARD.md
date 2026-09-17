@@ -195,9 +195,14 @@ recall and nothing else. The archive samples transmitting vessels, so a
 detection with no AIS beside it is **not** a false alarm; it may be a buoy, a
 rig, or a ship with its transponder off. Each row keeps what it was measured
 on (`bg_median_dn`, `bg_mad_dn`, `snr`, `area_px`, `length_m`,
-`dist_to_land_km`) and the candidates that failed the shape test are kept too,
-with `is_vessel` false and a `reject_reason`, so the judgement can be redone
-without the imagery.
+`orientation_deg`, `dist_to_land_km`) and the candidates that failed the shape
+test are kept too, with `vessel_sized` false and a `reject_reason`, so the
+judgement can be redone without the imagery.
+
+The column is called `vessel_sized` and not `is_vessel` on purpose: it says
+the object is the size and shape of a vessel, which is what was tested. On one
+scene, 48% of the objects it is true for sit within a kilometre of the shore,
+where hulls and displaced rock are mixed.
 
 Detections within a kilometre of the shore are mixed: terrain is not corrected
 in these products, so a ridge is laid over toward the satellite by a kilometre
