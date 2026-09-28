@@ -223,6 +223,6 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
         "n_candidates": len(rows),
         "n_vessel_sized": sum(r["vessel_sized"] for r in rows),
     }
-    logger.info("%d candidates, %d vessels, %.0f km2 of scored water",
+    logger.info("%d candidates, %d vessel-sized, %.0f km2 of scored water",
                 stats["n_candidates"], stats["n_vessel_sized"], stats["scored_water_km2"])
     return rows, stats

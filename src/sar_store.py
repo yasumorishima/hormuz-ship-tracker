@@ -168,7 +168,7 @@ def upload(scene_id: str, detections: list[dict], scene: dict,
         _api(token).create_commit(
             repo_id=REPO_ID, repo_type=REPO_TYPE, operations=operations,
             commit_message=(f"sar {version} {scene_id}: "
-                            f"{scene['n_vessel_sized']} vessels of "
+                            f"{scene['n_vessel_sized']} vessel-sized of "
                             f"{scene['n_candidates']} candidates"))
     finally:
         for local in temps:

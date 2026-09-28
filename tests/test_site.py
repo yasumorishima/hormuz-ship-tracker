@@ -8,6 +8,7 @@ matches the one the rendered snapshots are drawn on, and nothing would say so.
 
 import hashlib
 import re
+import sys
 import unittest
 from pathlib import Path
 
@@ -48,6 +49,32 @@ class PageTest(unittest.TestCase):
         for phrase in ("samples, not tracks", "not observed",
                        "unknown, not absent"):
             self.assertIn(phrase, self.html)
+
+    def test_the_radar_caveat_is_on_the_page_itself(self):
+        """The three things a radar circle is not: a ship, a track, clean
+        near the shore."""
+        for phrase in ("not ships", "once every two days", "one instant, not a track",
+                       "Within 1&nbsp;km of the shore", "AIS identity"):
+            self.assertIn(phrase, self.html)
+
+    def test_radar_detections_are_never_called_vessels_or_ships_in_a_count(self):
+        """"1,633 vessels" is the sentence this project must not print."""
+        self.assertIn("vessel-sized detections", self.js)
+        self.assertNotRegex(self.js, r"\$\{counts\[\d\]\}</b> (vessels|ships)")
+
+    def test_the_radar_default_matches_the_measured_threshold(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        import sar_columns
+        for js_name, py_name in (("SAR_MIN_SHORE_KM", "MAP_MIN_SHORE_KM"),
+                                 ("SAR_MIN_SNR", "MAP_MIN_SNR")):
+            m = re.search(rf"^const {js_name} = ([0-9.]+);$", self.js, re.M)
+            self.assertIsNotNone(m, f"{js_name} is no longer a literal in map.js")
+            self.assertEqual(float(m.group(1)), getattr(sar_columns, py_name))
+
+    def test_the_radar_reads_the_detector_version_the_collector_writes(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        from sar_columns import DETECTOR_VERSION
+        self.assertIn(f"const SAR_DET = 'sar/det/{DETECTOR_VERSION}/';", self.js)
 
     def test_no_tile_provider_is_depended_on(self):
         """Every keyless dark tile service either wants a key now or will.
@@ -122,6 +149,8 @@ class PageTest(unittest.TestCase):
         self.assertIn("const esc =", self.js)
         for expr in ("esc(source.path)", "esc(e.message)", "esc(v.ship_name",
                      "esc(val)"):
+            self.assertIn(expr, self.js)
+        for expr in ("esc(e.message)}.`", "esc(when)", "esc(age)"):
             self.assertIn(expr, self.js)
 
 

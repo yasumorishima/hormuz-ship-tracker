@@ -154,8 +154,7 @@ async function listAll(url) {
   return entries;
 }
 
-async function load() {
-  const listing = await listAll(TREE);
+async function load(listing) {
   const source = chooseSource(listing);
   if (!source) throw new Error('the dataset holds no parquet files yet');
 
@@ -177,8 +176,124 @@ async function load() {
       ? ' <b>Collection has not started yet</b>, so this is history, not now.' : ''));
 }
 
-load().catch(e => {
-  say(`Could not draw the map: ${esc(e.message)}. The data is still there — `
-    + `<a href="https://huggingface.co/datasets/${REPO}">browse the dataset</a>.`);
+// ------------------------------------------------------------------ radar --
+
+// Sentinel-1 detections, drawn from the newest pass on the Hub. Kept apart
+// from the AIS layer in every way: its own status line, its own legend entry,
+// its own failure. A radar detection is a bright object of the right size,
+// not a ship, and nothing here joins it to an AIS identity.
+//
+// What is shown by default, measured over the 17 scenes on the Hub on
+// 2026-09-28 (src/sar_survey.py; docs/PIPELINE.md "What the map shows"):
+// - SAR_MIN_SHORE_KM: from 3 km out the rate of vessel-sized detections is the
+//   open-sea rate (4-5 per 100 km^2); within 1 km it is 94.5.
+// - SAR_MIN_SNR: in open water, 86% of detections above SNR 20 also stand out
+//   in the VH channel, against 0.5% at random water; at or below 20 it is 4%.
+//   The weak ones may be small craft VH misses or sea clutter; the table
+//   cannot say which, so they are drawn only on request.
+// Both are held equal to sar_columns by tests/test_site.py.
+const SAR_MIN_SHORE_KM = 3;
+const SAR_MIN_SNR = 20;
+const SAR_DET = 'sar/det/v1/';
+const SAR_COLUMNS = ['acq_time', 'platform', 'orbit_state', 'latitude', 'longitude',
+                     'dist_to_land_km', 'length_m', 'snr', 'vessel_sized'];
+const sarStatus = document.getElementById('sar-status');
+const saySar = html => { sarStatus.innerHTML = html; };
+
+/** The newest pass: every slice of one platform's datatake on one date.
+ *
+ * A pass arrives as two or three slices, each its own file; drawing only the
+ * newest slice would show a third of what the satellite saw. The id's
+ * platform and start date name the pass (see sar_survey.pass_of). */
+function newestPass(entries) {
+  const files = entries
+    .filter(e => e.type === 'file' && e.path.startsWith(SAR_DET) && e.path.endsWith('.parquet'))
+    .map(e => ({ path: e.path, id: e.path.slice(SAR_DET.length, -'.parquet'.length) }));
+  if (!files.length) return null;
+  const passOf = id => id.slice(0, 3) + id.slice(17, 25);
+  const start = id => id.slice(17, 32);
+  const newest = files.reduce((a, f) => (start(f.id) > start(a.id) ? f : a));
+  const key = passOf(newest.id);
+  return { key, files: files.filter(f => passOf(f.id) === key).map(f => f.path) };
+}
+
+const SAR_BANDS = [
+  { name: `Radar, ${SAR_MIN_SHORE_KM} km or more from shore, SNR over ${SAR_MIN_SNR}`, on: true,
+    test: (d, snr) => d >= SAR_MIN_SHORE_KM && snr > SAR_MIN_SNR, colour: '#f2f5f8' },
+  { name: `Radar, ${SAR_MIN_SHORE_KM} km or more from shore, weak (mostly unconfirmed)`, on: false,
+    test: (d, snr) => d >= SAR_MIN_SHORE_KM && !(snr > SAR_MIN_SNR), colour: '#7f93a8' },
+  { name: `Radar, 1–${SAR_MIN_SHORE_KM} km from shore`, on: false,
+    test: d => d >= 1 && d < SAR_MIN_SHORE_KM, colour: '#c9b27c' },
+  { name: 'Radar, within 1 km of shore (mostly terrain)', on: false,
+    test: d => d < 1, colour: '#9a7b52' },
+];
+
+function drawSar(rows) {
+  const layers = SAR_BANDS.map(() => L.layerGroup());
+  const counts = SAR_BANDS.map(() => 0);
+  for (const r of rows) {
+    if (!r.vessel_sized || r.latitude === null || r.longitude === null) continue;
+    const d = Number(r.dist_to_land_km);
+    const i = SAR_BANDS.findIndex(b => b.test(d, Number(r.snr)));
+    if (i < 0) continue;
+    counts[i] += 1;
+    const dl = [
+      ['Seen', `${r.acq_time} (${r.platform}, ${r.orbit_state})`],
+      ['Length', `about ${Math.round(Number(r.length_m))} m`],
+      ['SNR', Number(r.snr).toFixed(1)],
+      ['From shore', `${d.toFixed(1)} km`],
+    ].map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join('');
+    L.circleMarker([r.latitude, r.longitude], {
+      radius: 3, color: SAR_BANDS[i].colour, weight: 1.5, fill: false,
+    }).bindPopup('<strong>Radar detection</strong> — a bright object of vessel size, '
+      + `not an identified ship<dl>${dl}</dl>`).addTo(layers[i]);
+  }
+  const overlays = {};
+  SAR_BANDS.forEach((b, i) => {
+    overlays[`<span style="color:${b.colour}">&#9675;</span> ${b.name} (${counts[i]})`] = layers[i];
+    if (b.on) layers[i].addTo(map);
+  });
+  L.control.layers(null, overlays, { collapsed: false, position: 'topright' }).addTo(map);
+  return counts;
+}
+
+async function loadSar(listing) {
+  const pass = newestPass(listing);
+  if (!pass) { saySar('Radar: no scenes on the Hub yet.'); return; }
+  const rows = [];
+  for (const path of pass.files) {
+    const file = await asyncBufferFromUrl({ url: FILE(path) });
+    rows.push(...await parquetReadObjects({ file, compressors, columns: SAR_COLUMNS }));
+  }
+  const counts = drawSar(rows);
+  const when = rows.length ? `${rows[0].acq_time}` : `pass ${pass.key}`;
+  const age = rows.length ? ago(String(rows[0].acq_time)) : null;
+  saySar(`Radar: <b>${counts[0]}</b> strong vessel-sized detections ${SAR_MIN_SHORE_KM} km or more `
+    + `from shore in the Sentinel-1 pass of <b>${esc(when)}</b>`
+    + (age ? ` (${esc(age)})` : '')
+    + ` — one instant, not a track. ${counts[1]} weak ones and ${counts[2] + counts[3]} `
+    + 'nearer the shore are off by default.');
+}
+
+async function main() {
+  const listing = await listAll(TREE);
+  // Neither layer waits for, or fails with, the other.
+  await Promise.all([
+    load(listing).catch(e => {
+      say(`Could not draw the map: ${esc(e.message)}. The data is still there — `
+        + `<a href="https://huggingface.co/datasets/${REPO}">browse the dataset</a>.`);
+      console.error(e);
+    }),
+    loadSar(listing).catch(e => {
+      saySar(`Radar layer did not load: ${esc(e.message)}.`);
+      console.error(e);
+    }),
+  ]);
+}
+
+main().catch(e => {
+  say(`Could not list the dataset: ${esc(e.message)}. `
+    + `<a href="https://huggingface.co/datasets/${REPO}">Browse it directly</a>.`);
+  saySar('Radar layer did not load: the dataset could not be listed.');
   console.error(e);
 });

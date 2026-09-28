@@ -260,12 +260,27 @@ kilometre of the shore. A count of them is not a count of ships.
 
 ### Catching up
 
-`sar-collect.yml` looks back 72 hours and takes at most four scenes, against
-about 1.4 scenes a day reaching the AOI. That absorbs a missed firing or two.
-It does not absorb a long outage: a scene older than the window is never
-picked up on its own, because the ledger is the set of files that exist and
-nothing hunts for gaps. After several days down, run it by hand with a longer
-`hours` — the scenes already done are skipped, so the only cost is the search.
+`sar-collect.yml` looks back three weeks and does at most six scenes a run,
+**oldest first**, against about 1.4 scenes a day reaching the AOI.
+
+It used to look back 72 hours and take four, newest first, and that lost a
+scene for good: the first real run on 2026-09-17 found five, did the newest
+four, and by the next day's run the fifth — S1D 2026-09-15T02:14:05Z, the
+northern slice of that pass — was older than the window. Nothing hunts for
+gaps, because the ledger is the set of files that exist, so a scene that
+leaves the window unprocessed is simply never looked at. Oldest first means
+the scene about to leave is the one taken; a three-week window means an
+outage of up to about two weeks heals by itself. Searching costs one request
+whatever the window, and scenes already done are skipped. The search warns if
+it ever returns a full page, because the endpoint lists newest first and a
+truncated page drops exactly the oldest.
+
+Checked 2026-09-28 against the Hub and the run list: `sar-collect.yml` ran
+every day from 09-17 to 09-28 (three manual runs on 09-17, then one scheduled
+run a day, all green; the 04:41 cron actually fires between 09:00 and 11:15
+UTC). Planetary Computer lists 21 slices from 09-15 on; the Hub holds 20. The
+missing one is the slice above, and the next run with the wider window
+picks it up, along with the 09-12 and 09-13 passes that predate the first run.
 
 ### Running it by hand
 
@@ -273,7 +288,7 @@ nothing hunts for gaps. After several days down, run it by hand with a longer
 pip install -r requirements-sar.txt
 
 # what would be processed, without writing to the Hub
-python src/sar_collect.py --hours 72 --dry-run
+python src/sar_collect.py --dry-run
 
 # one real scene, no credentials, asserting what was measured
 python scripts/sar_smoke.py

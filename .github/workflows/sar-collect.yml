@@ -13,8 +13,8 @@ name: Collect SAR scenes
 on:
   schedule:
     # Daily, though the satellites come round every two days or so. A run with
-    # nothing to do costs a minute and the window overlaps itself, so a missed
-    # firing is picked up by the next one rather than lost.
+    # nothing to do costs a minute and the three-week window overlaps itself,
+    # so a missed firing is picked up by the next one rather than lost.
     - cron: '41 4 * * *'
   workflow_dispatch:
     inputs:
@@ -25,12 +25,12 @@ on:
       hours:
         description: 'how far back to look for scenes'
         required: false
-        default: '72'
+        default: '504'
         type: string
       max_scenes:
         description: 'stop after this many scenes'
         required: false
-        default: '4'
+        default: '6'
         type: string
       dry_run:
         description: 'process but write nothing to the Hub'
@@ -84,8 +84,8 @@ jobs:
         if: env.CONFIGURED == 'true' || inputs.dry_run == true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HOURS: ${{ inputs.hours || '72' }}
-          MAX_SCENES: ${{ inputs.max_scenes || '4' }}
+          HOURS: ${{ inputs.hours || '504' }}
+          MAX_SCENES: ${{ inputs.max_scenes || '6' }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
           REDO: ${{ inputs.redo && '--redo' || '' }}
         run: |

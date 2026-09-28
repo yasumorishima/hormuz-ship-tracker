@@ -1,8 +1,8 @@
 """Process every Sentinel-1 scene over the strait that has not been done yet.
 
-    python src/sar_collect.py --hours 72
-    python src/sar_collect.py --hours 72 --dry-run     # no Hub write
-    python src/sar_collect.py --hours 72 --redo        # do them again
+    python src/sar_collect.py --hours 504
+    python src/sar_collect.py --hours 504 --dry-run    # no Hub write
+    python src/sar_collect.py --hours 504 --redo       # do them again
 
 Runs to completion whatever the sea is doing: a scene that only clips the
 corner of the AOI, or one with no vessels in it, still gets a scene row. The
@@ -27,6 +27,29 @@ logger = logging.getLogger("sar_collect")
 # arithmetic, but it is still recorded so it is not fetched again.
 MIN_COVERED = 0.02
 
+# Three weeks. The window used to be 72 hours with four scenes a run, newest
+# first, and that lost a scene for good: the first real run on 2026-09-17 found
+# five, did the newest four, and by the next day the fifth
+# (S1D 2026-09-15T02:14:05Z) was older than the window. Searching costs one
+# request whatever the window, and scenes already done are skipped, so a long
+# window only costs anything when there is something to catch up on.
+DEFAULT_HOURS = 504.0
+DEFAULT_MAX_SCENES = 6
+
+
+def select(scenes: list[dict], already: set[str], max_scenes: int) -> list[dict]:
+    """The scenes to do this run: not done yet, oldest first, at most `max_scenes`.
+
+    Oldest first because the oldest is the one about to leave the window. Taking
+    the newest would starve it whenever a run has more to do than it may, which
+    is exactly the day after an outage. A scene that can never be read costs one
+    slot per run until it ages out; it does not block the others, because a
+    failure moves on to the next scene.
+    """
+    todo = [s for s in scenes if s["scene_id"] not in already]
+    todo.sort(key=lambda s: s["acq_time"] or "")
+    return todo[:max_scenes]
+
 
 def process(scene: dict, land, dry_run: bool = False, token: str | None = None) -> dict:
     started = time.monotonic()
@@ -48,9 +71,9 @@ def process(scene: dict, land, dry_run: bool = False, token: str | None = None) 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--hours", type=float, default=72.0,
+    ap.add_argument("--hours", type=float, default=DEFAULT_HOURS,
                     help="how far back to look for scenes")
-    ap.add_argument("--max-scenes", type=int, default=4,
+    ap.add_argument("--max-scenes", type=int, default=DEFAULT_MAX_SCENES,
                     help="stop after this many, so one run cannot sit for an hour")
     ap.add_argument("--dry-run", action="store_true", help="process but do not upload")
     ap.add_argument("--redo", action="store_true",
@@ -64,10 +87,10 @@ def main(argv=None) -> int:
 
     already = (set() if args.dry_run or args.redo
                else sar_store.processed(sar_store.list_files()))
-    todo = [s for s in scenes if s["scene_id"] not in already][:args.max_scenes]
-    logger.info("%d scenes in the window, %d already done, %d to do",
-                len(scenes), len(scenes) - len([s for s in scenes if s["scene_id"] not in already]),
-                len(todo))
+    todo = select(scenes, already, args.max_scenes)
+    pending = len([s for s in scenes if s["scene_id"] not in already])
+    logger.info("%d scenes in the window, %d already done, %d to do, %d left for later",
+                len(scenes), len(scenes) - pending, len(todo), pending - len(todo))
 
     summary = {"window_hours": args.hours, "scenes_found": len(scenes),
                "scenes_processed": 0, "dry_run": args.dry_run,
@@ -85,7 +108,7 @@ def main(argv=None) -> int:
             row = process(scene, land, dry_run=args.dry_run)
         except Exception as exc:                      # noqa: BLE001
             # Carry on to the next scene rather than ending the run. `todo` is
-            # newest first, so a scene that can never be read would otherwise
+            # oldest first, so a scene that can never be read would otherwise
             # sit at the head of the queue and block everything behind it for
             # as long as it stays inside the window. Nothing is written for it,
             # so it is retried rather than recorded as done.

@@ -96,6 +96,11 @@ def search(start: str, end: str, limit: int = 100) -> list[dict]:
         "limit": limit,
     }
     features = _get_json(STAC_SEARCH, body).get("features", [])
+    if len(features) >= limit:
+        # The endpoint returns newest first, so a full page has dropped the
+        # oldest scenes — the ones sar_collect is trying to catch up on.
+        logger.warning("the search returned a full page of %d; older scenes in "
+                       "the window were not listed", limit)
     scenes = []
     for f in features:
         props = f.get("properties", {})
