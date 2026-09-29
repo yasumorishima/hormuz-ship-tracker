@@ -40,7 +40,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **SAR 収集は毎日走っている**：`sar-collect.yml` は 09-17〜09-28 の全日 success（09-17 手動 3 回＋以後 schedule 毎日 1 回。
   cron 04:41 だが実発火は 09:00〜11:15 UTC）。HF の `sar/scenes/v1/` は 20 枚＝PC の 09-15 以降 21 スライスから **1 枚欠け**
   （S1D 2026-09-15T02:14:05Z）。原因＝旧設定「72h・最大 4 枚・新しい順」で 5 枚目が窓から落ちた。PR #13 で「504h・最大 6 枚・古い順」に直した
-  （次の run が欠けと 09-12・09-13 の 2 パスを拾う想定＝要確認）。
+  （窓に入る未処理は 09-09・09-10・09-12・09-13・欠けの計 10 スライス。欠けは古い順で 10 番目＝merge 後 **2 回目**の run で入る想定＝要確認）。
 - **HF カード**：配信物 README.md は `docs/DATASET_CARD.md` とバイト一致・radar 節あり（09-28 確認）。HF のコミット題が「N vessels of M」
   だったのを「vessel-sized」に直した（#13・以後のコミットから）。
 - **距離帯（17 シーン・9 パス・vessel_sized 12,524・`src/sar_survey.py`・生データ `docs/sar_survey.json`）**：100km² あたり
@@ -51,13 +51,14 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **再出現（他パスの 100m 以内・対照 500m 先）**：10km+ 5.5%（偶然 0.9%）＝固定物は多くて約 5%。0.2–1km 53%（偶然 21%）。
 - **地図に SAR 層を足した**：最新パスのみ・既定は「海岸 3km 以上かつ SNR>20」（`MAP_MIN_SHORE_KM`/`MAP_MIN_SNR`＝`sar_columns.py` と
   `map.js` をテストで一致）。弱い検出・1–3km・1km 以内は層として OFF。画面に「not ships」「once every two days」「one instant, not a track」
-  「Within 1 km … mixed」を明記。09-27 パスで既定 252・弱 1,400・海岸寄り 1,344。
+  「Within 1 km … mixed」「unobserved, not empty」（パスが見た箱の割合を表示）を明記。no_overlap だけのパスは飛ばす。09-27 パスで既定 252・弱 1,400・海岸寄り 1,344。
 - **precision**：海峡では未測定のまま。測れたのは「実在散乱体の下限」と「固定物の上限」まで（PIPELINE.md「Precision in the strait, without AIS」）。
 
 ## ▶▶ 次にやること
 
-1. PR #13 merge 後の `sar-collect.yml` の run で、欠けていた S1D 2026-09-15T02:14:05Z と 09-12・09-13 のスライスが HF に入ったかを数える
-   （PC で窓内 30 スライス・既処理 20＝残り 10、1 run 6 枚なので 2 run かかる）。
+1. PR #13 merge 後の `sar-collect.yml` の run 2 回で、欠けていた S1D 2026-09-15T02:14:05Z と 09-09〜09-13 のスライスが HF に入ったかを数える
+   （PC で窓内 30 スライス・既処理 20＝残り 10、1 run 6 枚・古い順なので 2 run かかる）。
+   既知の弱点：読めないシーンが 1 枚あると窓（21 日）を出るまで毎日赤になる（旧 3 日）。起きたら失敗回数で status=failed 行を書く案。
 2. 再出現を**取得スロット別**（`sar_survey.geometry_of`：02:06/02:14/14:16/14:24）に分ける：同スロットだけで再出現＝地形の倒れ込み、
    スロットを跨いで再出現＝構造物。各スロット 3 パス以上たまってから（今は 2 パス程度）。
 3. 弱い検出（SNR≤20・外洋）の正体：Sentinel-2（PC・無料）で同日の静止物だけ照合できるか試す。移動船は時刻差で無理。

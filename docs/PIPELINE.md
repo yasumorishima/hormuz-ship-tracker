@@ -260,7 +260,8 @@ kilometre of the shore. A count of them is not a count of ships.
 
 ### What the map shows, and why
 
-Measured 2026-09-28 by `src/sar_survey.py` over every scene then on the Hub:
+Measured 2026-09-28 by `python src/sar_survey.py --vh` (needs the test
+requirements plus pandas) over every scene then on the Hub:
 17 scenes in 9 passes (09-15 to 09-27), 21,437 candidates, 12,524
 vessel-sized. The raw output is `docs/sar_survey.json`. Water is the scene
 footprint from the STAC item intersected with the water mask beyond the 200 m
@@ -300,8 +301,13 @@ detection, against the same question 500 m away:
 | beyond 10 | SNR > 20 | 852 | **86%** | 0.3% | **86%** |
 
 The bound is f = p·q + (1−p)·c ≤ p + (1−p)·c, so p ≥ (f − c)/(1 − c) whatever
-the VH detectability q of a real target is. Near the shore it says little:
-terrain is a real scatterer too, so VH confirms it. Out at sea it splits the
+the VH detectability q of a real target is. It assumes a VV detection that is
+not a real scatterer passes the VH test at the random-water rate c; where VV
+false alarms sit on things also bright in VH (surf, rain cells, wakes,
+layover) they pass more often and the bound overstates. Near the shore c is
+already 8–20%, so the 0.2–3 km bounds are optimistic, and they say little
+anyway: terrain is a real scatterer too, so VH confirms it. Beyond 3 km c is
+under 1%. Out at sea it splits the
 detections cleanly — beyond 10 km, 99.6% of those above SNR 100 are confirmed
 and 1.4% of those at SNR 10–12. The weak ones are either small craft that VH
 does not see (small wooden and GRP boats are common here) or clutter; nothing
@@ -311,8 +317,10 @@ keeps the weak ones and the two near-shore bands as layers that are off until
 asked for. On the 09-27 pass that is 252 by default, 1,400 weak, 1,344 nearer
 the shore.
 
-The map draws only the newest pass, as its own layer with its own status line
-and its own failure, and says on the page that a circle is not a ship, that a
+The map draws only the newest pass, — the newest one whose scene rows say
+`ok`, so a pass that only clipped a corner is skipped — as its own layer with
+its own status line and its own failure. The status line gives the share of
+the box the pass saw, because the rest is unobserved, not empty. The page says that a circle is not a ship, that a
 pass is one instant about every two days, and that within 1 km terrain and
 hulls are mixed. The AIS 24-of-24 recall was measured off Dubai with the full
 detector, not with the SNR 20 display cut; the cut may hide real small boats,
@@ -381,18 +389,23 @@ truncated page drops exactly the oldest.
 
 Checked 2026-09-28 against the Hub and the run list: `sar-collect.yml` ran
 every day from 09-17 to 09-28 (three manual runs on 09-17, then one scheduled
-run a day, all green; the 04:41 cron actually fires between 09:00 and 11:15
-UTC). Planetary Computer lists 21 slices from 09-15 on; the Hub holds 20. The
-missing one is the slice above, and the next run with the wider window
-picks it up, along with the 09-12 and 09-13 passes that predate the first run.
+run a day, all green; the 04:41 cron actually fires between about 09:00 and
+11:15 UTC). Planetary Computer lists 21 slices from 09-15 on; the Hub holds
+20. The missing one is the slice above. The wider window also reaches the
+09-09, 09-10, 09-12 and 09-13 passes that predate the first run: ten slices
+to do, the lost one tenth oldest, so it lands on the second run after the
+change, while it is about fifteen days old and still inside the window.
 
 ### Running it by hand
 
 ```bash
 pip install -r requirements-sar.txt
 
-# what would be processed, without writing to the Hub
+# what the next scheduled run would process, without writing to the Hub
 python src/sar_collect.py --dry-run
+
+# everything in the window again, overwriting (about 30 slices, 30 s each)
+python src/sar_collect.py --redo --max-scenes 40
 
 # one real scene, no credentials, asserting what was measured
 python scripts/sar_smoke.py

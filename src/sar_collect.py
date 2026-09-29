@@ -85,8 +85,11 @@ def main(argv=None) -> int:
     start = (now - timedelta(hours=args.hours)).isoformat(timespec="seconds")
     scenes = sar_scene.search(start, now.isoformat(timespec="seconds"))
 
-    already = (set() if args.dry_run or args.redo
-               else sar_store.processed(sar_store.list_files()))
+    # A dry run still reads the ledger (the listing needs no token), so it
+    # shows what the scheduled run would do rather than the oldest scenes in
+    # the window. Only --redo ignores it; to redo everything in the window,
+    # pass a --max-scenes larger than the window holds (about 30 in three weeks).
+    already = set() if args.redo else sar_store.processed(sar_store.list_files())
     todo = select(scenes, already, args.max_scenes)
     pending = len([s for s in scenes if s["scene_id"] not in already])
     logger.info("%d scenes in the window, %d already done, %d to do, %d left for later",

@@ -3,7 +3,8 @@
     python src/sar_survey.py              # distance bands and recurrence
     python src/sar_survey.py --vh         # also re-read each scene's VH band
 
-If the download stalls (it did in one sandbox, in the Xet transfer), set
+Needs requirements-test.txt plus pandas (not in requirements-sar.txt, which
+is what the collector installs). If the download stalls (it did in one sandbox, in the Xet transfer), set
 HF_HUB_DISABLE_XET=1 to fall back to plain HTTP.
 
 Three measurements, none of which needs AIS, because the feed has no
@@ -27,7 +28,13 @@ receivers in the strait:
    fraction of detections with VH `> bg + k*sd` within two pixels, minus the
    same fraction at control points, bounds from below how many are real
    scatterers: f = p*q + (1-p)*c <= p + (1-p)*c, so p >= (f - c) / (1 - c)
-   whatever the VH detectability q is. It does not say a scatterer is a ship.
+   whatever the VH detectability q is. That rests on one assumption: a VV
+   detection that is not a real scatterer passes the VH test at the rate of
+   random water, c. Where VV false alarms sit on things that are also bright
+   in VH — surf, rain cells, wakes, layover — they pass more often and the
+   bound overstates p. Near the shore c is already 8-20%, so the 0.2-3 km
+   bounds are optimistic; beyond 3 km c is under 1%. It does not say a
+   scatterer is a ship.
 
 None of this is precision against ships. It separates "fixed" from "not
 fixed" and "real scatterer" from "noise"; a transient real scatterer in open

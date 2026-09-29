@@ -82,7 +82,7 @@ def _get_json(url: str, payload: dict | None = None, timeout: int = 60) -> dict:
         return json.load(response)
 
 
-def search(start: str, end: str, limit: int = 100) -> list[dict]:
+def search(start: str, end: str, limit: int = 250) -> list[dict]:
     """Scenes whose footprint touches the AOI, newest first.
 
     `id` is Planetary Computer's, which drops the four-character suffix the
