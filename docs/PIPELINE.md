@@ -258,6 +258,110 @@ AOI: of 2,931 candidates in one scene, 1,633 were vessel-sized, 1,240 too
 small and 58 too long — and 48% of the vessel-sized ones were within a
 kilometre of the shore. A count of them is not a count of ships.
 
+### What the map shows, and why
+
+Measured 2026-09-28 by `src/sar_survey.py` over every scene then on the Hub:
+17 scenes in 9 passes (09-15 to 09-27), 21,437 candidates, 12,524
+vessel-sized. The raw output is `docs/sar_survey.json`. Water is the scene
+footprint from the STAC item intersected with the water mask beyond the 200 m
+buffer; the per-scene totals agree with the stored `scored_water_km2` to a few
+per cent.
+
+| km from land | scored water, km² (summed over scenes) | vessel-sized | per 100 km² | SNR p10 / median / p90 | SNR > 20 |
+|---|---:|---:|---:|---|---:|
+| 0.2 – 1 | 6,653 | 6,284 | **94.5** | 11.3 / 14.7 / 32.7 | 25% |
+| 1 – 3 | 12,092 | 1,446 | **12.0** | 11.4 / 15.4 / 71.9 | 35% |
+| 3 – 10 | 32,199 | 1,602 | **5.0** | 11.5 / 29.1 / 247 | 55% |
+| beyond 10 | 78,033 | 3,187 | **4.1** | 11.0 / 13.5 / 196 | 27% |
+
+Finer, near the shore: 167 per 100 km² at 0.2–0.5 km, 39 at 0.5–1, 17 at
+1–2, 6.2 at 2–3, then 4.1 at 3–5 and 5.4 at 5–10 — the open-sea level. So
+**3 km is where the shore stops adding detections**, and that is the map's
+default (`MAP_MIN_SHORE_KM` in `src/sar_columns.py`, copied in `docs/map.js`).
+Half of all vessel-sized detections are in the 0.2–1 km band, which is 5% of
+the water. SNR does not separate the bands — the median is 13–15 in all but
+one — so it cannot be used to clean the shore.
+
+It does separate something else. The detector runs on VV; each scene also has
+VH, whose noise is independent of VV's. A hull, a platform or a rock usually
+stands out in both; speckle and sea clutter rarely do in VH. Re-reading VV and
+VH for all 17 scenes (the shipped detector reproduced every stored table
+exactly) and asking whether VH stands `> bg + 5·sd` within two pixels of each
+detection, against the same question 500 m away:
+
+| km from land | stratum | n | VH confirms | control | real scatterers, lower bound |
+|---|---|---:|---:|---:|---:|
+| 0.2 – 1 | all | 6,284 | 73% | 20% | 66% |
+| 1 – 3 | SNR ≤ 20 | 939 | 31% | 8% | 25% |
+| 1 – 3 | SNR > 20 | 507 | 81% | 8% | 80% |
+| 3 – 10 | SNR ≤ 20 | 725 | 13% | 0.6% | 12% |
+| 3 – 10 | SNR > 20 | 877 | **93%** | 0.6% | **93%** |
+| beyond 10 | SNR ≤ 20 | 2,335 | **3.8%** | 0.3% | **3.5%** |
+| beyond 10 | SNR > 20 | 852 | **86%** | 0.3% | **86%** |
+
+The bound is f = p·q + (1−p)·c ≤ p + (1−p)·c, so p ≥ (f − c)/(1 − c) whatever
+the VH detectability q of a real target is. Near the shore it says little:
+terrain is a real scatterer too, so VH confirms it. Out at sea it splits the
+detections cleanly — beyond 10 km, 99.6% of those above SNR 100 are confirmed
+and 1.4% of those at SNR 10–12. The weak ones are either small craft that VH
+does not see (small wooden and GRP boats are common here) or clutter; nothing
+in these tables can say which. So the map draws, by default, vessel-sized
+detections **3 km or more from shore with SNR over 20** (`MAP_MIN_SNR`), and
+keeps the weak ones and the two near-shore bands as layers that are off until
+asked for. On the 09-27 pass that is 252 by default, 1,400 weak, 1,344 nearer
+the shore.
+
+The map draws only the newest pass, as its own layer with its own status line
+and its own failure, and says on the page that a circle is not a ship, that a
+pass is one instant about every two days, and that within 1 km terrain and
+hulls are mixed. The AIS 24-of-24 recall was measured off Dubai with the full
+detector, not with the SNR 20 display cut; the cut may hide real small boats,
+which is why it is a default and not a filter on the data.
+
+### Precision in the strait, without AIS
+
+Precision needs a truth for every detection, and in the strait there is none:
+AIS has no receivers there, and even where it has, an unmatched detection may
+be a ship with its transponder off. So the question is split into parts that
+can each be answered from the radar alone.
+
+1. **Is it a real scatterer, or noise?** The VH test above. It gives a lower
+   bound on the real fraction per band and SNR stratum, with a measured
+   chance level. Out at sea: at least 86–93% for SNR > 20, at least 3.5–12%
+   for SNR ≤ 20.
+2. **Is it fixed, or does it move?** A hull under way is elsewhere two days
+   later; a platform, a rock or the layover of a ridge is not. For each
+   detection, every *other* pass whose footprint covers it is asked for a
+   detection within 100 m (the slices of one pass are one look), and the same
+   is asked 500 m away in the same band for chance. Only detections covered
+   by at least two other passes are scored:
+
+   | km from land | n | seen again within 100 m | chance |
+   |---|---:|---:|---:|
+   | 0.2 – 1 | 6,284 | 53% | 21% |
+   | 1 – 3 | 1,446 | 27% | 12% |
+   | 3 – 10 | 1,602 | 13% | 2.4% |
+   | beyond 10 | 3,187 | 5.5% | 0.9% |
+
+   Beyond 10 km at most about 5% are fixed; the rest are gone by the next
+   look, which is what vessels do. Near the shore about a third recur beyond
+   chance — the terrain and the berths. Passes in the same acquisition slot
+   (`sar_survey.geometry_of`) share an incidence angle, so layover recurs
+   within a slot and moves between slots; a near-shore point that recurs only
+   within its slot is the signature of terrain, and one that recurs across
+   slots is a structure. That split is the next thing to measure, once the
+   Hub has more than two passes per slot.
+3. **Is a transient real scatterer a vessel?** Not answerable from radar
+   alone. What would answer it, in order of cost: AIS where coverage returns
+   (a match is a vessel; no match stays unknown); a Sentinel-2 image of the
+   same day for the fixed and slow ones (it passes hours before or after
+   the radar, so moving ships will have moved); a wake beside the target.
+   None of these is implemented.
+
+So, on what is measured: out at sea, the default layer is at least 86% real
+scatterers and at most about 5% fixed ones. That is not the same as "86% are
+ships", and nothing on the page or in the data says it is.
+
 ### Catching up
 
 `sar-collect.yml` looks back three weeks and does at most six scenes a run,

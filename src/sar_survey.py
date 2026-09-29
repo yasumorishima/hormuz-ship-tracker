@@ -3,6 +3,9 @@
     python src/sar_survey.py              # distance bands and recurrence
     python src/sar_survey.py --vh         # also re-read each scene's VH band
 
+If the download stalls (it did in one sandbox, in the Xet transfer), set
+HF_HUB_DISABLE_XET=1 to fall back to plain HTTP.
+
 Three measurements, none of which needs AIS, because the feed has no
 receivers in the strait:
 

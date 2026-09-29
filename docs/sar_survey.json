@@ -1,0 +1,190 @@
+{
+  "version": "v1",
+  "scenes": 17,
+  "passes": 9,
+  "bands": [
+    {
+      "band_km": "0.2-1",
+      "water_km2": 6653,
+      "candidates": 11174,
+      "vessel_sized": 6284,
+      "per_100km2": 94.45,
+      "share_pct": 50.2,
+      "snr_p10": 11.3,
+      "snr_median": 14.7,
+      "snr_p90": 32.7,
+      "snr_gt20_pct": 25.2
+    },
+    {
+      "band_km": "1-3",
+      "water_km2": 12092,
+      "candidates": 2360,
+      "vessel_sized": 1446,
+      "per_100km2": 11.96,
+      "share_pct": 11.5,
+      "snr_p10": 11.4,
+      "snr_median": 15.4,
+      "snr_p90": 71.9,
+      "snr_gt20_pct": 35.1
+    },
+    {
+      "band_km": "3-10",
+      "water_km2": 32199,
+      "candidates": 2334,
+      "vessel_sized": 1602,
+      "per_100km2": 4.98,
+      "share_pct": 12.8,
+      "snr_p10": 11.5,
+      "snr_median": 29.1,
+      "snr_p90": 247.0,
+      "snr_gt20_pct": 54.7
+    },
+    {
+      "band_km": "10+",
+      "water_km2": 78033,
+      "candidates": 5558,
+      "vessel_sized": 3187,
+      "per_100km2": 4.08,
+      "share_pct": 25.4,
+      "snr_p10": 11.0,
+      "snr_median": 13.5,
+      "snr_p90": 195.8,
+      "snr_gt20_pct": 26.7
+    }
+  ],
+  "recurrence": {
+    "radius_km": 0.1,
+    "rows": [
+      {
+        "band_km": "0.2-1",
+        "n": 6284,
+        "seen_again_pct": 53.2,
+        "control_n": 3658,
+        "control_seen_again_pct": 21.1
+      },
+      {
+        "band_km": "1-3",
+        "n": 1446,
+        "seen_again_pct": 26.7,
+        "control_n": 1563,
+        "control_seen_again_pct": 12.3
+      },
+      {
+        "band_km": "3-10",
+        "n": 1602,
+        "seen_again_pct": 12.9,
+        "control_n": 1602,
+        "control_seen_again_pct": 2.4
+      },
+      {
+        "band_km": "10+",
+        "n": 3187,
+        "seen_again_pct": 5.5,
+        "control_n": 3176,
+        "control_seen_again_pct": 0.9
+      }
+    ]
+  },
+  "vh": {
+    "k": 5.0,
+    "not_reproduced": [],
+    "rows": [
+      {
+        "band_km": "0.2-1",
+        "stratum": "all",
+        "n": 6284,
+        "vh_confirmed_pct": 73.0,
+        "control_pct": 20.2,
+        "real_scatterer_lower_bound_pct": 66.2
+      },
+      {
+        "band_km": "0.2-1",
+        "stratum": "snr<=20",
+        "n": 4698,
+        "vh_confirmed_pct": 70.2,
+        "control_pct": 20.2,
+        "real_scatterer_lower_bound_pct": 62.7
+      },
+      {
+        "band_km": "0.2-1",
+        "stratum": "snr>20",
+        "n": 1586,
+        "vh_confirmed_pct": 81.4,
+        "control_pct": 20.2,
+        "real_scatterer_lower_bound_pct": 76.7
+      },
+      {
+        "band_km": "1-3",
+        "stratum": "all",
+        "n": 1446,
+        "vh_confirmed_pct": 48.7,
+        "control_pct": 8.4,
+        "real_scatterer_lower_bound_pct": 44.0
+      },
+      {
+        "band_km": "1-3",
+        "stratum": "snr<=20",
+        "n": 939,
+        "vh_confirmed_pct": 31.1,
+        "control_pct": 8.4,
+        "real_scatterer_lower_bound_pct": 24.8
+      },
+      {
+        "band_km": "1-3",
+        "stratum": "snr>20",
+        "n": 507,
+        "vh_confirmed_pct": 81.3,
+        "control_pct": 8.4,
+        "real_scatterer_lower_bound_pct": 79.5
+      },
+      {
+        "band_km": "3-10",
+        "stratum": "all",
+        "n": 1602,
+        "vh_confirmed_pct": 56.7,
+        "control_pct": 0.6,
+        "real_scatterer_lower_bound_pct": 56.5
+      },
+      {
+        "band_km": "3-10",
+        "stratum": "snr<=20",
+        "n": 725,
+        "vh_confirmed_pct": 12.8,
+        "control_pct": 0.6,
+        "real_scatterer_lower_bound_pct": 12.3
+      },
+      {
+        "band_km": "3-10",
+        "stratum": "snr>20",
+        "n": 877,
+        "vh_confirmed_pct": 93.0,
+        "control_pct": 0.6,
+        "real_scatterer_lower_bound_pct": 93.0
+      },
+      {
+        "band_km": "10+",
+        "stratum": "all",
+        "n": 3187,
+        "vh_confirmed_pct": 25.8,
+        "control_pct": 0.3,
+        "real_scatterer_lower_bound_pct": 25.5
+      },
+      {
+        "band_km": "10+",
+        "stratum": "snr<=20",
+        "n": 2335,
+        "vh_confirmed_pct": 3.8,
+        "control_pct": 0.3,
+        "real_scatterer_lower_bound_pct": 3.5
+      },
+      {
+        "band_km": "10+",
+        "stratum": "snr>20",
+        "n": 852,
+        "vh_confirmed_pct": 85.9,
+        "control_pct": 0.3,
+        "real_scatterer_lower_bound_pct": 85.9
+      }
+    ]
+  }
+}
