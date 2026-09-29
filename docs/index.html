@@ -15,7 +15,7 @@
   connect-src 'self' https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net;
   img-src 'self' data:;
   base-uri 'none'; form-action 'none';">
-<meta name="description" content="Sampled AIS vessel positions in the Persian Gulf, Strait of Hormuz and Gulf of Oman, read straight from the public Hugging Face dataset.">
+<meta name="description" content="Sampled AIS vessel positions and Sentinel-1 radar detections in the Persian Gulf, Strait of Hormuz and Gulf of Oman, read straight from the public Hugging Face dataset.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
@@ -32,7 +32,8 @@
   h1 { margin: 0 0 2px; font-size: 16px; font-weight: 600; letter-spacing: .01em; }
   h1 span { color: var(--dim); font-weight: 400; }
   #status { color: var(--dim); }
-  #status b { color: var(--ink); font-weight: 600; }
+  #status b, #sar-status b { color: var(--ink); font-weight: 600; }
+  #sar-status { color: var(--dim); }
   .caveat { margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--warn);
     background: #241d0f; color: #f0dcbb; font-size: 13px; }
   a { color: var(--accent); }
@@ -56,12 +57,24 @@
 <header>
   <h1>Strait of Hormuz <span>— AIS monitor</span></h1>
   <div id="status">Loading positions from the dataset…</div>
+  <div id="sar-status">Loading radar detections…</div>
   <div class="caveat" id="caveat">
     These are <strong>samples, not tracks</strong>. The collector opens the AIS
     stream for 180&nbsp;seconds about every 15&nbsp;minutes; the gaps between
     windows are not observed, and shore-based receivers do not cover the middle
     of the strait. An absent vessel is unknown, not absent.
     <a href="https://github.com/yasumorishima/hormuz-ship-tracker/blob/master/docs/PIPELINE.md">How this is collected</a>
+  </div>
+  <div class="caveat" id="sar-caveat">
+    Radar circles are <strong>not ships</strong>: they are bright objects the
+    size of a vessel in one Sentinel-1 image. A pass comes about
+    <strong>once every two days</strong> and is
+    <strong>one instant, not a track</strong>.
+    Within 1&nbsp;km of the shore, terrain laid over by the radar is mixed
+    with real hulls, so that band is off by default, and so are the weak
+    detections further out, most of which the radar's second channel does not
+    confirm. A pass sees only part of the box; where it did not look is
+    unobserved, not empty. None of them is matched to an AIS identity.
   </div>
 </header>
 <div id="map"></div>
@@ -70,6 +83,8 @@
   read directly in your browser — nothing is proxied.
   AIS via <a href="https://aisstream.io/">aisstream.io</a>.
   Coastline: <a href="https://www.naturalearthdata.com/">Natural Earth</a> 10m, public domain.
+  Radar: contains modified Copernicus Sentinel data (2026), via Microsoft Planetary Computer;
+  water mask ESA WorldCover 10m v200, CC BY 4.0.
   Map: <a href="https://leafletjs.com/">Leaflet</a>.
   Code: <a href="https://github.com/yasumorishima/hormuz-ship-tracker">hormuz-ship-tracker</a>.
   Also here:

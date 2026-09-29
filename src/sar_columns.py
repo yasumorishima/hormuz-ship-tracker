@@ -23,6 +23,18 @@ AOI_VERSION = "v1"
 # the old one and the two can be compared.
 DETECTOR_VERSION = "v1"
 
+# What the map draws by default; the other bands are there but switched off.
+# Measured over the 17 scenes on the Hub on 2026-09-28 (src/sar_survey.py,
+# docs/PIPELINE.md "What the map shows"):
+# - per 100 km^2 of scored water, vessel-sized detections run 4.1 beyond 10 km,
+#   5.0 at 3-10 km, 12.0 at 1-3 km and 94.5 at 0.2-1 km. From 3 km out the
+#   rate is the open-sea rate.
+# - beyond 3 km, 89% of those above SNR 20 also stand out in VH (at random
+#   water, under 1%); at or below 20, 6%.
+# docs/map.js keeps its own copies, held equal by tests/test_site.py.
+MAP_MIN_SHORE_KM = 3.0
+MAP_MIN_SNR = 20.0
+
 # Source and licence of the committed water mask, carried into the dataset
 # card so the attribution travels with the data.
 MASK_SOURCE = "ESA WorldCover 10m v200 (2021), CC BY 4.0"

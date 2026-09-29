@@ -16,7 +16,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **秘密情報は使わない**。`HF_TOKEN` と aisstream のキーは Actions の secrets にだけある。SAR 側は匿名で取れるので、
   smoke も検証も秘密なしで回す（**本番キーをバグ探しに使わない**）。
 - 依存：`pip install -r requirements-test.txt`（SAR の依存も含む・`websockets==15.0.1` と `shapely==2.0.7` は固定のまま緩めない）。
-  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（09-17 時点で 77 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（09-29 時点で 108 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
   `scripts/generate_sar_water_mask.py` はピーク約 4.4GB（コンテナなら回せる。RPi5 では回せなかった）。
 
 ## 構成
@@ -28,26 +28,42 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 | 公開 | `publish.yml`（3 時間ごと）が HF → 使い捨て SQLite（`positions` のみ）→ 描画 → `docs/` を commit。4 workflow の enable を打ち直す（60 日停止対策） |
 | SAR | `sar-collect.yml`（日次 04:41 UTC）＝`src/sar_scene.py`（STAC＋SAS＋GCP 付き COG）→ `src/sar_detect.py`（ブロック中央値＋MAD の背景 → `bg + 10·sd` → 連結成分 → 形状）→ `src/sar_store.py`（HF `sar/det/v1/` と `sar/scenes/v1/` を 1 コミット） |
 | 陸マスク | `data/sar_water_mask.tif`＝ESA WorldCover v200 10m（**CC BY 4.0**）。生成器 `scripts/generate_sar_water_mask.py` |
-| 地図 | GitHub Pages（master の `/docs`）。サーバーなし。背景は同梱の Natural Earth 陸地（`docs/land_mask.geojson`・`data/` とバイト一致をテストで固定） |
+| 地図 | GitHub Pages（master の `/docs`）。サーバーなし。背景は同梱の Natural Earth 陸地（`docs/land_mask.geojson`・`data/` とバイト一致をテストで固定）。SAR 層＝最新パスの `sar/det/v1/` をブラウザが直接読む |
+| SAR 評価 | `src/sar_survey.py`（手動）＝距離帯の率・パス間の再出現（対照つき）・`--vh` で VH 交差偏波の下限。結果 `docs/sar_survey.json` |
 
 `compact.yml` / `publish.yml` / `sar-collect.yml` は同じ concurrency group `hormuz-hub`。
 
-## 現在地（2026-09-24）
+## 現在地（2026-09-29）
 
 - **AIS は供給元が止まっている**：全世界を 180 秒購読すると 9,500〜12,300 隻受かるのに、海峡の枠は 0（09-16・09-17 に再現）。
   aisstream にペルシャ湾・オマーン湾の受信機が無い。collector の故障ではない。接続成功・位置 0 は warning で success にしてある（赤にしない）。
-- **SAR 収集面は稼働中**（PR #10・#11 merge 済・09-24 の日次 run も success）。海峡中心を覆うシーンは約 2 日に 1 枚・遅延 1 日未満。
-  検出率＝AIS を正解に **24/24**（300m 以内・Dubai 沖 2 シーン）。**recall だけで precision は未測定**、しかも海峡でなく Dubai 沖で測った。
-  初回実収集 1 シーン：候補 2,931・`vessel_sized` 1,633・**うち 48% が海岸 1km 以内**。
+- **SAR 収集は毎日走っている**：`sar-collect.yml` は 09-17〜09-28 の全日 success（09-17 手動 3 回＋以後 schedule 毎日 1 回。
+  cron 04:41 だが実発火は 09:00〜11:15 UTC）。HF の `sar/scenes/v1/` は 20 枚＝PC の 09-15 以降 21 スライスから **1 枚欠け**
+  （S1D 2026-09-15T02:14:05Z）。原因＝旧設定「72h・最大 4 枚・新しい順」で 5 枚目が窓から落ちた。PR #13 で「504h・最大 6 枚・古い順」に直した
+  （窓に入る未処理は 09-09・09-10・09-12・09-13・欠けの計 10 スライス。欠けは古い順で 10 番目＝merge 後 **2 回目**の run で入る想定＝要確認）。
+- **HF カード**：配信物 README.md は `docs/DATASET_CARD.md` とバイト一致・radar 節あり（09-28 確認）。HF のコミット題が「N vessels of M」
+  だったのを「vessel-sized」に直した（#13・以後のコミットから）。
+- **距離帯（17 シーン・9 パス・vessel_sized 12,524・`src/sar_survey.py`・生データ `docs/sar_survey.json`）**：100km² あたり
+  0.2–1km **94.5**／1–3km **12.0**／3–10km **5.0**／10km+ **4.1**（細かく 2–3km 6.2・3–5km 4.1＝3km から外洋水準）。
+  0.2–1km が vessel_sized の 50%（水面の 5%）。SNR 中央値は帯で差が無い（13–15）＝SNR で海岸は掃除できない。
+- **VH 交差偏波で「実在の散乱体」の下限**（VH が bg+5sd を ±2px で超える率 − 500m 先の対照）：3km+ で SNR>20 は 86–93%（対照 0.3–0.6%）、
+  SNR≤20 は 3.5–12%。**弱い方は小舟か clutter か区別できない**。海岸 1km 以内は地形も VH で光る＝VH では分けられない。
+- **再出現（他パスの 100m 以内・対照 500m 先）**：10km+ 5.5%（偶然 0.9%）＝固定物は多くて約 5%。0.2–1km 53%（偶然 21%）。
+- **地図に SAR 層を足した**：最新パスのみ・既定は「海岸 3km 以上かつ SNR>20」（`MAP_MIN_SHORE_KM`/`MAP_MIN_SNR`＝`sar_columns.py` と
+  `map.js` をテストで一致）。弱い検出・1–3km・1km 以内は層として OFF。画面に「not ships」「once every two days」「one instant, not a track」
+  「Within 1 km … mixed」「unobserved, not empty」（パスが見た箱の割合を表示）を明記。no_overlap だけのパスは飛ばす。09-27 パスで既定 252・弱 1,400・海岸寄り 1,344。
+- **precision**：海峡では未測定のまま。測れたのは「実在散乱体の下限」と「固定物の上限」まで（PIPELINE.md「Precision in the strait, without AIS」）。
 
 ## ▶▶ 次にやること
 
-1. `sar-collect.yml` の日次 run が積んだシーン数を HF の `sar/scenes/v1/` で数える（09-17 以降、毎日走っているか・欠けた日は無いか）。
-2. `compact.yml` 実行後の HF カードに radar 節が載っているかを実物で確認する。
-3. **海岸近傍のクラッタ**：既定の見せ方を決める（`dist_to_land_km` で絞れる形にはしてある）。決める前に距離帯ごとの件数と SNR を測る。
-4. **地図に SAR 層を足すか**を、3 を測ってから判断する。足すなら「`vessel_sized` を船と呼ばない」「海岸 1km 以内は混ざる」を画面にも書く。
-5. **precision を海峡で測る方法**を考える（AIS が無い今、AIS の無い検出は誤警報とは限らない＝正解の作り方から設計する）。
-6. AIS 側は触らない（コスト 0 の待機）。被覆が戻ったら実配信間隔を測る。
+1. PR #13 merge 後の `sar-collect.yml` の run 2 回で、欠けていた S1D 2026-09-15T02:14:05Z と 09-09〜09-13 のスライスが HF に入ったかを数える
+   （PC で窓内 30 スライス・既処理 20＝残り 10、1 run 6 枚・古い順なので 2 run かかる）。
+   既知の弱点：読めないシーンが 1 枚あると窓（21 日）を出るまで毎日赤になる（旧 3 日）。起きたら失敗回数で status=failed 行を書く案。
+2. 再出現を**取得スロット別**（`sar_survey.geometry_of`：02:06/02:14/14:16/14:24）に分ける：同スロットだけで再出現＝地形の倒れ込み、
+   スロットを跨いで再出現＝構造物。各スロット 3 パス以上たまってから（今は 2 パス程度）。
+3. 弱い検出（SNR≤20・外洋）の正体：Sentinel-2（PC・無料）で同日の静止物だけ照合できるか試す。移動船は時刻差で無理。
+4. 地図の SAR 層：パス選択（過去パス）や再出現フラグを出すかは 2 の結果次第。今は最新パスのみ。
+5. AIS 側は触らない（コスト 0 の待機）。被覆が戻ったら実配信間隔を測り、SAR の precision を AIS で測り直す（一致＝船・不一致＝不明のまま）。
 
 ## 🔴 主張の前に必ず併記すること
 
@@ -73,7 +89,18 @@ SAR：
 - `GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR` を export したまま `gdal_translate -of ENVI` すると出力 2 バイトで exit 0。/vsicurl 用の設定は読み出しの中だけに閉じる。
 - blob 読み出しは一過性に落ちる。`sar_scene.read_scene` が**署名し直して**最大 3 回再試行する（SAS は約 45 分で失効）。
 - PC の item id は SAFE 名の末尾 4 桁を落とす。出力パスの主キーは item id。
+- **窓＋上限＋新しい順は取りこぼす**：72h・最大 4 枚・新しい順で、5 枚あった初日の最古 1 枚が翌日には窓外＝永久欠損（09-15T02:14:05Z）。
+  台帳＝ファイルの存在なので誰も穴を探さない。今は 504h・6 枚・古い順（`sar_collect.select`）。STAC は新しい順に返す＝満ページは最古を落とす（警告を出す）。
+- **scene id の部分一致で探さない**：スライスの終了時刻＝次スライスの開始時刻（`…T021405_20260927T021430…` と `…T021430_…`）。
+  `"20260927T021430" in id` は 2 枚に当たる。開始時刻は `id[17:32]`、パスは `id[:3]+id[17:25]`。
 - 検出器の数字を書くときは**出荷する検出器で測る**（粗い検出器の「533 対 30」を docs に書いた前科）。出荷検出器では外洋で両マスク一致、海岸 1km 以内で差が出る。
+
+cloud サンドボックス：
+- HF の Xet 転送（`snapshot_download`/`hf_hub_download`）が無言で止まる → `HF_HUB_DISABLE_XET=1` で HTTP に落とすと通る。`curl -L …/resolve/main/…` も可。
+- `pkill -f <文字列>`／`kill $(pgrep -f …)` は同じ文字列を含む自分の shell まで殺す（exit 144）。`pgrep -f "^python src/…"` のように先頭で固定。
+- headless Chromium から unpkg・jsdelivr は proxy が 403、HF の resolve もリダイレクトで落ちる。検証は Playwright の `context.route` で
+  CDN を npm（registry は通る）から esbuild で束ねた同版ファイルに、HF の parquet を curl で落とした実物（Range 対応で 206）に差し替える。
+  proxy は `bypass: '<-loopback>'`、証明書は `ignoreHTTPSErrors`。
 
 AIS・公開：
 - `time.monotonic()` は boot からの秒数。「未記録」の番兵を 0 にしない。
