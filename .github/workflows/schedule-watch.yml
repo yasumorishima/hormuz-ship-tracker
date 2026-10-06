@@ -1,0 +1,72 @@
+name: Watch the scheduled runs
+
+# A run GitHub never gives a runner to (collect.yml on 2026-10-05T20:49Z: "The
+# job was not acquired by Runner of type hosted even after multiple attempts")
+# starts none of its own steps, so no check inside that workflow can see it.
+# This one looks from outside: two or more scheduled runs in a row that did
+# not succeed open an issue mentioning the owner, the same issue is updated
+# rather than opened again, and it is closed once a scheduled run succeeds.
+# One-off failures still only get GitHub's own mail. Rules: src/watch_schedules.py.
+
+on:
+  schedule:
+    # As often as the most frequent watched schedule (collect.yml, every 15
+    # minutes) and off its minutes. GitHub fires scheduled runs late, so the
+    # script also reports a streak that came and went between two looks.
+    - cron: '3,18,33,48 * * * *'
+  workflow_dispatch:
+    inputs:
+      memo:
+        description: 'この実行の意図'
+        required: false
+        type: string
+      dry_run:
+        description: 'judge only, touch no issue'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  # contents: read is only for the checkout; it is what a public repository
+  # already gives anyone.
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  # Two watchers deciding at once could each open the same issue.
+  group: schedule-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install 'pyyaml==6.0.2'
+
+      - name: Judge every scheduled workflow
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN_FLAG: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          set -o pipefail
+          python src/watch_schedules.py $DRY_RUN_FLAG | tee "$RUNNER_TEMP/watch.json"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo '### Scheduled runs'
+            echo '```json'
+            cat "$RUNNER_TEMP/watch.json" 2>/dev/null || echo '(no output)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
