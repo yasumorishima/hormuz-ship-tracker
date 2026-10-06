@@ -16,7 +16,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **秘密情報は使わない**。`HF_TOKEN` と aisstream のキーは Actions の secrets にだけある。SAR 側は匿名で取れるので、
   smoke も検証も秘密なしで回す（**本番キーをバグ探しに使わない**）。
 - 依存：`pip install -r requirements-test.txt`（SAR の依存も含む・`websockets==15.0.1` と `shapely==2.0.7` は固定のまま緩めない）。
-  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（09-29 時点で 108 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（10-06 時点で 138 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
   `scripts/generate_sar_water_mask.py` はピーク約 4.4GB（コンテナなら回せる。RPi5 では回せなかった）。
 
 ## 構成
@@ -25,13 +25,31 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 |---|---|
 | AIS 収集 | `collect.yml`（15 分ごとの設定・実配信は best-effort）が aisstream に **180 秒だけ**接続 → 陸地フィルタ → HF `raw/<日>/<HHMMSS>.parquet` |
 | 統合 | `compact.yml`（日次）が終わった日を `daily/<日>.parquet` へ＋データセットカードを HF へ（`push_card.py`） |
-| 公開 | `publish.yml`（3 時間ごと）が HF → 使い捨て SQLite（`positions` のみ）→ 描画 → `docs/` を commit。4 workflow の enable を打ち直す（60 日停止対策） |
+| 公開 | `publish.yml`（3 時間ごと）が HF → 使い捨て SQLite（`positions` のみ）→ 描画 → `docs/` を commit。5 workflow（見張り含む）の enable を打ち直す（60 日停止対策） |
 | SAR | `sar-collect.yml`（日次 04:41 UTC）＝`src/sar_scene.py`（STAC＋SAS＋GCP 付き COG）→ `src/sar_detect.py`（ブロック中央値＋MAD の背景 → `bg + 10·sd` → 連結成分 → 形状）→ `src/sar_store.py`（HF `sar/det/v1/` と `sar/scenes/v1/` を 1 コミット） |
 | 陸マスク | `data/sar_water_mask.tif`＝ESA WorldCover v200 10m（**CC BY 4.0**）。生成器 `scripts/generate_sar_water_mask.py` |
 | 地図 | GitHub Pages（master の `/docs`）。サーバーなし。背景は同梱の Natural Earth 陸地（`docs/land_mask.geojson`・`data/` とバイト一致をテストで固定）。SAR 層＝最新パスの `sar/det/v1/` をブラウザが直接読む |
+| 見張り | `schedule-watch.yml`（15 分ごと・`actions: read`/`issues: write`/`contents: read`・secrets なし）＝`src/watch_schedules.py`。定時 workflow の連続失敗を Issue でメールする（下の「見張りの判定規則」） |
 | SAR 評価 | `src/sar_survey.py`（手動）＝距離帯の率・パス間の再出現（対照つき）・`--vh` で VH 交差偏波の下限。結果 `docs/sar_survey.json` |
 
 `compact.yml` / `publish.yml` / `sar-collect.yml` は同じ concurrency group `hormuz-hub`。
+
+### 見張りの判定規則（`src/watch_schedules.py`・テスト `tests/test_watch_schedules.py`）
+
+- 対象＝`.github/workflows` で `schedule` を持つもの全部（見張り自身は除く・今は collect/compact/publish/sar-collect）。
+  見るのは `event=schedule&status=completed` の run だけ（手動 dispatch・実行中・待機中は数えない）。
+- **success 以外は全部失敗**（failure/cancelled/timed_out/startup_failure/skipped…）。4 workflow ともジョブ単位の `if` が無いので skipped＝ジョブが走らなかった。
+  実行機の割り当て失敗（10-05T20:49Z の collect）は run の conclusion が `failure`（ジョブは cancelled・ステップ 0）。
+- 新しい順に先頭から **2 回以上連続**で success 以外 → Issue「定時実行が連続で失敗: <file>」を開く（本文に @yasumorishima・run の URL・conclusion・時刻・回数）。
+  同名の open Issue があれば本文の更新だけ（編集はメールが飛ばない）。単発の失敗は GitHub 本体のメールだけ（アカウント設定・触らない）。
+- 連続が success で途切れたら、コメントを付けて close。open のままの Issue の連続が途切れ、見ていない間に別の 2 連続ができていたら、古い方を close して新しく開く（メールを飛ばすため）。
+- 定時 run は数時間遅れて発火する（collect は 18 日で 114 回・間隔最大 8.4h）＝見張りも同じく寝る。見張りが見る前に 2 連続→回復まで済んだものは、
+  **開いてすぐ閉じる**（48h 以内のものだけ・本文末尾の `<!-- schedule-watch file=… last-failed-run=… -->` と重なる連続は二度報告しない）。
+- run 0 件・API エラー・workflow が読めない → 見張り自身が赤（他の workflow の判定は済ませてから）。**新しく定時 workflow を足すと、その初回の定時 run が終わるまで見張りが赤**になる
+  （仕様どおり・`TheRealRepositoryTest` の監視対象一覧も直す）。
+- 失敗が続いている最中に Issue を手で閉じると、次の見張りで新しい Issue が開く（＝まだ失敗中の再通知）。
+- **実働確認（10-06）**：PR #15 merge（03:39Z）後の初発火は 7 時間後の 10:47Z（run 37452134102・success・4 workflow とも `none`・Issue なし）。15 分 cron でも実発火は collect 同様に 1 日数回＝通知の遅れは GitHub の schedule 次第。
+- 見えないもの：見張り自身の割り当て失敗（GitHub 本体のメールだけ）・定時 run がそもそも発火しなくなった状態（最新が success のまま止まる＝未検知）。
 
 ## 現在地（2026-09-29 12:00 UTC）
 
