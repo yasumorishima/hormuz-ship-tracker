@@ -48,6 +48,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - run 0 件・API エラー・workflow が読めない → 見張り自身が赤（他の workflow の判定は済ませてから）。**新しく定時 workflow を足すと、その初回の定時 run が終わるまで見張りが赤**になる
   （仕様どおり・`TheRealRepositoryTest` の監視対象一覧も直す）。
 - 失敗が続いている最中に Issue を手で閉じると、次の見張りで新しい Issue が開く（＝まだ失敗中の再通知）。
+- **実働確認（10-06）**：PR #15 merge（03:39Z）後の初発火は 7 時間後の 10:47Z（run 37452134102・success・4 workflow とも `none`・Issue なし）。15 分 cron でも実発火は collect 同様に 1 日数回＝通知の遅れは GitHub の schedule 次第。
 - 見えないもの：見張り自身の割り当て失敗（GitHub 本体のメールだけ）・定時 run がそもそも発火しなくなった状態（最新が success のまま止まる＝未検知）。
 
 ## 現在地（2026-09-29 12:00 UTC）
