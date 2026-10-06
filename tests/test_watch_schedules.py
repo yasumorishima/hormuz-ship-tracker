@@ -122,6 +122,9 @@ class OpeningTest(unittest.TestCase):
         gh = FakeGitHub({"collect.yml": list(reversed(runs("failure", "failure", "success")))})
         watch(gh)
         self.assertEqual(len(gh.created), 1)
+        self.assertEqual(gh.closed, [])
+        self.assertEqual(gh.issues_[0]["state"], "open")
+        self.assertIn("**2 回連続", gh.issues_[0]["body"])
 
 
 class UpdatingTest(unittest.TestCase):
@@ -180,6 +183,24 @@ class GrownStreakTest(unittest.TestCase):
         self.assertEqual(len(gh.closed), 1)
 
 
+class NewStreakBehindAnOpenIssueTest(unittest.TestCase):
+    def test_a_new_streak_after_an_unseen_recovery_mails_again(self):
+        gh = FakeGitHub({"collect.yml": runs("failure", "failure", "success")})
+        watch(gh)
+        first = gh.created[0]
+        later = NOW + timedelta(hours=2)
+        gh.runs_by_file["collect.yml"] = (
+            runs("failure", "failure", "success", start=later)
+            + runs("failure", "failure", "success", start=NOW))
+        watch(gh, later)
+        self.assertEqual(gh.closed, [first])
+        self.assertEqual(len(gh.created), 2)
+        self.assertEqual(gh.issues_[-1]["state"], "open")
+        self.assertIn("@yasumorishima", gh.issues_[-1]["body"])
+        watch(gh, later)
+        self.assertEqual(len(gh.created), 2)
+
+
 class MissedStreakTest(unittest.TestCase):
     """Scheduled runs fire hours late; a streak can come and go unwatched."""
 
@@ -193,6 +214,13 @@ class MissedStreakTest(unittest.TestCase):
         self.assertIn(history[0]["html_url"] + ")", gh.comments[0][1])  # the success
         watch(gh)
         self.assertEqual(len(gh.created), 1)
+
+    def test_the_recovery_cited_is_the_success_that_broke_the_streak(self):
+        history = runs("success", "success", "failure", "failure", "success")
+        gh = FakeGitHub({"collect.yml": history})
+        watch(gh)
+        self.assertIn(history[1]["html_url"] + ")", gh.comments[0][1])
+        self.assertNotIn(history[0]["html_url"] + ")", gh.comments[0][1])
 
     def test_an_old_streak_is_left_alone(self):
         old = NOW - ws.LOOKBACK - timedelta(hours=1)
@@ -233,10 +261,61 @@ class BlindnessTest(unittest.TestCase):
                 mock.patch("builtins.print"):
             self.assertEqual(ws.main(), 1)
 
+    def test_a_broken_workflow_file_is_a_watch_error(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "bad.yml"), "w") as f:
+                f.write("just a string\n")
+            with self.assertRaises(ws.WatchError):
+                ws.scheduled_workflows(d)
+
     def test_http_failures_raise(self):
         gh = ws.GitHub("o/r", "t", api="http://127.0.0.1:9")  # nothing listens
         with self.assertRaises(ws.WatchError):
             gh.runs("collect.yml")
+
+
+class RecordingGitHub(ws.GitHub):
+    """The real client, with the wire replaced by a recorder."""
+
+    def __init__(self, replies):
+        super().__init__("o/r", "t")
+        self.replies, self.calls = list(replies), []
+
+    def _call(self, method, path, payload=None):
+        self.calls.append((method, path, payload))
+        return self.replies.pop(0)
+
+
+class ClientTest(unittest.TestCase):
+    def test_runs_asks_for_finished_scheduled_runs_only(self):
+        gh = RecordingGitHub([{"workflow_runs": []}])
+        gh.runs("collect.yml")
+        path = gh.calls[0][1]
+        self.assertIn("/actions/workflows/collect.yml/runs?", path)
+        self.assertIn("event=schedule", path)
+        self.assertIn("status=completed", path)
+
+    def test_a_runs_reply_without_runs_is_an_error(self):
+        gh = RecordingGitHub([{"message": "Not Found"}])
+        with self.assertRaises(ws.WatchError):
+            gh.runs("collect.yml")
+
+    def test_issues_drop_pull_requests_and_follow_pages(self):
+        full = [{"number": n, "title": "t"} for n in range(99)] + [
+            {"number": 99, "title": "pr", "pull_request": {}}]
+        gh = RecordingGitHub([full, [{"number": 200, "title": "t"}]])
+        got = gh.issues("open", pages=5)
+        self.assertEqual(len(gh.calls), 2)
+        self.assertIn("page=2", gh.calls[1][1])
+        self.assertNotIn(99, [i["number"] for i in got])
+        self.assertIn(200, [i["number"] for i in got])
+
+    def test_close_says_completed(self):
+        gh = RecordingGitHub([{}])
+        gh.close(7)
+        self.assertEqual(gh.calls[0], ("PATCH", "/issues/7",
+                                       {"state": "closed", "state_reason": "completed"}))
 
 
 def fire_minutes(cron: str) -> list[int]:

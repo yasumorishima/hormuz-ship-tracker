@@ -67,10 +67,13 @@ def scheduled_workflows(directory: str = ".github/workflows") -> list[dict]:
         name = os.path.basename(path)
         if name == SELF:
             continue
-        with open(path, encoding="utf-8") as f:
-            doc = yaml.safe_load(f)
-        # PyYAML reads the bare key `on` as the boolean True.
-        triggers = doc.get("on", doc.get(True)) or {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                doc = yaml.safe_load(f)
+            # PyYAML reads the bare key `on` as the boolean True.
+            triggers = doc.get("on", doc.get(True)) or {}
+        except (yaml.YAMLError, AttributeError) as e:
+            raise WatchError(f"{name}: cannot read its triggers: {e}") from e
         if isinstance(triggers, dict) and triggers.get("schedule"):
             found.append({"file": name, "name": doc.get("name", name),
                           "crons": [s["cron"] for s in triggers["schedule"]]})
@@ -137,6 +140,12 @@ def decide(wf: dict, runs: list[dict], open_issue: dict | None,
         body = render_body(wf, streak, recovered_by=None)
         if open_issue is None:
             return {"op": "open", "title": title, "body": body}
+        if not any(r["id"] in reported_runs([open_issue], wf["file"]) for r in streak):
+            # The open issue is about an earlier streak that a success broke
+            # while nobody looked. Editing it would mail no one about this one.
+            return {"op": "close_and_open", "number": open_issue["number"],
+                    "comment": render_recovery(runs[len(streak)]),
+                    "title": title, "body": body}
         if open_issue.get("body") != body:
             return {"op": "update", "number": open_issue["number"], "body": body}
         return {"op": "none", "why": f"{len(streak)} in a row, issue already up to date"}
@@ -268,6 +277,10 @@ def apply(gh, action: dict) -> None:
     elif op == "close":
         gh.comment(action["number"], action["comment"])
         gh.close(action["number"])
+    elif op == "close_and_open":
+        gh.comment(action["number"], action["comment"])
+        gh.close(action["number"])
+        gh.create_issue(action["title"], action["body"])
     elif op == "open_and_close":
         number = gh.create_issue(action["title"], action["body"])
         gh.comment(number, action["comment"])
