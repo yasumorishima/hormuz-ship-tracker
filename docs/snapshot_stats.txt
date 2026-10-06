@@ -1,34 +1,9 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-03-18 12:30:17 UTC
+Generated: 2026-10-06 15:55:51 UTC
 
-Active vessels (30 min): 193
-Unique vessels (24h): 268
-Total position records: 43,574
-Strait transits (24h): IN 17 / OUT 9
+Active vessels (30 min): 0
+Unique vessels (24h): 1
+Total position records: 1
+Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
-  Unknown: 135
-  Tanker: 25
-  Cargo: 23
-  Fishing/Towing/Dredging: 3
-  Passenger: 2
-  Other: 2
-  Military/Sailing/Pleasure: 2
-  WIG: 1
-
-## Top vessels by name
-  DUBAI FORTUNE [Cargo] → Jebel Ali | 10.6 kn
-  NAVE ANDROMEDA [Tanker] → Singapore | 0.7 kn
-  MARINE CHARGE [Tanker] → Dubai | 0.4 kn
-  YC PANSY [Unknown] → -- | 0.4 kn
-  EXPLORER [Unknown] → -- | 8.8 kn
-  CAMILLA [Unknown] → -- | 0.2 kn
-  ASP AVANA [Unknown] → -- | --
-  MONTE URBASA [Tanker] → TBC | 15.5 kn
-  ABU DHABI III [Unknown] → -- | 0.1 kn
-  SELAT HOPE [Unknown] → -- | 102.3 kn
-  VALLIANZ SUPREME [Unknown] → -- | --
-  SEA CONDOR [Tanker] → For Orders | 5.6 kn
-  SEA WOLF [Unknown] → -- | 1.4 kn
-  AL BARRAH [Tanker] → Jebel Ali | 8.5 kn
-  BSL NORDIC [Cargo] → JABEL ALI | 0.1 kn
