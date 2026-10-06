@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-06 15:55 UTC*
+*Auto-updated: 2026-10-06 22:39 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-06 → 2026-10-06 (0.0 days) |
-| Total positions | 1 |
-| Clean positions | 1 (100%) |
+| Collection period | 2026-10-06 → 2026-10-06 (0.2 days) |
+| Total positions | 3 |
+| Clean positions | 3 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 1 |
-| Avg positions/day | 100 |
+| Unique vessels | 2 |
+| Avg positions/day | 14 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,14 +19,15 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-06 | 1 | 1 |
+| 2026-10-06 | 3 | 2 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  15:00     1  ████████████████████████████████████████
+  15:00     1  ████████████████████
+  20:00     2  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -37,6 +38,7 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
+| PA | Panama | 1 |
 | KN | St. Kitts | 1 |
 
 ## Vessel Types
@@ -48,7 +50,8 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| AARNA | KN | Unknown | 1 | 2026-10-06 | 2026-10-06 |
+| AARNA | KN | Unknown | 2 | 2026-10-06 | 2026-10-06 |
+| H7 PMB2 | PA | Unknown | 1 | 2026-10-06 | 2026-10-06 |
 
 ## Top Destinations
 
