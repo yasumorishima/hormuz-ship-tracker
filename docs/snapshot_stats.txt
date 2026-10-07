@@ -1,17 +1,9 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-10-07 05:56:52 UTC
+Generated: 2026-10-07 13:19:57 UTC
 
-Active vessels (30 min): 3
-Unique vessels (24h): 4
-Total position records: 7
+Active vessels (30 min): 0
+Unique vessels (24h): 5
+Total position records: 10
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
-  Unknown: 1
-  Military/Sailing/Pleasure: 1
-  Cargo: 1
-
-## Top vessels by name
-  AZIZI [Unknown] → -- | --
-  ZEFZAF [Military/Sailing/Pleasure] → Dubai | --
-  H7 PMB2 [Cargo] → Sharjah | 9.9 kn
