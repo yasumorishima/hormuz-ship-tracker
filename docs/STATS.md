@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-08 00:59 UTC*
+*Auto-updated: 2026-10-08 10:32 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-06 → 2026-10-07 (1.2 days) |
-| Total positions | 13 |
-| Clean positions | 13 (100%) |
+| Collection period | 2026-10-06 → 2026-10-08 (1.8 days) |
+| Total positions | 14 |
+| Clean positions | 14 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 6 |
-| Avg positions/day | 11 |
+| Unique vessels | 7 |
+| Avg positions/day | 8 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-10-06 | 4 | 2 |
 | 2026-10-07 | 9 | 6 |
+| 2026-10-08 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -28,6 +29,7 @@ Average positions per hour across all days (clean data only):
 
 ```
   05:00     3  ████████████████████████████████████████
+  09:00     1  █████████████
   12:00     3  ████████████████████████████████████████
   15:00     1  █████████████
   18:00     3  ████████████████████████████████████████
@@ -46,6 +48,7 @@ No transit events recorded yet.
 | KN | St. Kitts | 2 |
 | AE | UAE | 2 |
 | PA | Panama | 1 |
+| NL | Netherlands | 1 |
 
 ## Vessel Types
 
@@ -62,6 +65,7 @@ No transit events recorded yet.
 | H7 PMB2 | PA | Cargo | 5 | 2026-10-06 | 2026-10-07 |
 | AARNA | KN | Unknown | 3 | 2026-10-06 | 2026-10-07 |
 | AZIZI | AE | Unknown | 2 | 2026-10-07 | 2026-10-07 |
+| HAM 318 | NL | Unknown | 1 | 2026-10-08 | 2026-10-08 |
 | ILLUMINATE | KN | Unknown | 1 | 2026-10-07 | 2026-10-07 |
 | ZEFZAF | AE | Military | 1 | 2026-10-07 | 2026-10-07 |
 | SOLTIS | -- | Tanker | 1 | 2026-10-07 | 2026-10-07 |
