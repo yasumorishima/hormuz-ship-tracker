@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-09 10:30 UTC*
+*Auto-updated: 2026-10-09 18:20 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-07 → 2026-10-09 (2.1 days) |
-| Total positions | 20 |
-| Clean positions | 20 (100%) |
+| Collection period | 2026-10-07 → 2026-10-09 (2.4 days) |
+| Total positions | 22 |
+| Clean positions | 22 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 9 |
-| Avg positions/day | 10 |
+| Unique vessels | 10 |
+| Avg positions/day | 9 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-07 | 9 | 6 |
 | 2026-10-08 | 5 | 3 |
-| 2026-10-09 | 6 | 5 |
+| 2026-10-09 | 8 | 6 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -34,6 +34,7 @@ Average positions per hour across all days (clean data only):
   08:00     1  █████████████
   09:00     1  █████████████
   12:00     3  ████████████████████████████████████████
+  15:00     2  ██████████████████████████
   16:00     2  ██████████████████████████
   18:00     3  ████████████████████████████████████████
   21:00     2  ██████████████████████████
@@ -47,8 +48,8 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
+| AE | UAE | 3 |
 | KN | St. Kitts | 2 |
-| AE | UAE | 2 |
 | PA | Panama | 1 |
 | NL | Netherlands | 1 |
 | BS | Bahamas | 1 |
@@ -65,7 +66,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| AARNA | KN | Unknown | 5 | 2026-10-07 | 2026-10-09 |
+| AARNA | KN | Unknown | 6 | 2026-10-07 | 2026-10-09 |
 | AZIZI | AE | Unknown | 5 | 2026-10-07 | 2026-10-09 |
 | H7 PMB2 | PA | Cargo | 3 | 2026-10-07 | 2026-10-07 |
 | ILLUMINATE | KN | Unknown | 2 | 2026-10-07 | 2026-10-09 |
