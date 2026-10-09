@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-08 18:50 UTC*
+*Auto-updated: 2026-10-09 01:12 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-06 → 2026-10-08 (2.1 days) |
-| Total positions | 16 |
-| Clean positions | 16 (100%) |
+| Collection period | 2026-10-07 → 2026-10-08 (1.7 days) |
+| Total positions | 14 |
+| Clean positions | 14 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 7 |
 | Avg positions/day | 8 |
@@ -19,9 +19,8 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-06 | 4 | 2 |
 | 2026-10-07 | 9 | 6 |
-| 2026-10-08 | 3 | 3 |
+| 2026-10-08 | 5 | 3 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -31,11 +30,9 @@ Average positions per hour across all days (clean data only):
   05:00     3  ████████████████████████████████████████
   09:00     1  █████████████
   12:00     3  ████████████████████████████████████████
-  15:00     1  █████████████
   16:00     2  ██████████████████████████
   18:00     3  ████████████████████████████████████████
-  20:00     2  ██████████████████████████
-  23:00     1  █████████████
+  21:00     2  ██████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -63,9 +60,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| H7 PMB2 | PA | Cargo | 5 | 2026-10-06 | 2026-10-07 |
-| AARNA | KN | Unknown | 4 | 2026-10-06 | 2026-10-08 |
-| AZIZI | AE | Unknown | 3 | 2026-10-07 | 2026-10-08 |
+| AZIZI | AE | Unknown | 4 | 2026-10-07 | 2026-10-08 |
+| AARNA | KN | Unknown | 3 | 2026-10-07 | 2026-10-08 |
+| H7 PMB2 | PA | Cargo | 3 | 2026-10-07 | 2026-10-07 |
 | HAM 318 | NL | Unknown | 1 | 2026-10-08 | 2026-10-08 |
 | ILLUMINATE | KN | Unknown | 1 | 2026-10-07 | 2026-10-07 |
 | ZEFZAF | AE | Military | 1 | 2026-10-07 | 2026-10-07 |
