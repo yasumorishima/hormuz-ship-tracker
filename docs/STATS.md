@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-11 19:33 UTC*
+*Auto-updated: 2026-10-12 00:31 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-09 → 2026-10-11 (2.6 days) |
-| Total positions | 60 |
-| Clean positions | 60 (100%) |
+| Collection period | 2026-10-11 → 2026-10-11 (0.6 days) |
+| Total positions | 120 |
+| Clean positions | 120 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 51 |
-| Avg positions/day | 23 |
+| Unique vessels | 88 |
+| Avg positions/day | 202 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,19 +19,17 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-09 | 8 | 6 |
-| 2026-10-11 | 52 | 48 |
+| 2026-10-11 | 120 | 88 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  01:00     2  ███
-  07:00     3  █████
-  08:00     1  █
-  09:00    24  ████████████████████████████████████████
-  15:00    15  █████████████████████████
+  09:00    24  █████████████████████████
+  15:00    28  █████████████████████████████
+  19:00    30  ███████████████████████████████
+  23:00    38  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -42,46 +40,50 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 20 |
-| KN | St. Kitts | 4 |
-| KM | Comoros | 4 |
-| PA | Panama | 2 |
-| NL | Netherlands | 2 |
-| VC | St. Vincent | 1 |
+| AE | UAE | 34 |
+| VC | St. Vincent | 7 |
+| KN | St. Kitts | 6 |
+| MH | Marshall Is. | 5 |
+| KM | Comoros | 5 |
+| PA | Panama | 4 |
+| NL | Netherlands | 4 |
+| LR | Liberia | 3 |
+| TH | Thailand | 1 |
 | TG | TG | 1 |
-| SO | SO | 1 |
-| MT | Malta | 1 |
-| MH | Marshall Is. | 1 |
 
 ## Vessel Types
 
 | Type | Vessels |
 |---|---:|
+| Cargo | 1 |
+| Military | 1 |
 
 ## Most Tracked Vessels
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| AARNA | KN | Unknown | 4 | 2026-10-09 | 2026-10-11 |
-| ILLUMINATE | KN | Unknown | 3 | 2026-10-09 | 2026-10-11 |
-| BARDSEY ISLAND | GB | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| BARDSEY ISLAND | GB | Military | 3 | 2026-10-11 | 2026-10-11 |
+| SEA BULLDOG | NL | Unknown | 3 | 2026-10-11 | 2026-10-11 |
+| RED SEA II | AE | Unknown | 3 | 2026-10-11 | 2026-10-11 |
+| LUMINA OCEAN | CD | Unknown | 3 | 2026-10-11 | 2026-10-11 |
+| MCS ANNEKE 2 | -- | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| HAM 318 | NL | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| COASTAL RANGER | NL | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| AL FAHEDI | -- | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| ILLUMINATE | KN | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| AARNA | KN | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| TIME OUT UMM QASSAR | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| PLC 02 | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
+| DTA DEAN ANDREW | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
 | HADDOCK ANN | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
-| RED SEA II | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
-| AZIZI | AE | Unknown | 2 | 2026-10-09 | 2026-10-11 |
-| WILLEM VAN ORANJE | BS | Unknown | 1 | 2026-10-09 | 2026-10-09 |
-| MCS ANNEKE 2 | -- | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| COASTAL RANGER | NL | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| SEA BULLDOG | NL | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| INDIGO STAR 1 | MT | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| NATO WARSHIP | -- | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| THUNDER | -- | Unknown | 1 | 2026-10-09 | 2026-10-09 |
-| PORTLAND IV | KN | Unknown | 1 | 2026-10-11 | 2026-10-11 |
-| TSC DARYA | KN | Unknown | 1 | 2026-10-11 | 2026-10-11 |
+| SHAMAL | AE | Unknown | 2 | 2026-10-11 | 2026-10-11 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
+| Sharjah | 1 |
+| Dubai | 1 |
 
 ---
 *Data source: [aisstream.io](https://aisstream.io/) (terrestrial AIS)*
