@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-13 16:56 UTC*
+*Auto-updated: 2026-10-13 22:42 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-11 → 2026-10-13 (2.3 days) |
-| Total positions | 367 |
-| Clean positions | 366 (99%) |
+| Collection period | 2026-10-11 → 2026-10-13 (2.5 days) |
+| Total positions | 386 |
+| Clean positions | 385 (99%) |
 | Anomalous positions | 1 (0%) |
-| Unique vessels | 193 |
-| Avg positions/day | 159 |
+| Unique vessels | 197 |
+| Avg positions/day | 153 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-11 | 120 | 88 |
 | 2026-10-12 | 118 | 98 |
-| 2026-10-13 | 129 | 100 |
+| 2026-10-13 | 148 | 109 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -35,6 +35,7 @@ Average positions per hour across all days (clean data only):
   15:00    28  ██████████████████
   16:00    21  ██████████████
   19:00    32  █████████████████████
+  21:00    19  ████████████
   23:00    38  █████████████████████████
 ```
 
@@ -46,13 +47,13 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 61 |
-| PA | Panama | 16 |
+| AE | UAE | 62 |
+| PA | Panama | 17 |
 | VC | St. Vincent | 14 |
 | MH | Marshall Is. | 13 |
 | KN | St. Kitts | 13 |
 | KM | Comoros | 12 |
-| LR | Liberia | 8 |
+| LR | Liberia | 9 |
 | TG | TG | 4 |
 | NL | Netherlands | 4 |
 | KY | Cayman | 4 |
@@ -69,21 +70,21 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| SEAFOX BURJ | MH | Unknown | 8 | 2026-10-11 | 2026-10-13 |
 | COASTAL RANGER | NL | Unknown | 7 | 2026-10-11 | 2026-10-13 |
 | SEA BULLDOG | NL | Unknown | 7 | 2026-10-11 | 2026-10-13 |
+| AARNA | KN | Unknown | 7 | 2026-10-11 | 2026-10-13 |
+| RED SEA II | AE | Unknown | 7 | 2026-10-11 | 2026-10-13 |
 | CHRISTINA TIDE | -- | Unknown | 7 | 2026-10-11 | 2026-10-13 |
 | MCS ANNEKE 2 | -- | Unknown | 6 | 2026-10-11 | 2026-10-13 |
 | BARDSEY ISLAND | GB | Military | 6 | 2026-10-11 | 2026-10-13 |
-| AARNA | KN | Unknown | 6 | 2026-10-11 | 2026-10-13 |
+| GTO 202 | NL | Other | 6 | 2026-10-11 | 2026-10-13 |
 | TIME OUT UMM QASSAR | AE | Unknown | 6 | 2026-10-11 | 2026-10-13 |
-| RED SEA II | AE | Unknown | 6 | 2026-10-11 | 2026-10-13 |
-| GTO 202 | NL | Other | 5 | 2026-10-11 | 2026-10-13 |
 | HAM 318 | NL | Unknown | 5 | 2026-10-11 | 2026-10-13 |
+| MAG PEARL | TG | Unknown | 5 | 2026-10-12 | 2026-10-13 |
 | BARGE LESVOS V | -- | Unknown | 5 | 2026-10-11 | 2026-10-13 |
-| DTA DEAN ANDREW | AE | Unknown | 4 | 2026-10-11 | 2026-10-13 |
-| HADDOCK ANN | AE | Unknown | 4 | 2026-10-11 | 2026-10-12 |
-| SHAMAL | AE | Unknown | 4 | 2026-10-11 | 2026-10-13 |
-| ENAD | AE | Unknown | 4 | 2026-10-11 | 2026-10-13 |
+| INDIGO STAR 1 | MT | Unknown | 4 | 2026-10-11 | 2026-10-13 |
+| MV JANA 37 | SA | Unknown | 4 | 2026-10-12 | 2026-10-13 |
 
 ## Top Destinations
 
