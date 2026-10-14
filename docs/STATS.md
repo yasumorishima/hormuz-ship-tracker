@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-14 11:49 UTC*
+*Auto-updated: 2026-10-14 17:08 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-12 → 2026-10-14 (2.3 days) |
-| Total positions | 401 |
-| Clean positions | 400 (99%) |
+| Collection period | 2026-10-12 → 2026-10-14 (2.5 days) |
+| Total positions | 429 |
+| Clean positions | 428 (99%) |
 | Anomalous positions | 1 (0%) |
-| Unique vessels | 211 |
-| Avg positions/day | 172 |
+| Unique vessels | 221 |
+| Avg positions/day | 169 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-12 | 118 | 98 |
 | 2026-10-13 | 148 | 109 |
-| 2026-10-14 | 135 | 98 |
+| 2026-10-14 | 163 | 116 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -35,6 +35,7 @@ Average positions per hour across all days (clean data only):
   08:00    60  ████████████████████████████████████████
   09:00    38  █████████████████████████
   10:00    52  ██████████████████████████████████
+  15:00    28  ██████████████████
   16:00    21  ██████████████
   19:00    35  ███████████████████████
   21:00    19  ████████████
@@ -48,16 +49,16 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 61 |
+| AE | UAE | 63 |
 | PA | Panama | 22 |
 | KN | St. Kitts | 14 |
 | KM | Comoros | 14 |
 | VC | St. Vincent | 13 |
+| LR | Liberia | 13 |
 | MH | Marshall Is. | 12 |
-| LR | Liberia | 12 |
+| KY | Cayman | 6 |
 | NL | Netherlands | 5 |
-| KY | Cayman | 5 |
-| MT | Malta | 4 |
+| TH | Thailand | 4 |
 
 ## Vessel Types
 
@@ -71,21 +72,21 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| SEAFOX BURJ | MH | Unknown | 8 | 2026-10-12 | 2026-10-14 |
-| MCS ANNEKE 2 | -- | Unknown | 7 | 2026-10-12 | 2026-10-14 |
+| SEAFOX BURJ | MH | Unknown | 9 | 2026-10-12 | 2026-10-14 |
+| MCS ANNEKE 2 | -- | Unknown | 8 | 2026-10-12 | 2026-10-14 |
+| MAG PEARL | TG | Unknown | 8 | 2026-10-12 | 2026-10-14 |
 | GTO 202 | NL | Other | 7 | 2026-10-12 | 2026-10-14 |
 | COASTAL RANGER | NL | Unknown | 7 | 2026-10-12 | 2026-10-14 |
 | AARNA | KN | Unknown | 7 | 2026-10-12 | 2026-10-14 |
+| TIME OUT UMM QASSAR | AE | Unknown | 7 | 2026-10-12 | 2026-10-14 |
 | CHRISTINA TIDE | -- | Unknown | 7 | 2026-10-12 | 2026-10-14 |
-| MAG PEARL | TG | Unknown | 7 | 2026-10-12 | 2026-10-14 |
 | MV JANA 37 | SA | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| TIME OUT UMM QASSAR | AE | Unknown | 6 | 2026-10-12 | 2026-10-14 |
 | RED SEA II | AE | Unknown | 6 | 2026-10-12 | 2026-10-14 |
 | DTA 11 | MH | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| SHAMAL | AE | Unknown | 5 | 2026-10-12 | 2026-10-14 |
-| ENAD | AE | Unknown | 5 | 2026-10-13 | 2026-10-14 |
-| SEALINE 3 | AE | Unknown | 5 | 2026-10-12 | 2026-10-14 |
-| VORTEX VENTURE | LR | Unknown | 5 | 2026-10-12 | 2026-10-14 |
+| BARGE LESVOS V | -- | Unknown | 6 | 2026-10-12 | 2026-10-14 |
+| MCS ROSIE 2 | -- | Unknown | 5 | 2026-10-12 | 2026-10-14 |
+| SEA BULLDOG | NL | Unknown | 5 | 2026-10-12 | 2026-10-14 |
+| SF HUMA | KN | Unknown | 5 | 2026-10-13 | 2026-10-14 |
 
 ## Top Destinations
 
