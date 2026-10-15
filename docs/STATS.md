@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-14 21:39 UTC*
+*Auto-updated: 2026-10-15 04:36 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-12 → 2026-10-14 (2.7 days) |
-| Total positions | 464 |
-| Clean positions | 463 (99%) |
+| Collection period | 2026-10-13 → 2026-10-15 (2.0 days) |
+| Total positions | 398 |
+| Clean positions | 397 (99%) |
 | Anomalous positions | 1 (0%) |
-| Unique vessels | 229 |
-| Avg positions/day | 171 |
+| Unique vessels | 198 |
+| Avg positions/day | 202 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,26 +19,25 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-12 | 118 | 98 |
 | 2026-10-13 | 148 | 109 |
-| 2026-10-14 | 198 | 131 |
+| 2026-10-14 | 220 | 138 |
+| 2026-10-15 | 30 | 30 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  00:00    32  █████████████████████
+  00:00    31  ████████████████████
   01:00    47  ███████████████████████████████
-  02:00    45  ██████████████████████████████
   05:00    51  ██████████████████████████████████
   08:00    60  ████████████████████████████████████████
-  09:00    38  █████████████████████████
   10:00    52  ██████████████████████████████████
   15:00    28  ██████████████████
   16:00    21  ██████████████
   19:00    35  ███████████████████████
   21:00    19  ████████████
+  22:00    22  ██████████████
 ```
 
 ## Gate Crossings by Day
@@ -49,22 +48,21 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 63 |
+| AE | UAE | 55 |
 | PA | Panama | 23 |
-| VC | St. Vincent | 15 |
-| LR | Liberia | 15 |
-| KM | Comoros | 15 |
-| KN | St. Kitts | 14 |
-| MH | Marshall Is. | 13 |
-| KY | Cayman | 6 |
-| NL | Netherlands | 5 |
+| KM | Comoros | 13 |
+| VC | St. Vincent | 12 |
+| LR | Liberia | 12 |
+| KN | St. Kitts | 12 |
+| MH | Marshall Is. | 8 |
+| NL | Netherlands | 6 |
 | TH | Thailand | 4 |
+| MT | Malta | 4 |
 
 ## Vessel Types
 
 | Type | Vessels |
 |---|---:|
-| Military | 2 |
 | Other | 1 |
 | Tanker | 1 |
 
@@ -72,27 +70,27 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| MCS ANNEKE 2 | -- | Unknown | 9 | 2026-10-12 | 2026-10-14 |
-| SEAFOX BURJ | MH | Unknown | 9 | 2026-10-12 | 2026-10-14 |
-| COASTAL RANGER | NL | Unknown | 8 | 2026-10-12 | 2026-10-14 |
-| AARNA | KN | Unknown | 8 | 2026-10-12 | 2026-10-14 |
-| PLC-03 | AE | Unknown | 8 | 2026-10-12 | 2026-10-14 |
-| MAG PEARL | TG | Unknown | 8 | 2026-10-12 | 2026-10-14 |
-| GTO 202 | NL | Other | 7 | 2026-10-12 | 2026-10-14 |
-| MV JANA 37 | SA | Unknown | 7 | 2026-10-12 | 2026-10-14 |
-| RED SEA II | AE | Unknown | 7 | 2026-10-12 | 2026-10-14 |
-| CHRISTINA TIDE | -- | Unknown | 7 | 2026-10-12 | 2026-10-14 |
-| MCS ROSIE 2 | -- | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| DTA 11 | MH | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| VORTEX VENTURE | LR | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| BARGE LESVOS V | -- | Unknown | 6 | 2026-10-12 | 2026-10-14 |
-| BARDSEY ISLAND | GB | Military | 5 | 2026-10-12 | 2026-10-14 |
+| MV JANA 37 | SA | Unknown | 8 | 2026-10-13 | 2026-10-15 |
+| TIME OUT UMM QASSAR | AE | Unknown | 8 | 2026-10-13 | 2026-10-15 |
+| MAG PEARL | TG | Unknown | 8 | 2026-10-13 | 2026-10-15 |
+| MCS ANNEKE 2 | -- | Unknown | 7 | 2026-10-13 | 2026-10-15 |
+| COASTAL RANGER | NL | Unknown | 7 | 2026-10-13 | 2026-10-15 |
+| SEAFOX BURJ | MH | Unknown | 7 | 2026-10-13 | 2026-10-14 |
+| CHRISTINA TIDE | -- | Unknown | 7 | 2026-10-13 | 2026-10-15 |
+| AARNA | KN | Unknown | 6 | 2026-10-13 | 2026-10-14 |
+| RED SEA II | AE | Unknown | 6 | 2026-10-13 | 2026-10-14 |
+| MCS ROSIE 2 | -- | Unknown | 5 | 2026-10-13 | 2026-10-14 |
+| GTO 202 | NL | Other | 5 | 2026-10-13 | 2026-10-14 |
+| SEA BULLDOG | NL | Unknown | 5 | 2026-10-13 | 2026-10-15 |
+| SF HUMA | KN | Unknown | 5 | 2026-10-13 | 2026-10-14 |
+| ENAD | AE | Unknown | 5 | 2026-10-13 | 2026-10-14 |
+| SEALINE 3 | AE | Unknown | 5 | 2026-10-13 | 2026-10-14 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
-| Dubai | 4 |
+| Dubai | 2 |
 | UAE.WATER | 1 |
 | NAIA ISLAND | 1 |
 | MUSSAFF ANCHORGE | 1 |
