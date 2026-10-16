@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-16 04:29 UTC*
+*Auto-updated: 2026-10-16 11:20 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-14 → 2026-10-16 (2.0 days) |
-| Total positions | 418 |
-| Clean positions | 417 (99%) |
+| Collection period | 2026-10-14 → 2026-10-16 (2.4 days) |
+| Total positions | 514 |
+| Clean positions | 513 (99%) |
 | Anomalous positions | 1 (0%) |
-| Unique vessels | 213 |
-| Avg positions/day | 209 |
+| Unique vessels | 250 |
+| Avg positions/day | 215 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,20 +21,22 @@
 |---|---:|---:|
 | 2026-10-14 | 220 | 138 |
 | 2026-10-15 | 172 | 117 |
-| 2026-10-16 | 26 | 26 |
+| 2026-10-16 | 122 | 102 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  00:00    29  ██████████████████████████
-  05:00    39  ███████████████████████████████████
-  10:00    44  ████████████████████████████████████████
-  14:00    22  ████████████████████
-  15:00    28  █████████████████████████
-  19:00    32  █████████████████████████████
-  22:00    24  █████████████████████
+  00:00    29  ███████████████████████
+  04:00    50  ████████████████████████████████████████
+  05:00    39  ███████████████████████████████
+  09:00    46  ████████████████████████████████████
+  10:00    44  ███████████████████████████████████
+  14:00    22  █████████████████
+  15:00    28  ██████████████████████
+  19:00    32  █████████████████████████
+  22:00    24  ███████████████████
 ```
 
 ## Gate Crossings by Day
@@ -45,12 +47,12 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 63 |
-| PA | Panama | 22 |
-| KM | Comoros | 16 |
+| AE | UAE | 75 |
+| PA | Panama | 28 |
+| KM | Comoros | 19 |
 | VC | St. Vincent | 15 |
-| LR | Liberia | 13 |
-| MH | Marshall Is. | 11 |
+| MH | Marshall Is. | 15 |
+| LR | Liberia | 14 |
 | KN | St. Kitts | 7 |
 | NL | Netherlands | 6 |
 | TH | Thailand | 4 |
@@ -60,36 +62,38 @@ No transit events recorded yet.
 
 | Type | Vessels |
 |---|---:|
-| Other | 2 |
+| Other | 3 |
 | Tanker | 2 |
 
 ## Most Tracked Vessels
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| COASTAL RANGER | NL | Unknown | 9 | 2026-10-14 | 2026-10-16 |
-| CHRISTINA TIDE | -- | Other | 8 | 2026-10-14 | 2026-10-15 |
-| MCS ANNEKE 2 | -- | Unknown | 7 | 2026-10-14 | 2026-10-15 |
+| COASTAL RANGER | NL | Unknown | 10 | 2026-10-14 | 2026-10-16 |
+| AARNA | KN | Unknown | 9 | 2026-10-14 | 2026-10-16 |
+| RED SEA II | AE | Unknown | 9 | 2026-10-14 | 2026-10-16 |
+| CHRISTINA TIDE | -- | Other | 9 | 2026-10-14 | 2026-10-16 |
+| MCS ANNEKE 2 | -- | Unknown | 8 | 2026-10-14 | 2026-10-16 |
+| TIME OUT UMM QASSAR | AE | Unknown | 8 | 2026-10-14 | 2026-10-16 |
+| MAG PEARL | TG | Unknown | 8 | 2026-10-14 | 2026-10-16 |
 | BARDSEY ISLAND | GB | Unknown | 7 | 2026-10-14 | 2026-10-16 |
-| AARNA | KN | Unknown | 7 | 2026-10-14 | 2026-10-16 |
-| TIME OUT UMM QASSAR | AE | Unknown | 7 | 2026-10-14 | 2026-10-15 |
-| RED SEA II | AE | Unknown | 7 | 2026-10-14 | 2026-10-16 |
-| MAG PEARL | TG | Unknown | 7 | 2026-10-14 | 2026-10-16 |
-| GTO 202 | NL | Other | 6 | 2026-10-14 | 2026-10-16 |
-| SEA BULLDOG | NL | Unknown | 6 | 2026-10-14 | 2026-10-15 |
+| GTO 202 | NL | Other | 7 | 2026-10-14 | 2026-10-16 |
+| SEA BULLDOG | NL | Unknown | 7 | 2026-10-14 | 2026-10-16 |
+| PROTEUS | VC | Unknown | 7 | 2026-10-14 | 2026-10-16 |
+| BARGE LESVOS V | -- | Unknown | 7 | 2026-10-14 | 2026-10-16 |
+| MCS ROSIE 2 | -- | Unknown | 6 | 2026-10-14 | 2026-10-16 |
+| AL FAHEDI | -- | Unknown | 6 | 2026-10-14 | 2026-10-16 |
 | THUNDER | -- | Unknown | 6 | 2026-10-14 | 2026-10-16 |
-| BARGE LESVOS V | -- | Unknown | 6 | 2026-10-14 | 2026-10-16 |
-| WILLEM VAN ORANJE | BS | Unknown | 5 | 2026-10-14 | 2026-10-15 |
-| AL FAHEDI | -- | Unknown | 5 | 2026-10-14 | 2026-10-15 |
-| PROTEUS | VC | Unknown | 5 | 2026-10-14 | 2026-10-16 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
 | Dubai | 2 |
+| UMM SUQEIM | 1 |
 | UAE.WATER | 1 |
 | MUSSAFF ANCHORGE | 1 |
+| LOGO ISLAND | 1 |
 | Jebel Ali | 1 |
 | Hamriyah | 1 |
 | Basra | 1 |
