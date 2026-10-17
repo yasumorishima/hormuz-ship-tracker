@@ -1,30 +1,9 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-10-17 10:40:56 UTC
+Generated: 2026-10-17 15:32:03 UTC
 
-Active vessels (30 min): 54
-Unique vessels (24h): 219
-Total position records: 658
+Active vessels (30 min): 0
+Unique vessels (24h): 218
+Total position records: 688
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
-  Unknown: 51
-  Cargo: 1
-  Fishing/Towing/Dredging: 1
-  Military/Sailing/Pleasure: 1
-
-## Top vessels by name
-  ZAKHER FALCON [Unknown] → -- | --
-  WILLEM VAN ORANJE [Unknown] → -- | 0.1 kn
-  J .PIONEER [Cargo] → Jebel Ali | --
-  ALHAMRA [Unknown] → -- | --
-  STAR GRAND [Unknown] → -- | --
-  DTA 8 [Unknown] → -- | --
-  SEALINE 3 [Unknown] → -- | --
-  CRONUS [Unknown] → -- | --
-  DN79 [Unknown] → -- | 0.1 kn
-  SHAMAL [Unknown] → -- | --
-  AMANI [Unknown] → -- | --
-  REEM 1 [Unknown] → -- | --
-  ASAD [Unknown] → -- | --
-  RUBBAN [Unknown] → -- | --
-  PACIFIC PHOENIX [Unknown] → Dubai | --
