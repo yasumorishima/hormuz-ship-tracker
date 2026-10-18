@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-18 20:39 UTC*
+*Auto-updated: 2026-10-18 23:10 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-16 → 2026-10-18 (2.8 days) |
-| Total positions | 910 |
-| Clean positions | 905 (99%) |
+| Collection period | 2026-10-16 → 2026-10-18 (2.9 days) |
+| Total positions | 937 |
+| Clean positions | 932 (99%) |
 | Anomalous positions | 5 (0%) |
-| Unique vessels | 370 |
-| Avg positions/day | 325 |
+| Unique vessels | 371 |
+| Avg positions/day | 324 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-16 | 285 | 176 |
 | 2026-10-17 | 368 | 204 |
-| 2026-10-18 | 257 | 176 |
+| 2026-10-18 | 284 | 184 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -39,7 +39,7 @@ Average positions per hour across all days (clean data only):
   17:00    37  █████████████████████
   18:00    29  █████████████████
   19:00    30  █████████████████
-  21:00    41  ████████████████████████
+  21:00    36  █████████████████████
   23:00    42  ████████████████████████
 ```
 
@@ -66,10 +66,10 @@ No transit events recorded yet.
 
 | Type | Vessels |
 |---|---:|
+| Other | 3 |
 | Military | 3 |
 | Cargo | 2 |
 | Fish/Tow | 2 |
-| Other | 2 |
 | HSC | 1 |
 
 ## Most Tracked Vessels
@@ -77,28 +77,28 @@ No transit events recorded yet.
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
 | COASTAL RANGER | NL | Unknown | 14 | 2026-10-16 | 2026-10-18 |
+| CRONUS | NL | Unknown | 14 | 2026-10-16 | 2026-10-18 |
 | MCS ANNEKE 2 | -- | Unknown | 13 | 2026-10-16 | 2026-10-18 |
-| CRONUS | NL | Unknown | 13 | 2026-10-16 | 2026-10-18 |
+| PACIFIC PHOENIX | -- | Unknown | 13 | 2026-10-16 | 2026-10-18 |
 | BARDSEY ISLAND | GB | Military | 12 | 2026-10-16 | 2026-10-18 |
+| AARNA | KN | Unknown | 12 | 2026-10-16 | 2026-10-18 |
 | SHAMAL | AE | Unknown | 12 | 2026-10-16 | 2026-10-18 |
-| PACIFIC PHOENIX | -- | Unknown | 12 | 2026-10-16 | 2026-10-18 |
-| AARNA | KN | Unknown | 11 | 2026-10-16 | 2026-10-18 |
-| SEA BULLDOG | NL | Unknown | 10 | 2026-10-16 | 2026-10-18 |
-| DTA-3 | AE | Unknown | 10 | 2026-10-16 | 2026-10-18 |
+| SEA BULLDOG | NL | Unknown | 11 | 2026-10-16 | 2026-10-18 |
+| DTA-3 | AE | Unknown | 11 | 2026-10-16 | 2026-10-18 |
+| SEAFOX BURJ | MH | Unknown | 11 | 2026-10-16 | 2026-10-18 |
+| GTO 202 | NL | Other | 10 | 2026-10-16 | 2026-10-18 |
+| TIME OUT UMM QASSAR | AE | Unknown | 10 | 2026-10-16 | 2026-10-18 |
+| RED SEA II | AE | Unknown | 10 | 2026-10-16 | 2026-10-18 |
 | SHOJAA | AE | Unknown | 10 | 2026-10-16 | 2026-10-18 |
-| SEAFOX BURJ | MH | Unknown | 10 | 2026-10-16 | 2026-10-18 |
 | BASEL S3 | -- | Unknown | 9 | 2026-10-17 | 2026-10-18 |
-| GTO 202 | NL | Other | 9 | 2026-10-16 | 2026-10-18 |
-| TIME OUT UMM QASSAR | AE | Unknown | 9 | 2026-10-16 | 2026-10-18 |
-| RED SEA II | AE | Unknown | 9 | 2026-10-16 | 2026-10-18 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
 | Dubai | 7 |
+| Port Rashid | 3 |
 | Jebel Ali | 3 |
-| Port Rashid | 2 |
 | Dubai Maritime City | 2 |
 | UMM SUQEIM | 1 |
 | MUSAFFAH_ | 1 |
