@@ -1,9 +1,28 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-10-18 04:30:04 UTC
+Generated: 2026-10-18 11:01:31 UTC
 
-Active vessels (30 min): 0
-Unique vessels (24h): 178
-Total position records: 693
+Active vessels (30 min): 83
+Unique vessels (24h): 186
+Total position records: 804
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
+  Unknown: 82
+  Military/Sailing/Pleasure: 1
+
+## Top vessels by name
+  RAED [Unknown] → -- | --
+  MY NIRVANA [Unknown] → -- | --
+  MEHRAN 1 [Unknown] → -- | --
+  TERRAQUA [Unknown] → -- | --
+  SERDAL [Unknown] → -- | 0.1 kn
+  PACIFIC 38 [Unknown] → -- | --
+  KARAR [Unknown] → -- | --
+  BES VENTURE [Unknown] → -- | 0.1 kn
+  AK ROYALTY [Unknown] → -- | --
+  HAYA [Unknown] → -- | --
+  MAG PEARL [Unknown] → -- | --
+  MCS ANNEKE 2 [Unknown] → -- | 0.6 kn
+  MV YASC 1 [Unknown] → -- | --
+  MV JANA 37 [Unknown] → -- | --
+  SURVEY 5 [Unknown] → -- | 4.2 kn
