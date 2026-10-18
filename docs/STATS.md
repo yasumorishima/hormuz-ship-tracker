@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-18 11:01 UTC*
+*Auto-updated: 2026-10-18 15:50 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-16 → 2026-10-18 (2.4 days) |
-| Total positions | 804 |
-| Clean positions | 799 (99%) |
+| Collection period | 2026-10-16 → 2026-10-18 (2.6 days) |
+| Total positions | 843 |
+| Clean positions | 838 (99%) |
 | Anomalous positions | 5 (0%) |
-| Unique vessels | 351 |
-| Avg positions/day | 330 |
+| Unique vessels | 360 |
+| Avg positions/day | 326 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-16 | 285 | 176 |
 | 2026-10-17 | 368 | 204 |
-| 2026-10-18 | 151 | 128 |
+| 2026-10-18 | 190 | 149 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -35,7 +35,7 @@ Average positions per hour across all days (clean data only):
   09:00    46  ███████████████████████████
   10:00    68  ████████████████████████████████████████
   13:00    30  █████████████████
-  14:00    36  █████████████████████
+  14:00    37  █████████████████████
   17:00    38  ██████████████████████
   18:00    29  █████████████████
   19:00    29  █████████████████
@@ -51,15 +51,15 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 108 |
+| AE | UAE | 112 |
 | PA | Panama | 39 |
 | KM | Comoros | 28 |
-| MH | Marshall Is. | 24 |
+| MH | Marshall Is. | 25 |
 | VC | St. Vincent | 18 |
 | LR | Liberia | 16 |
 | KN | St. Kitts | 16 |
+| SG | Singapore | 8 |
 | TH | Thailand | 7 |
-| SG | Singapore | 7 |
 | TG | TG | 6 |
 
 ## Vessel Types
@@ -76,21 +76,21 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| COASTAL RANGER | NL | Unknown | 13 | 2026-10-16 | 2026-10-18 |
+| COASTAL RANGER | NL | Unknown | 14 | 2026-10-16 | 2026-10-18 |
+| MCS ANNEKE 2 | -- | Unknown | 11 | 2026-10-16 | 2026-10-18 |
 | BARDSEY ISLAND | GB | Military | 11 | 2026-10-16 | 2026-10-18 |
 | CRONUS | NL | Unknown | 11 | 2026-10-16 | 2026-10-18 |
 | SHAMAL | AE | Unknown | 11 | 2026-10-16 | 2026-10-18 |
-| MCS ANNEKE 2 | -- | Unknown | 10 | 2026-10-16 | 2026-10-18 |
-| PACIFIC PHOENIX | -- | Unknown | 10 | 2026-10-16 | 2026-10-18 |
+| PACIFIC PHOENIX | -- | Unknown | 11 | 2026-10-16 | 2026-10-18 |
 | BASEL S3 | -- | Unknown | 9 | 2026-10-17 | 2026-10-18 |
 | GTO 202 | NL | Other | 9 | 2026-10-16 | 2026-10-18 |
+| AARNA | KN | Unknown | 9 | 2026-10-16 | 2026-10-18 |
+| DTA-3 | AE | Unknown | 9 | 2026-10-16 | 2026-10-18 |
 | SEAFOX BURJ | MH | Unknown | 9 | 2026-10-16 | 2026-10-18 |
 | SEA BULLDOG | NL | Unknown | 8 | 2026-10-16 | 2026-10-17 |
 | SF HUMA | KN | Unknown | 8 | 2026-10-16 | 2026-10-18 |
-| AARNA | KN | Unknown | 8 | 2026-10-16 | 2026-10-17 |
-| PLC 02 | AE | Fish/Tow | 8 | 2026-10-16 | 2026-10-18 |
-| RED SEA II | AE | Unknown | 8 | 2026-10-16 | 2026-10-18 |
-| DTA-3 | AE | Unknown | 8 | 2026-10-16 | 2026-10-18 |
+| PACIFIC 38 | PA | Unknown | 8 | 2026-10-16 | 2026-10-18 |
+| PLC-03 | AE | Unknown | 8 | 2026-10-16 | 2026-10-18 |
 
 ## Top Destinations
 
