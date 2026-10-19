@@ -1,9 +1,30 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-10-19 13:09:59 UTC
+Generated: 2026-10-19 20:34:53 UTC
 
-Active vessels (30 min): 0
-Unique vessels (24h): 154
-Total position records: 784
+Active vessels (30 min): 28
+Unique vessels (24h): 132
+Total position records: 851
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
+  Unknown: 25
+  Military/Sailing/Pleasure: 1
+  HSC: 1
+  Tanker: 1
+
+## Top vessels by name
+  PACIFIC 38 [Unknown] → -- | --
+  RAWABI44 [Unknown] → -- | --
+  BOSS [Unknown] → -- | --
+  MERAJ2 [Unknown] → -- | 3.8 kn
+  ENAD [Unknown] → -- | --
+  FADAK2000 [Unknown] → -- | 3.9 kn
+  ORINOCCO [Unknown] → -- | --
+  DTA-3 [Unknown] → -- | --
+  MCS ROSIE 2 [Unknown] → -- | 0.5 kn
+  SEAFOX BURJ [Unknown] → -- | --
+  TSC SAAM [Unknown] → -- | --
+  BARDSEY ISLAND [Military/Sailing/Pleasure] → Dubai | --
+  AL FAHEDI [Unknown] → -- | --
+  SEA BULLDOG [Unknown] → -- | 0.1 kn
+  MELINA [Unknown] → -- | 0.2 kn
