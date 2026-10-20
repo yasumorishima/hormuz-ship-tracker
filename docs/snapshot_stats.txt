@@ -1,14 +1,9 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-10-20 00:19:16 UTC
+Generated: 2026-10-20 08:30:07 UTC
 
-Active vessels (30 min): 2
-Unique vessels (24h): 118
-Total position records: 510
+Active vessels (30 min): 0
+Unique vessels (24h): 126
+Total position records: 605
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
-  Unknown: 2
-
-## Top vessels by name
-  NASHWAN [Unknown] → -- | --
-  SEA EAGLE [Unknown] → -- | --
