@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-21 17:09 UTC*
+*Auto-updated: 2026-10-21 21:41 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-19 → 2026-10-21 (2.5 days) |
-| Total positions | 612 |
-| Clean positions | 612 (100%) |
+| Collection period | 2026-10-19 → 2026-10-21 (2.7 days) |
+| Total positions | 666 |
+| Clean positions | 666 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 278 |
-| Avg positions/day | 241 |
+| Unique vessels | 295 |
+| Avg positions/day | 245 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-19 | 182 | 118 |
 | 2026-10-20 | 207 | 145 |
-| 2026-10-21 | 223 | 164 |
+| 2026-10-21 | 277 | 192 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -38,6 +38,7 @@ Average positions per hour across all days (clean data only):
   13:00    38  ███████████████████████
   14:00    52  ███████████████████████████████
   17:00    30  ██████████████████
+  18:00    54  ████████████████████████████████
   20:00    28  ████████████████
   21:00    44  ██████████████████████████
   23:00    27  ████████████████
@@ -51,13 +52,13 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 69 |
-| PA | Panama | 30 |
-| KM | Comoros | 20 |
-| MH | Marshall Is. | 19 |
-| LR | Liberia | 14 |
+| AE | UAE | 72 |
+| PA | Panama | 32 |
+| KM | Comoros | 23 |
+| MH | Marshall Is. | 20 |
+| LR | Liberia | 15 |
+| VC | St. Vincent | 14 |
 | KN | St. Kitts | 13 |
-| VC | St. Vincent | 12 |
 | SG | Singapore | 7 |
 | KY | Cayman | 7 |
 | TG | TG | 6 |
@@ -74,21 +75,21 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| PACIFIC PHOENIX | -- | Unknown | 11 | 2026-10-19 | 2026-10-21 |
-| PLC-03 | AE | Unknown | 10 | 2026-10-19 | 2026-10-21 |
-| BARDSEY ISLAND | GB | Unknown | 9 | 2026-10-19 | 2026-10-21 |
+| PACIFIC PHOENIX | -- | Unknown | 12 | 2026-10-19 | 2026-10-21 |
+| SHOALBUSTER 2711 | AE | Unknown | 11 | 2026-10-19 | 2026-10-21 |
+| BARDSEY ISLAND | GB | Unknown | 10 | 2026-10-19 | 2026-10-21 |
+| AARNA | KN | Unknown | 9 | 2026-10-19 | 2026-10-21 |
 | COASTAL RANGER | NL | Unknown | 8 | 2026-10-19 | 2026-10-21 |
 | SEA BULLDOG | NL | Unknown | 8 | 2026-10-19 | 2026-10-21 |
 | THUNDER | -- | Unknown | 8 | 2026-10-19 | 2026-10-21 |
-| AARNA | KN | Unknown | 8 | 2026-10-19 | 2026-10-21 |
 | DTA DEAN ANDREW | AE | Unknown | 8 | 2026-10-19 | 2026-10-21 |
 | MILLENNIUM | AE | Unknown | 8 | 2026-10-19 | 2026-10-21 |
 | DELTA  XV | PA | Unknown | 7 | 2026-10-19 | 2026-10-21 |
 | ENAD | AE | Unknown | 7 | 2026-10-19 | 2026-10-21 |
+| AL DAIRAH | AE | Unknown | 7 | 2026-10-19 | 2026-10-21 |
 | SEAFOX BURJ | MH | Unknown | 7 | 2026-10-19 | 2026-10-21 |
 | GTO 202 | NL | Unknown | 6 | 2026-10-19 | 2026-10-21 |
 | OJAS PRIDE | KN | Unknown | 6 | 2026-10-19 | 2026-10-21 |
-| STANFORD CHALLENGER | VC | Unknown | 6 | 2026-10-19 | 2026-10-21 |
 
 ## Top Destinations
 
