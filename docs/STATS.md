@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-20 23:52 UTC*
+*Auto-updated: 2026-10-21 04:43 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-18 → 2026-10-20 (2.8 days) |
-| Total positions | 717 |
-| Clean positions | 713 (99%) |
-| Anomalous positions | 4 (0%) |
-| Unique vessels | 304 |
-| Avg positions/day | 252 |
+| Collection period | 2026-10-19 → 2026-10-21 (2.1 days) |
+| Total positions | 481 |
+| Clean positions | 481 (100%) |
+| Anomalous positions | 0 (0%) |
+| Unique vessels | 222 |
+| Avg positions/day | 227 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,27 +19,27 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-18 | 328 | 193 |
 | 2026-10-19 | 182 | 118 |
 | 2026-10-20 | 207 | 145 |
+| 2026-10-21 | 92 | 77 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  01:00    43  ████████████████████
-  02:00    46  ██████████████████████
-  06:00    22  ██████████
-  07:00    34  ████████████████
-  10:00    83  ████████████████████████████████████████
-  13:00    38  ██████████████████
-  14:00    39  ██████████████████
-  17:00    33  ███████████████
-  19:00    31  ██████████████
-  20:00    28  █████████████
-  21:00    35  ████████████████
-  23:00    35  ████████████████
+  00:00    39  █████████████████████████████
+  01:00    47  ███████████████████████████████████
+  02:00    46  ██████████████████████████████████
+  04:00    53  ████████████████████████████████████████
+  06:00    21  ███████████████
+  07:00    34  █████████████████████████
+  13:00    38  ████████████████████████████
+  14:00    39  █████████████████████████████
+  17:00    30  ██████████████████████
+  20:00    28  █████████████████████
+  21:00    44  █████████████████████████████████
+  23:00    27  ████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -50,55 +50,53 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 89 |
-| PA | Panama | 28 |
-| MH | Marshall Is. | 26 |
-| KN | St. Kitts | 18 |
-| KM | Comoros | 18 |
-| VC | St. Vincent | 16 |
-| LR | Liberia | 15 |
-| SG | Singapore | 7 |
-| KY | Cayman | 7 |
-| NL | Netherlands | 6 |
+| AE | UAE | 61 |
+| PA | Panama | 21 |
+| MH | Marshall Is. | 17 |
+| KN | St. Kitts | 13 |
+| KM | Comoros | 13 |
+| LR | Liberia | 11 |
+| VC | St. Vincent | 9 |
+| KY | Cayman | 6 |
+| TG | TG | 5 |
+| SG | Singapore | 5 |
 
 ## Vessel Types
 
 | Type | Vessels |
 |---|---:|
-| Other | 5 |
-| Military | 3 |
+| Other | 2 |
 | Tanker | 2 |
-| HSC | 1 |
+| Military | 2 |
 
 ## Most Tracked Vessels
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| PLC-03 | AE | Unknown | 12 | 2026-10-18 | 2026-10-20 |
-| PACIFIC PHOENIX | -- | Unknown | 12 | 2026-10-18 | 2026-10-20 |
-| AARNA | KN | Unknown | 11 | 2026-10-18 | 2026-10-20 |
-| ENAD | AE | Unknown | 11 | 2026-10-18 | 2026-10-20 |
-| SEAFOX BURJ | MH | Unknown | 11 | 2026-10-18 | 2026-10-20 |
-| BARDSEY ISLAND | GB | Unknown | 10 | 2026-10-18 | 2026-10-20 |
-| VORTEX VELA | LR | Unknown | 10 | 2026-10-18 | 2026-10-20 |
-| BARGE LESVOS V | -- | Unknown | 10 | 2026-10-18 | 2026-10-20 |
-| SEA BULLDOG | NL | Unknown | 9 | 2026-10-18 | 2026-10-20 |
-| THUNDER | -- | HSC | 9 | 2026-10-18 | 2026-10-20 |
-| MILLENNIUM | AE | Unknown | 9 | 2026-10-18 | 2026-10-20 |
-| MCS ANNEKE 2 | -- | Unknown | 8 | 2026-10-18 | 2026-10-20 |
-| COASTAL RANGER | NL | Unknown | 8 | 2026-10-18 | 2026-10-20 |
-| BARAKA 50 | -- | Other | 8 | 2026-10-18 | 2026-10-20 |
-| AK ROYALTY | -- | Unknown | 8 | 2026-10-18 | 2026-10-19 |
+| PACIFIC PHOENIX | -- | Unknown | 9 | 2026-10-19 | 2026-10-21 |
+| BARDSEY ISLAND | GB | Unknown | 8 | 2026-10-19 | 2026-10-21 |
+| THUNDER | -- | Unknown | 8 | 2026-10-19 | 2026-10-21 |
+| AL AMLAQ | AE | Unknown | 8 | 2026-10-19 | 2026-10-21 |
+| MILLENNIUM | AE | Unknown | 8 | 2026-10-19 | 2026-10-21 |
+| SEA BULLDOG | NL | Unknown | 7 | 2026-10-19 | 2026-10-21 |
+| AARNA | KN | Unknown | 7 | 2026-10-19 | 2026-10-21 |
+| ENAD | AE | Unknown | 7 | 2026-10-19 | 2026-10-21 |
+| SEAFOX BURJ | MH | Unknown | 7 | 2026-10-19 | 2026-10-21 |
+| COASTAL RANGER | NL | Unknown | 6 | 2026-10-19 | 2026-10-21 |
+| OJAS PRIDE | KN | Unknown | 6 | 2026-10-19 | 2026-10-21 |
+| DELTA  XV | PA | Unknown | 6 | 2026-10-19 | 2026-10-21 |
+| DTA DEAN ANDREW | AE | Unknown | 6 | 2026-10-19 | 2026-10-21 |
+| LESVOS IX | -- | Unknown | 6 | 2026-10-19 | 2026-10-21 |
+| MCS ANNEKE 2 | -- | Unknown | 5 | 2026-10-19 | 2026-10-21 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
-| Port Rashid | 5 |
-| Dubai | 5 |
+| Port Rashid | 2 |
+| Dubai | 2 |
 | UMM AL NAAR-MINA ZAY | 1 |
 | SEA-TRIAL | 1 |
-| MUSAFFAH_ | 1 |
 | Jebel Ali | 1 |
 | IQKAZ | 1 |
 | Dubai Maritime City | 1 |
