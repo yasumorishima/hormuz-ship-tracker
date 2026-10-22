@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-22 05:47 UTC*
+*Auto-updated: 2026-10-22 11:48 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-20 → 2026-10-22 (2.0 days) |
-| Total positions | 645 |
-| Clean positions | 645 (100%) |
+| Collection period | 2026-10-20 → 2026-10-22 (2.2 days) |
+| Total positions | 702 |
+| Clean positions | 702 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 326 |
-| Avg positions/day | 325 |
+| Unique vessels | 343 |
+| Avg positions/day | 326 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-20 | 207 | 145 |
 | 2026-10-21 | 331 | 222 |
-| 2026-10-22 | 107 | 107 |
+| 2026-10-22 | 164 | 149 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -32,6 +32,7 @@ Average positions per hour across all days (clean data only):
   01:00   107  ████████████████████████████████████████
   02:00    46  █████████████████
   04:00    53  ███████████████████
+  05:00    57  █████████████████████
   07:00    49  ██████████████████
   09:00    66  ████████████████████████
   13:00    38  ██████████████
@@ -50,16 +51,16 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 83 |
-| PA | Panama | 35 |
-| MH | Marshall Is. | 26 |
+| AE | UAE | 87 |
+| PA | Panama | 38 |
+| MH | Marshall Is. | 27 |
 | KM | Comoros | 24 |
-| VC | St. Vincent | 18 |
+| VC | St. Vincent | 22 |
 | LR | Liberia | 17 |
-| KN | St. Kitts | 12 |
+| KN | St. Kitts | 14 |
 | SG | Singapore | 10 |
-| TG | TG | 7 |
-| BH | Bahrain | 6 |
+| TG | TG | 8 |
+| KY | Cayman | 6 |
 
 ## Vessel Types
 
@@ -75,21 +76,21 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| BARDSEY ISLAND | GB | Unknown | 9 | 2026-10-20 | 2026-10-22 |
 | TIME OUT UMM QASSAR | AE | Unknown | 9 | 2026-10-20 | 2026-10-22 |
-| BARDSEY ISLAND | GB | Unknown | 8 | 2026-10-20 | 2026-10-21 |
+| PACIFIC PHOENIX | -- | Unknown | 9 | 2026-10-20 | 2026-10-22 |
+| DELTA  XV | PA | Unknown | 8 | 2026-10-20 | 2026-10-22 |
 | DTA DEAN ANDREW | AE | Unknown | 8 | 2026-10-20 | 2026-10-22 |
-| PACIFIC PHOENIX | -- | Unknown | 8 | 2026-10-20 | 2026-10-21 |
+| WILLEM VAN ORANJE | BS | Unknown | 7 | 2026-10-20 | 2026-10-22 |
 | SEA BULLDOG | NL | Unknown | 7 | 2026-10-20 | 2026-10-22 |
-| DELTA  XV | PA | Unknown | 7 | 2026-10-20 | 2026-10-22 |
-| WILLEM VAN ORANJE | BS | Unknown | 6 | 2026-10-20 | 2026-10-22 |
+| PICASSO | PT | Other | 7 | 2026-10-20 | 2026-10-22 |
 | COASTAL RANGER | NL | Unknown | 6 | 2026-10-20 | 2026-10-21 |
-| PICASSO | PT | Other | 6 | 2026-10-20 | 2026-10-21 |
+| AARNA | KN | Unknown | 6 | 2026-10-20 | 2026-10-22 |
+| PACIFIC 38 | PA | Unknown | 6 | 2026-10-20 | 2026-10-22 |
+| ENAD | AE | Unknown | 6 | 2026-10-20 | 2026-10-22 |
 | AL DAIRAH | AE | Unknown | 6 | 2026-10-20 | 2026-10-21 |
 | MEDAIFY | -- | Unknown | 6 | 2026-10-20 | 2026-10-22 |
 | LESVOS IX | -- | Unknown | 6 | 2026-10-20 | 2026-10-21 |
-| MCS ANNEKE 2 | -- | Unknown | 5 | 2026-10-20 | 2026-10-22 |
-| MY LEA | -- | Unknown | 5 | 2026-10-20 | 2026-10-22 |
-| AARNA | KN | Unknown | 5 | 2026-10-20 | 2026-10-21 |
 
 ## Top Destinations
 
