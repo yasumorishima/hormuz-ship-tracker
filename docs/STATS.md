@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-23 21:23 UTC*
+*Auto-updated: 2026-10-24 04:33 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-21 → 2026-10-23 (2.0 days) |
-| Total positions | 498 |
-| Clean positions | 498 (100%) |
+| Collection period | 2026-10-22 → 2026-10-23 (1.0 days) |
+| Total positions | 167 |
+| Clean positions | 167 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 298 |
-| Avg positions/day | 244 |
+| Unique vessels | 150 |
+| Avg positions/day | 172 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,7 +19,6 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-21 | 331 | 222 |
 | 2026-10-22 | 164 | 149 |
 | 2026-10-23 | 3 | 3 |
 
@@ -28,14 +27,8 @@
 Average positions per hour across all days (clean data only):
 
 ```
-  00:00    39  ███████████████████████
-  01:00    55  █████████████████████████████████
-  04:00    53  ████████████████████████████████
-  05:00    57  ██████████████████████████████████
-  09:00    66  ████████████████████████████████████████
-  14:00    65  ███████████████████████████████████████
-  18:00    54  ████████████████████████████████
-  22:00    54  ████████████████████████████████
+  01:00    55  ██████████████████████████████████████
+  05:00    57  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -46,24 +39,21 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 74 |
-| PA | Panama | 36 |
-| MH | Marshall Is. | 25 |
-| KM | Comoros | 22 |
-| VC | St. Vincent | 20 |
-| LR | Liberia | 15 |
-| KN | St. Kitts | 9 |
-| SG | Singapore | 8 |
-| TG | TG | 6 |
-| NL | Netherlands | 5 |
+| AE | UAE | 40 |
+| PA | Panama | 20 |
+| MH | Marshall Is. | 11 |
+| KM | Comoros | 11 |
+| LR | Liberia | 10 |
+| VC | St. Vincent | 9 |
+| KN | St. Kitts | 7 |
+| SG | Singapore | 4 |
+| NL | Netherlands | 3 |
+| MT | Malta | 2 |
 
 ## Vessel Types
 
 | Type | Vessels |
 |---|---:|
-| Military | 2 |
-| Other | 1 |
-| Tanker | 1 |
 | Cargo | 1 |
 | HSC | 1 |
 
@@ -71,29 +61,26 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| BARDSEY ISLAND | GB | Unknown | 6 | 2026-10-21 | 2026-10-22 |
-| TIME OUT UMM QASSAR | AE | Unknown | 6 | 2026-10-21 | 2026-10-22 |
-| PACIFIC PHOENIX | -- | Unknown | 6 | 2026-10-21 | 2026-10-22 |
-| WILLEM VAN ORANJE | BS | Unknown | 5 | 2026-10-21 | 2026-10-22 |
-| PICASSO | PT | Other | 5 | 2026-10-21 | 2026-10-22 |
-| DELTA  XV | PA | Unknown | 5 | 2026-10-21 | 2026-10-22 |
-| DTA DEAN ANDREW | AE | Unknown | 5 | 2026-10-21 | 2026-10-22 |
-| MEDAIFY | -- | Unknown | 5 | 2026-10-21 | 2026-10-22 |
-| COASTAL RANGER | NL | Unknown | 4 | 2026-10-21 | 2026-10-21 |
-| THUNDER | -- | HSC | 4 | 2026-10-21 | 2026-10-22 |
-| AARNA | KN | Unknown | 4 | 2026-10-21 | 2026-10-22 |
-| SEA EAGLE | KN | Unknown | 4 | 2026-10-21 | 2026-10-22 |
-| HERMES | PA | Unknown | 4 | 2026-10-21 | 2026-10-22 |
-| SBS POWER 1 | AE | Unknown | 4 | 2026-10-21 | 2026-10-22 |
-| ENAD | AE | Unknown | 4 | 2026-10-21 | 2026-10-22 |
+| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| HAM 318 | NL | Unknown | 2 | 2026-10-22 | 2026-10-23 |
+| LCT KASHANI1 | -- | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| THUNDER | -- | HSC | 2 | 2026-10-22 | 2026-10-22 |
+| JIAFA | PA | Unknown | 2 | 2026-10-22 | 2026-10-23 |
+| DELTA  XV | PA | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| GFS RANNA | VC | Cargo | 2 | 2026-10-22 | 2026-10-22 |
+| JAZIRA 3 | SA | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| RED SEA II | AE | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| GOVINDA | AE | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| ENAD | AE | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| SERDAL | AE | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| MARGEEL | -- | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| YEKTA 4 | KM | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| MORGAN | KM | Unknown | 2 | 2026-10-22 | 2026-10-22 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
-| Sharjah | 1 |
-| Ras Al Khaimah | 1 |
-| MARSA AL ARAB | 1 |
 | Fujairah | 1 |
 | Dubai | 1 |
 
