@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-24 15:55 UTC*
+*Auto-updated: 2026-10-24 20:46 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-22 → 2026-10-23 (1.0 days) |
-| Total positions | 167 |
-| Clean positions | 167 (100%) |
+| Collection period | 2026-10-22 → 2026-10-24 (2.8 days) |
+| Total positions | 168 |
+| Clean positions | 168 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 150 |
-| Avg positions/day | 172 |
+| Avg positions/day | 61 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-10-22 | 164 | 149 |
 | 2026-10-23 | 3 | 3 |
+| 2026-10-24 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -29,6 +30,7 @@ Average positions per hour across all days (clean data only):
 ```
   01:00    55  ██████████████████████████████████████
   05:00    57  ████████████████████████████████████████
+  19:00     1  
 ```
 
 ## Gate Crossings by Day
@@ -61,7 +63,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-22 | 2026-10-22 |
+| WILLEM VAN ORANJE | BS | Unknown | 3 | 2026-10-22 | 2026-10-24 |
 | HAM 318 | NL | Unknown | 2 | 2026-10-22 | 2026-10-23 |
 | LCT KASHANI1 | -- | Unknown | 2 | 2026-10-22 | 2026-10-22 |
 | THUNDER | -- | HSC | 2 | 2026-10-22 | 2026-10-22 |
