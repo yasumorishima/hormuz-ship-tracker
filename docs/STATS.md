@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-25 16:14 UTC*
+*Auto-updated: 2026-10-25 20:48 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-23 → 2026-10-24 (1.8 days) |
-| Total positions | 4 |
-| Clean positions | 4 (100%) |
+| Collection period | 2026-10-23 → 2026-10-25 (2.8 days) |
+| Total positions | 5 |
+| Clean positions | 5 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 4 |
 | Avg positions/day | 2 |
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-10-23 | 3 | 3 |
 | 2026-10-24 | 1 | 1 |
+| 2026-10-25 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -53,7 +54,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 1 | 2026-10-24 | 2026-10-24 |
+| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-24 | 2026-10-25 |
 | HAM 318 | NL | Unknown | 1 | 2026-10-23 | 2026-10-23 |
 | JIAFA | PA | Unknown | 1 | 2026-10-23 | 2026-10-23 |
 | GMS APOLLO | LR | Unknown | 1 | 2026-10-23 | 2026-10-23 |
