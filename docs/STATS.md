@@ -1,16 +1,16 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-26 12:57 UTC*
+*Auto-updated: 2026-10-26 20:28 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-24 → 2026-10-26 (1.4 days) |
-| Total positions | 3 |
-| Clean positions | 3 (100%) |
+| Collection period | 2026-10-24 → 2026-10-26 (1.9 days) |
+| Total positions | 4 |
+| Clean positions | 4 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 1 |
+| Unique vessels | 2 |
 | Avg positions/day | 2 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-10-24 | 1 | 1 |
 | 2026-10-25 | 1 | 1 |
-| 2026-10-26 | 1 | 1 |
+| 2026-10-26 | 2 | 2 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -29,6 +29,7 @@ Average positions per hour across all days (clean data only):
 
 ```
   05:00     1  ████████████████████████████████████████
+  17:00     1  ████████████████████████████████████████
   19:00     1  ████████████████████████████████████████
 ```
 
@@ -40,6 +41,7 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
+| NL | Netherlands | 1 |
 | BS | Bahamas | 1 |
 
 ## Vessel Types
@@ -52,6 +54,7 @@ No transit events recorded yet.
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
 | WILLEM VAN ORANJE | BS | Unknown | 3 | 2026-10-24 | 2026-10-26 |
+| SEA BULLDOG | NL | Unknown | 1 | 2026-10-26 | 2026-10-26 |
 
 ## Top Destinations
 
