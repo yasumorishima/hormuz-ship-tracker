@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-26 04:43 UTC*
+*Auto-updated: 2026-10-26 12:57 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-24 → 2026-10-25 (1.0 days) |
-| Total positions | 2 |
-| Clean positions | 2 (100%) |
+| Collection period | 2026-10-24 → 2026-10-26 (1.4 days) |
+| Total positions | 3 |
+| Clean positions | 3 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 1 |
 | Avg positions/day | 2 |
@@ -21,12 +21,14 @@
 |---|---:|---:|
 | 2026-10-24 | 1 | 1 |
 | 2026-10-25 | 1 | 1 |
+| 2026-10-26 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
+  05:00     1  ████████████████████████████████████████
   19:00     1  ████████████████████████████████████████
 ```
 
@@ -49,7 +51,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-24 | 2026-10-25 |
+| WILLEM VAN ORANJE | BS | Unknown | 3 | 2026-10-24 | 2026-10-26 |
 
 ## Top Destinations
 
