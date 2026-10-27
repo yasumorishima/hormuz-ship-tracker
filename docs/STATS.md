@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-27 00:49 UTC*
+*Auto-updated: 2026-10-27 09:17 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-25 → 2026-10-26 (0.9 days) |
-| Total positions | 3 |
-| Clean positions | 3 (100%) |
+| Collection period | 2026-10-25 → 2026-10-27 (1.2 days) |
+| Total positions | 4 |
+| Clean positions | 4 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 2 |
 | Avg positions/day | 3 |
@@ -21,12 +21,14 @@
 |---|---:|---:|
 | 2026-10-25 | 1 | 1 |
 | 2026-10-26 | 2 | 2 |
+| 2026-10-27 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
+  01:00     1  ████████████████████████████████████████
   05:00     1  ████████████████████████████████████████
   17:00     1  ████████████████████████████████████████
   19:00     1  ████████████████████████████████████████
@@ -52,7 +54,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-25 | 2026-10-26 |
+| WILLEM VAN ORANJE | BS | Unknown | 3 | 2026-10-25 | 2026-10-27 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-10-26 | 2026-10-26 |
 
 ## Top Destinations
