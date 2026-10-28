@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-27 22:11 UTC*
+*Auto-updated: 2026-10-28 05:39 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-25 → 2026-10-27 (1.9 days) |
-| Total positions | 6 |
-| Clean positions | 6 (100%) |
+| Collection period | 2026-10-26 → 2026-10-27 (1.5 days) |
+| Total positions | 5 |
+| Clean positions | 5 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 3 |
 | Avg positions/day | 3 |
@@ -19,7 +19,6 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-25 | 1 | 1 |
 | 2026-10-26 | 2 | 2 |
 | 2026-10-27 | 3 | 2 |
 
@@ -32,7 +31,6 @@ Average positions per hour across all days (clean data only):
   05:00     1  ████████████████████
   17:00     1  ████████████████████
   18:00     2  ████████████████████████████████████████
-  19:00     1  ████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -55,7 +53,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 4 | 2026-10-25 | 2026-10-27 |
+| WILLEM VAN ORANJE | BS | Unknown | 3 | 2026-10-26 | 2026-10-27 |
 | HAM 318 | NL | Unknown | 1 | 2026-10-27 | 2026-10-27 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-10-26 | 2026-10-26 |
 
