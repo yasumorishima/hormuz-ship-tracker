@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-01 13:18 UTC*
+*Auto-updated: 2026-11-01 19:38 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-30 → 2026-10-31 (0.8 days) |
-| Total positions | 4 |
-| Clean positions | 4 (100%) |
+| Collection period | 2026-10-30 → 2026-11-01 (2.0 days) |
+| Total positions | 5 |
+| Clean positions | 5 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 3 |
-| Avg positions/day | 5 |
+| Unique vessels | 4 |
+| Avg positions/day | 2 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-10-30 | 2 | 2 |
 | 2026-10-31 | 2 | 2 |
+| 2026-11-01 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -41,6 +42,7 @@ No transit events recorded yet.
 | Flag | Country | Vessels |
 |---|---|---:|
 | NL | Netherlands | 1 |
+| KY | Cayman | 1 |
 | BS | Bahamas | 1 |
 | AE | UAE | 1 |
 
@@ -55,6 +57,7 @@ No transit events recorded yet.
 |---|---|---|---:|---|---|
 | HAM 318 | NL | Unknown | 2 | 2026-10-30 | 2026-10-31 |
 | WILLEM VAN ORANJE | BS | Unknown | 1 | 2026-10-30 | 2026-10-30 |
+| SMERALDA | KY | Unknown | 1 | 2026-11-01 | 2026-11-01 |
 | BEHIKE | AE | Unknown | 1 | 2026-10-31 | 2026-10-31 |
 
 ## Top Destinations
