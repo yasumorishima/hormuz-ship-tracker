@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-10-31 19:17 UTC*
+*Auto-updated: 2026-11-01 00:06 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-29 → 2026-10-31 (1.7 days) |
-| Total positions | 5 |
-| Clean positions | 5 (100%) |
+| Collection period | 2026-10-30 → 2026-10-31 (0.8 days) |
+| Total positions | 4 |
+| Clean positions | 4 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 3 |
-| Avg positions/day | 3 |
+| Avg positions/day | 5 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,7 +19,6 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-29 | 1 | 1 |
 | 2026-10-30 | 2 | 2 |
 | 2026-10-31 | 2 | 2 |
 
@@ -30,7 +29,6 @@ Average positions per hour across all days (clean data only):
 ```
   08:00     2  ████████████████████████████████████████
   14:00     1  ████████████████████
-  16:00     1  ████████████████████
   23:00     1  ████████████████████
 ```
 
@@ -55,8 +53,8 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| WILLEM VAN ORANJE | BS | Unknown | 2 | 2026-10-29 | 2026-10-30 |
 | HAM 318 | NL | Unknown | 2 | 2026-10-30 | 2026-10-31 |
+| WILLEM VAN ORANJE | BS | Unknown | 1 | 2026-10-30 | 2026-10-30 |
 | BEHIKE | AE | Unknown | 1 | 2026-10-31 | 2026-10-31 |
 
 ## Top Destinations
