@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-02 21:42 UTC*
+*Auto-updated: 2026-11-03 06:44 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-10-31 → 2026-11-01 (1.2 days) |
-| Total positions | 3 |
-| Clean positions | 3 (100%) |
+| Collection period | 2026-11-01 → 2026-11-03 (1.5 days) |
+| Total positions | 2 |
+| Clean positions | 2 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 3 |
-| Avg positions/day | 2 |
+| Unique vessels | 2 |
+| Avg positions/day | 1 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,16 +19,16 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-10-31 | 2 | 2 |
 | 2026-11-01 | 1 | 1 |
+| 2026-11-03 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  08:00     2  ████████████████████████████████████████
-  14:00     1  ████████████████████
+  01:00     1  ████████████████████████████████████████
+  14:00     1  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -39,9 +39,8 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| NL | Netherlands | 1 |
+| VC | St. Vincent | 1 |
 | KY | Cayman | 1 |
-| AE | UAE | 1 |
 
 ## Vessel Types
 
@@ -52,9 +51,8 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| HAM 318 | NL | Unknown | 1 | 2026-10-31 | 2026-10-31 |
 | SMERALDA | KY | Unknown | 1 | 2026-11-01 | 2026-11-01 |
-| BEHIKE | AE | Unknown | 1 | 2026-10-31 | 2026-10-31 |
+| OCEAN TRANSPORTER | VC | Unknown | 1 | 2026-11-03 | 2026-11-03 |
 
 ## Top Destinations
 
