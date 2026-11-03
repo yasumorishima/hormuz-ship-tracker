@@ -1,16 +1,16 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-03 06:44 UTC*
+*Auto-updated: 2026-11-03 17:00 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-01 → 2026-11-03 (1.5 days) |
-| Total positions | 2 |
-| Clean positions | 2 (100%) |
+| Collection period | 2026-11-01 → 2026-11-03 (2.1 days) |
+| Total positions | 3 |
+| Clean positions | 3 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 2 |
+| Unique vessels | 3 |
 | Avg positions/day | 1 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
@@ -20,7 +20,7 @@
 | Date | Positions | Vessels |
 |---|---:|---:|
 | 2026-11-01 | 1 | 1 |
-| 2026-11-03 | 1 | 1 |
+| 2026-11-03 | 2 | 2 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -29,6 +29,7 @@ Average positions per hour across all days (clean data only):
 ```
   01:00     1  ████████████████████████████████████████
   14:00     1  ████████████████████████████████████████
+  16:00     1  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -40,6 +41,7 @@ No transit events recorded yet.
 | Flag | Country | Vessels |
 |---|---|---:|
 | VC | St. Vincent | 1 |
+| MH | Marshall Is. | 1 |
 | KY | Cayman | 1 |
 
 ## Vessel Types
@@ -53,6 +55,7 @@ No transit events recorded yet.
 |---|---|---|---:|---|---|
 | SMERALDA | KY | Unknown | 1 | 2026-11-01 | 2026-11-01 |
 | OCEAN TRANSPORTER | VC | Unknown | 1 | 2026-11-03 | 2026-11-03 |
+| MOONLIGHT | MH | Unknown | 1 | 2026-11-03 | 2026-11-03 |
 
 ## Top Destinations
 
