@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-03 23:20 UTC*
+*Auto-updated: 2026-11-04 06:15 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-01 → 2026-11-03 (2.1 days) |
-| Total positions | 3 |
-| Clean positions | 3 (100%) |
+| Collection period | 2026-11-03 → 2026-11-04 (1.0 days) |
+| Total positions | 4 |
+| Clean positions | 4 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 3 |
-| Avg positions/day | 1 |
+| Avg positions/day | 4 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,17 +19,17 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-11-01 | 1 | 1 |
 | 2026-11-03 | 2 | 2 |
+| 2026-11-04 | 2 | 2 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  01:00     1  ████████████████████████████████████████
-  14:00     1  ████████████████████████████████████████
-  16:00     1  ████████████████████████████████████████
+  01:00     1  ████████████████████
+  02:00     2  ████████████████████████████████████████
+  16:00     1  ████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -42,7 +42,7 @@ No transit events recorded yet.
 |---|---|---:|
 | VC | St. Vincent | 1 |
 | MH | Marshall Is. | 1 |
-| KY | Cayman | 1 |
+| KN | St. Kitts | 1 |
 
 ## Vessel Types
 
@@ -53,9 +53,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| SMERALDA | KY | Unknown | 1 | 2026-11-01 | 2026-11-01 |
+| MOONLIGHT | MH | Unknown | 2 | 2026-11-03 | 2026-11-04 |
+| AARNA | KN | Unknown | 1 | 2026-11-04 | 2026-11-04 |
 | OCEAN TRANSPORTER | VC | Unknown | 1 | 2026-11-03 | 2026-11-03 |
-| MOONLIGHT | MH | Unknown | 1 | 2026-11-03 | 2026-11-03 |
 
 ## Top Destinations
 
