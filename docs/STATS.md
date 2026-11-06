@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-05 23:37 UTC*
+*Auto-updated: 2026-11-06 06:39 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-03 → 2026-11-05 (2.7 days) |
-| Total positions | 17 |
-| Clean positions | 17 (100%) |
+| Collection period | 2026-11-04 → 2026-11-06 (2.1 days) |
+| Total positions | 22 |
+| Clean positions | 22 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 12 |
-| Avg positions/day | 6 |
+| Unique vessels | 17 |
+| Avg positions/day | 11 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,23 +19,23 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-11-03 | 2 | 2 |
 | 2026-11-04 | 9 | 7 |
-| 2026-11-05 | 6 | 6 |
+| 2026-11-05 | 10 | 10 |
+| 2026-11-06 | 3 | 3 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  01:00     1  ██████████
   02:00     2  ████████████████████
+  03:00     3  ██████████████████████████████
   09:00     1  ██████████
   10:00     3  ██████████████████████████████
-  16:00     1  ██████████
   17:00     4  ████████████████████████████████████████
   18:00     3  ██████████████████████████████
   22:00     2  ████████████████████
+  23:00     4  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -46,38 +46,46 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| AE | UAE | 3 |
+| AE | UAE | 4 |
 | MH | Marshall Is. | 2 |
-| VC | St. Vincent | 1 |
 | SG | Singapore | 1 |
+| QA | QA | 1 |
 | PT | PT | 1 |
+| PA | Panama | 1 |
+| NL | Netherlands | 1 |
 | KN | St. Kitts | 1 |
 
 ## Vessel Types
 
 | Type | Vessels |
 |---|---:|
+| Other | 1 |
 
 ## Most Tracked Vessels
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
 | AK ROYALTY | -- | Unknown | 3 | 2026-11-04 | 2026-11-05 |
-| MOONLIGHT | MH | Unknown | 3 | 2026-11-03 | 2026-11-04 |
-| AZIZI | AE | Unknown | 2 | 2026-11-04 | 2026-11-05 |
+| AZIZI | AE | Unknown | 3 | 2026-11-04 | 2026-11-06 |
+| MOONLIGHT | MH | Unknown | 2 | 2026-11-04 | 2026-11-04 |
+| MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-04 | 2026-11-04 |
+| SEA BULLDOG | NL | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 | CHARLES DARWIN | -- | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 | ATLANTIS | PT | Unknown | 1 | 2026-11-04 | 2026-11-04 |
+| FUGRO RESILIENCE | -- | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 | AARNA | KN | Unknown | 1 | 2026-11-04 | 2026-11-04 |
-| OCEAN TRANSPORTER | VC | Unknown | 1 | 2026-11-03 | 2026-11-03 |
+| HEA OCEANIC | PA | Other | 1 | 2026-11-05 | 2026-11-05 |
+| SIDRA AL KHOR | QA | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | MAHARA | AE | Unknown | 1 | 2026-11-04 | 2026-11-04 |
+| USF MC CONTROL | AE | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 | BEHIKE | AE | Unknown | 1 | 2026-11-05 | 2026-11-05 |
-| CONSTANTINOS P II | MH | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 
 ## Top Destinations
 
 | Destination | Vessels |
 |---|---:|
+| US FIELD | 1 |
 
 ---
 *Data source: [aisstream.io](https://aisstream.io/) (terrestrial AIS)*
