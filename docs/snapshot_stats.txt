@@ -1,8 +1,8 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-11-06 06:39:03 UTC
+Generated: 2026-11-06 16:44:25 UTC
 
 Active vessels (30 min): 0
-Unique vessels (24h): 12
+Unique vessels (24h): 9
 Total position records: 22
 Strait transits (24h): IN 0 / OUT 0
 
