@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-06 16:44 UTC*
+*Auto-updated: 2026-11-06 23:06 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-04 → 2026-11-06 (2.1 days) |
-| Total positions | 22 |
-| Clean positions | 22 (100%) |
+| Collection period | 2026-11-04 → 2026-11-06 (2.7 days) |
+| Total positions | 24 |
+| Clean positions | 24 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 17 |
-| Avg positions/day | 11 |
+| Avg positions/day | 9 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-11-04 | 9 | 7 |
 | 2026-11-05 | 10 | 10 |
-| 2026-11-06 | 3 | 3 |
+| 2026-11-06 | 5 | 4 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -33,7 +33,7 @@ Average positions per hour across all days (clean data only):
   09:00     1  ██████████
   10:00     3  ██████████████████████████████
   17:00     4  ████████████████████████████████████████
-  18:00     3  ██████████████████████████████
+  18:00     2  ████████████████████
   22:00     2  ████████████████████
   23:00     4  ████████████████████████████████████████
 ```
@@ -65,8 +65,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| AZIZI | AE | Unknown | 4 | 2026-11-04 | 2026-11-06 |
 | AK ROYALTY | -- | Unknown | 3 | 2026-11-04 | 2026-11-05 |
-| AZIZI | AE | Unknown | 3 | 2026-11-04 | 2026-11-06 |
+| AARNA | KN | Unknown | 2 | 2026-11-04 | 2026-11-06 |
 | MOONLIGHT | MH | Unknown | 2 | 2026-11-04 | 2026-11-04 |
 | MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-04 | 2026-11-04 |
@@ -74,7 +75,6 @@ No transit events recorded yet.
 | CHARLES DARWIN | -- | Unknown | 1 | 2026-11-05 | 2026-11-05 |
 | ATLANTIS | PT | Unknown | 1 | 2026-11-04 | 2026-11-04 |
 | FUGRO RESILIENCE | -- | Unknown | 1 | 2026-11-05 | 2026-11-05 |
-| AARNA | KN | Unknown | 1 | 2026-11-04 | 2026-11-04 |
 | HEA OCEANIC | PA | Other | 1 | 2026-11-05 | 2026-11-05 |
 | SIDRA AL KHOR | QA | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | MAHARA | AE | Unknown | 1 | 2026-11-04 | 2026-11-04 |
