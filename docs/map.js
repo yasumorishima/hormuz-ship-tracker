@@ -183,11 +183,12 @@ async function load(listing) {
 // its own failure. A radar detection is a bright object of the right size,
 // not a ship, and nothing here joins it to an AIS identity.
 //
-// What is shown by default, measured over the 17 scenes on the Hub on
-// 2026-09-28 (src/sar_survey.py; docs/PIPELINE.md "What the map shows, and
+// What is shown by default, measured over the 74 scenes on the Hub on
+// 2026-11-07 (src/sar_survey.py; docs/PIPELINE.md "What the map shows, and
 // why"; raw output docs/sar_survey.json):
-// - SAR_MIN_SHORE_KM: from 3 km out the rate of vessel-sized detections is the
-//   open-sea rate (4-5 per 100 km^2); at 0.2-1 km it is 94.5.
+// - SAR_MIN_SHORE_KM: from 3 km out the rate of vessel-sized detections is
+//   near the open-sea rate (6.2 at 3-10 km, 4.5 beyond, per 100 km^2); at
+//   0.2-1 km it is 98.
 // - SAR_MIN_SNR: beyond 3 km, 89% of detections above SNR 20 also stand out
 //   in the VH channel, against under 1% at random water; at or below 20, 6%.
 //   The weak ones may be small craft VH misses or sea clutter; the table

@@ -260,45 +260,47 @@ kilometre of the shore. A count of them is not a count of ships.
 
 ### What the map shows, and why
 
-Measured 2026-09-28 by `python src/sar_survey.py --vh` (needs the test
-requirements plus pandas) over every scene then on the Hub:
-17 scenes in 9 passes (09-15 to 09-27), 21,437 candidates, 12,524
-vessel-sized. The raw output is `docs/sar_survey.json`. Water is the scene
+Measured 2026-11-07 by `python src/sar_survey.py --vh` (needs the test
+requirements plus pandas) over every scene then on the Hub: 74 scenes with
+status `ok` in 37 passes (09-09 to 11-06), 98,541 candidates, 56,816
+vessel-sized. The first measurement, 2026-09-28 over 17 scenes in 9 passes,
+gave the same picture; the numbers below are the later ones. The raw output is `docs/sar_survey.json`. Water is the scene
 footprint from the STAC item intersected with the water mask beyond the 200 m
 buffer; the per-scene totals agree with the stored `scored_water_km2` to a few
 per cent.
 
 | km from land | scored water, km² (summed over scenes) | vessel-sized | per 100 km² | SNR p10 / median / p90 | SNR > 20 |
 |---|---:|---:|---:|---|---:|
-| 0.2 – 1 | 6,653 | 6,284 | **94.5** | 11.3 / 14.7 / 32.7 | 25% |
-| 1 – 3 | 12,092 | 1,446 | **12.0** | 11.4 / 15.4 / 71.9 | 35% |
-| 3 – 10 | 32,199 | 1,602 | **5.0** | 11.5 / 29.1 / 247 | 55% |
-| beyond 10 | 78,033 | 3,187 | **4.1** | 11.0 / 13.5 / 196 | 27% |
+| 0.2 – 1 | 27,541 | 27,072 | **98.3** | 11.3 / 14.8 / 33.3 | 27% |
+| 1 – 3 | 50,103 | 7,207 | **14.4** | 11.2 / 14.8 / 74.1 | 32% |
+| 3 – 10 | 131,832 | 8,106 | **6.2** | 11.3 / 17.8 / 248 | 47% |
+| beyond 10 | 319,879 | 14,431 | **4.5** | 11.0 / 13.5 / 150 | 23% |
 
-Finer, near the shore: 167 per 100 km² at 0.2–0.5 km, 39 at 0.5–1, 17 at
+Finer, near the shore (09-28, 17 scenes): 167 per 100 km² at 0.2–0.5 km, 39 at 0.5–1, 17 at
 1–2, 6.2 at 2–3, then 4.1 at 3–5 and 5.4 at 5–10 — the open-sea level. So
 **3 km is where the shore stops adding detections**, and that is the map's
 default (`MAP_MIN_SHORE_KM` in `src/sar_columns.py`, copied in `docs/map.js`).
-Half of all vessel-sized detections are in the 0.2–1 km band, which is 5% of
-the water. SNR does not separate the bands — the median is 13–15 in all but
-one — so it cannot be used to clean the shore.
+Nearly half (48%) of all vessel-sized detections are in the 0.2–1 km band,
+which is 5% of the water. The 3–10 km band runs a third above the open-sea
+rate; part of that is the slot-bound recurrence described under precision. SNR does not separate the bands — the median is 13.5–18 in all of
+them — so it cannot be used to clean the shore.
 
 It does separate something else. The detector runs on VV; each scene also has
 VH, whose noise is independent of VV's. A hull, a platform or a rock usually
 stands out in both; speckle and sea clutter rarely do in VH. Re-reading VV and
-VH for all 17 scenes (the shipped detector reproduced every stored table
+VH for all 74 scenes (the shipped detector reproduced every stored table
 exactly) and asking whether VH stands `> bg + 5·sd` within two pixels of each
 detection, against the same question 500 m away:
 
 | km from land | stratum | n | VH confirms | control | real scatterers, lower bound |
 |---|---|---:|---:|---:|---:|
-| 0.2 – 1 | all | 6,284 | 73% | 20% | 66% |
-| 1 – 3 | SNR ≤ 20 | 939 | 31% | 8% | 25% |
-| 1 – 3 | SNR > 20 | 507 | 81% | 8% | 80% |
-| 3 – 10 | SNR ≤ 20 | 725 | 13% | 0.6% | 12% |
-| 3 – 10 | SNR > 20 | 877 | **93%** | 0.6% | **93%** |
-| beyond 10 | SNR ≤ 20 | 2,335 | **3.8%** | 0.3% | **3.5%** |
-| beyond 10 | SNR > 20 | 852 | **86%** | 0.3% | **86%** |
+| 0.2 – 1 | all | 27,072 | 69% | 19% | 62% |
+| 1 – 3 | SNR ≤ 20 | 4,875 | 31% | 8% | 25% |
+| 1 – 3 | SNR > 20 | 2,332 | 83% | 8% | 81% |
+| 3 – 10 | SNR ≤ 20 | 4,295 | 9.9% | 0.6% | 9.3% |
+| 3 – 10 | SNR > 20 | 3,811 | **93%** | 0.6% | **93%** |
+| beyond 10 | SNR ≤ 20 | 11,098 | **4.3%** | 0.5% | **3.9%** |
+| beyond 10 | SNR > 20 | 3,333 | **84%** | 0.5% | **83%** |
 
 The bound is f = p·q + (1−p)·c ≤ p + (1−p)·c, so p ≥ (f − c)/(1 − c) whatever
 the VH detectability q of a real target is. It assumes a VV detection that is
@@ -308,8 +310,9 @@ layover) they pass more often and the bound overstates. Near the shore c is
 already 8–20%, so the 0.2–3 km bounds are optimistic, and they say little
 anyway: terrain is a real scatterer too, so VH confirms it. Beyond 3 km c is
 under 1%. Out at sea it splits the
-detections cleanly — beyond 10 km, 99.6% of those above SNR 100 are confirmed
-and 1.4% of those at SNR 10–12. The weak ones are either small craft that VH
+detections cleanly — beyond 3 km, 89% of those above SNR 20 are confirmed
+and 6% of those at or below it (on 09-28, beyond 10 km, 99.6% of those above
+SNR 100 and 1.4% of those at SNR 10–12). The weak ones are either small craft that VH
 does not see (small wooden and GRP boats are common here) or clutter; nothing
 in these tables can say which. So the map draws, by default, vessel-sized
 detections **3 km or more from shore with SNR over 20** (`MAP_MIN_SNR`), and
@@ -335,30 +338,65 @@ can each be answered from the radar alone.
 
 1. **Is it a real scatterer, or noise?** The VH test above. It gives a lower
    bound on the real fraction per band and SNR stratum, with a measured
-   chance level. Out at sea: at least 86–93% for SNR > 20, at least 3.5–12%
+   chance level. Out at sea: at least 83–93% for SNR > 20, at least 3.9–9.3%
    for SNR ≤ 20.
 2. **Is it fixed, or does it move?** A hull under way is elsewhere two days
    later; a platform, a rock or the layover of a ridge is not. For each
    detection, every *other* pass whose footprint covers it is asked for a
    detection within 100 m (the slices of one pass are one look), and the same
    is asked 500 m away in the same band for chance. Only detections covered
-   by at least two other passes are scored:
+   by at least two other passes are scored. Over the 74 scenes and 37 passes
+   of 2026-11-07 (all of them were):
 
    | km from land | n | seen again within 100 m | chance |
    |---|---:|---:|---:|
-   | 0.2 – 1 | 6,284 | 53% | 21% |
-   | 1 – 3 | 1,446 | 27% | 12% |
-   | 3 – 10 | 1,602 | 13% | 2.4% |
-   | beyond 10 | 3,187 | 5.5% | 0.9% |
+   | 0.2 – 1 | 27,072 | 87% | 49% |
+   | 1 – 3 | 7,207 | 66% | 39% |
+   | 3 – 10 | 8,106 | 28% | 10% |
+   | beyond 10 | 14,431 | 11% | 4.7% |
 
-   Beyond 10 km at most about 5% are fixed; the rest are gone by the next
-   look, which is what vessels do. Near the shore about a third recur beyond
-   chance — the terrain and the berths. Passes in the same acquisition slot
-   (`sar_survey.geometry_of`) share an incidence angle, so layover recurs
-   within a slot and moves between slots; a near-shore point that recurs only
-   within its slot is the signature of terrain, and one that recurs across
-   slots is a structure. That split is the next thing to measure, once the
-   Hub has more than two passes per slot.
+   With four times the passes the chance level is four times higher, so only
+   the excess over chance means anything. On 2026-09-28 (17 scenes, 9 passes)
+   beyond 10 km read 5.5% against 0.9%, and "at most about 5% fixed" was
+   written from it; with more looks and split by SNR, that does not hold for
+   the strong detections (below).
+
+   **Split by acquisition slot** (`sar_survey.geometry_of`; 7, 10, 10 and 10
+   passes in 02:0x, 02:1x, 14:1x and 14:2x). Passes in one slot share the
+   orbit and the incidence angle, so anything tied to the viewing geometry
+   recurs within a slot and moves between slots; an object on the water
+   recurs in both. Seen again within 100 m, against chance:
+
+   | km from land | SNR | n | same slot | chance | other slots | chance |
+   |---|---|---:|---:|---:|---:|---:|
+   | 3 – 10 | ≤ 20 | 4,295 | 7.1% | 2.0% | 3.5% | 3.5% |
+   | 3 – 10 | > 20 | 3,811 | **42%** | 6.3% | 14% | 10% |
+   | beyond 10 | ≤ 20 | 11,098 | 3.7% | 1.9% | 2.6% | 2.1% |
+   | beyond 10 | > 20 | 3,333 | **21%** | 2.2% | **15%** | 5.2% |
+
+   The weak detections out at sea do not recur beyond chance: they are
+   transient, whatever they are. The strong ones do. At 3–10 km the excess is
+   almost all within the slot (+36 points against +4 across slots) and stays
+   so at a 300 m radius (+33 against +5): something there is tied to the
+   viewing geometry, not to a place on the water. Beyond 10 km both kinds
+   recur, and at 300 m the gap narrows (+23 within, +18 across) — part of
+   what looked slot-bound at 100 m is a tall object whose bright point shifts
+   between ascending and descending views. The recurring strong detections
+   are clustered: beyond 10 km, the ten busiest 5 km cells hold 40% of the
+   slot-bound ones and 59% of the cross-slot ones, the largest off Fujairah
+   (56.6 E, 25.6 N) and west of the strait (55.7–56.0 E, 26.2–26.4 N). An
+   anchorage recurs too, with different ships, so **recurring is not the
+   same as not a ship**. What makes the 3–10 km band slot-bound is not
+   identified. An azimuth ambiguity (a ghost of a bright target about 5 km
+   along track, in the same place for the same geometry) was the first guess;
+   a quick test — is there land 4.5–6.5 km north or south of the detection —
+   found 30% for the slot-bound ones against 23% for those never seen again,
+   which does not settle it.
+
+   Of the map's default layer (3 km or more, SNR over 20; 7,144 detections
+   over the 37 passes), 24% recur only within their slot at 100 m and 15%
+   across slots.
+
 3. **Is a transient real scatterer a vessel?** Not answerable from radar
    alone. What would answer it, in order of cost: AIS where coverage returns
    (a match is a vessel; no match stays unknown); a Sentinel-2 image of the
@@ -366,9 +404,11 @@ can each be answered from the radar alone.
    the radar, so moving ships will have moved); a wake beside the target.
    None of these is implemented.
 
-So, on what is measured: out at sea, the default layer is at least 86% real
-scatterers and at most about 5% fixed ones. That is not the same as "86% are
-ships", and nothing on the page or in the data says it is.
+So, on what is measured: out at sea, the default layer is mostly real
+scatterers (89% confirmed in VH beyond 3 km), and 39% of it is seen again
+within 100 m on another pass (some of that by chance) — anchorages,
+platforms, and something tied to the viewing geometry that is not yet
+identified. That is not the same as "89% are ships", and nothing on the page or in the data says it is.
 
 ### Catching up
 

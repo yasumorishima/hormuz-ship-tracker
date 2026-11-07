@@ -201,17 +201,20 @@ judgement can be redone without the imagery.
 
 The column is called `vessel_sized` and not `is_vessel` on purpose: it says
 the object is the size and shape of a vessel, which is what was tested. Over
-the first 17 scenes, 50% of the objects it is true for sit within a kilometre
-of the shore, in 5% of the water, where hulls and displaced rock are mixed:
-94.5 per 100 km² there against 4.1 beyond 10 km. From 3 km out the rate is
-the open-sea rate.
+the first 74 scenes (09-09 to 11-06), 48% of the objects it is true for sit
+within a kilometre of the shore, in 5% of the water, where hulls and
+displaced rock are mixed: 98 per 100 km² there against 4.5 beyond 10 km.
+From 3 km out the rate is close to the open-sea rate.
 
 Out at sea the `snr` column matters. The scenes also carry a VH channel, whose
 noise is independent of the VV the detector runs on; of the vessel-sized
 detections 3 km or more from shore, 89% of those with `snr` above 20 also
 stand out in VH, against 6% of those at or below it and under 1% of random
 water. The weak ones may be small boats VH misses or sea clutter — this
-cannot tell. The measurement, and how it was made, is in
+cannot tell. The strong ones out at sea often recur: 39% of them are seen
+again within 100 m on another pass, mostly at a few places (anchorages,
+platforms, and something tied to the radar's viewing geometry), so a
+detection that recurs is not thereby a ship, nor thereby not one. The measurement, and how it was made, is in
 [docs/PIPELINE.md](https://github.com/yasumorishima/hormuz-ship-tracker/blob/master/docs/PIPELINE.md)
 under "What the map shows".
 

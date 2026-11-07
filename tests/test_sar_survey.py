@@ -101,6 +101,32 @@ class RecurrenceTest(unittest.TestCase):
         self.assertEqual(list(cov), [1, 1])
         self.assertEqual(list(hit), [0, 0])
 
+    def test_layover_recurs_within_its_slot_only(self):
+        # A and B share slot 02:1, C is 14:2. A ridge's layover is at the same
+        # place in A and B and somewhere else in C.
+        lon = np.array([56.0, 56.00001, 56.3])
+        lat = np.array([26.0, 26.0, 26.3])
+        passes = np.array(["A", "B", "C"])
+        slot = {"A": "02:1", "B": "02:1", "C": "14:2"}
+        point_slot = [slot[p] for p in passes]
+        same = sv.by_slot(everywhere, point_slot, slot, same=True)
+        cross = sv.by_slot(everywhere, point_slot, slot, same=False)
+        cs, hs = sv.recurrence(lon, lat, passes, same, 0.1)
+        cx, hx = sv.recurrence(lon, lat, passes, cross, 0.1)
+        self.assertEqual(list(cs), [1, 1, 0])
+        self.assertEqual(list(hs), [1, 1, 0])
+        self.assertEqual(list(cx), [1, 1, 2])
+        self.assertEqual(list(hx), [0, 0, 0])
+
+    def test_a_structure_recurs_across_slots(self):
+        lon = np.array([56.0, 56.00001, 55.99999])
+        lat = np.array([26.0, 26.0, 26.00001])
+        passes = np.array(["A", "B", "C"])
+        slot = {"A": "02:1", "B": "02:1", "C": "14:2"}
+        cross = sv.by_slot(everywhere, [slot[p] for p in passes], slot, same=False)
+        _, hx = sv.recurrence(lon, lat, passes, cross, 0.1)
+        self.assertEqual(list(hx), [1, 1, 2])
+
     def test_offsets_are_the_distance_asked_for(self):
         lon = np.full(200, 56.4)
         lat = np.full(200, 26.4)

@@ -54,7 +54,8 @@ class PageTest(unittest.TestCase):
         """The three things a radar circle is not: a ship, a track, clean
         near the shore."""
         for phrase in ("not ships", "once every two days", "one instant, not a track",
-                       "Within 1&nbsp;km of the shore", "AIS identity"):
+                       "recur in the same place", "Within 1&nbsp;km of the shore",
+                       "AIS identity"):
             self.assertIn(phrase, self.html)
 
     def test_radar_detections_are_never_called_vessels_or_ships_in_a_count(self):

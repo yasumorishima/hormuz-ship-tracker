@@ -159,6 +159,23 @@ def recurrence(lon, lat, passes, covers, radius_km: float,
     return covered, hits
 
 
+def by_slot(covers, point_slot, pass_slot: dict, same: bool):
+    """`covers` narrowed to the passes in the same acquisition slot as each
+    point (`same=True`) or to the passes in the other slots.
+
+    Layover of a ridge lands in the same place at the same incidence angle,
+    so it recurs within a slot and moves between slots; a structure recurs in
+    both. `point_slot` is the slot of each detection's own pass, in the order
+    of the points `covers` will be asked about.
+    """
+    point_slot = np.asarray(point_slot)
+
+    def narrowed(p, lon, lat):
+        match = point_slot == pass_slot[p]
+        return covers(p, lon, lat) & (match if same else ~match)
+    return narrowed
+
+
 def offset_points(lon, lat, km: float, seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
     """Each point moved `km` in a random direction, reproducibly."""
     ang = np.random.default_rng(seed).uniform(0, 2 * np.pi, len(lon))
@@ -237,10 +254,15 @@ def _download(dest: Path) -> list[str]:
 def _footprints(scene_ids: list[str]) -> dict:
     import sar_scene
 
-    feats = sar_scene._get_json(sar_scene.STAC_SEARCH, {
-        "collections": [sar_scene.COLLECTION], "ids": scene_ids,
-        "limit": max(len(scene_ids), 1)}).get("features", [])
-    return {f["id"]: f for f in feats}
+    # In batches: all 83 ids at once got a 504 from the STAC API (2026-11-07).
+    out = {}
+    for i in range(0, len(scene_ids), 20):
+        ids = scene_ids[i:i + 20]
+        feats = sar_scene._get_json(sar_scene.STAC_SEARCH, {
+            "collections": [sar_scene.COLLECTION], "ids": ids,
+            "limit": len(ids)}).get("features", [])
+        out.update({f["id"]: f for f in feats})
+    return out
 
 
 def main(argv=None) -> int:
@@ -260,12 +282,12 @@ def main(argv=None) -> int:
     import pandas as pd
     from rasterio.features import rasterize
     from scipy import ndimage
-    from shapely import prepared
-    from shapely.geometry import Point, shape
+    import shapely
+    from shapely.geometry import shape
     from shapely.ops import unary_union
 
     import sar_scene
-    from sar_columns import DETECTOR_VERSION
+    from sar_columns import DETECTOR_VERSION, MAP_MIN_SNR
 
     version = args.version or DETECTOR_VERSION
     dest = Path(args.data)
@@ -307,10 +329,12 @@ def main(argv=None) -> int:
     by_pass = {}
     for sid, f in feats.items():
         by_pass.setdefault(pass_of(sid), []).append(shape(f["geometry"]))
-    prepped = {p: prepared.prep(unary_union(g)) for p, g in by_pass.items()}
+    unions = {p: unary_union(g) for p, g in by_pass.items()}
+    for g in unions.values():
+        shapely.prepare(g)
 
     def covers(p, lon, lat):
-        return np.array([prepped[p].contains(Point(x, y)) for x, y in zip(lon, lat)])
+        return shapely.contains_xy(unions[p], np.asarray(lon), np.asarray(lat))
 
     vs_pass = vs.scene_id.map(pass_of).to_numpy()
     cov, hit = recurrence(vs.longitude, vs.latitude, vs_pass, covers, args.radius_km)
@@ -324,6 +348,32 @@ def main(argv=None) -> int:
     report["recurrence"] = {"radius_km": args.radius_km,
                             "rows": recurrence_table(band_of(vs.dist_to_land_km), cov, hit,
                                                      cband, ccov, chit)}
+
+    # The same question split by acquisition slot, and by SNR, because the
+    # strong detections out at sea are the ones that recur. A pass's slot is
+    # its first slice's; the slices of one datatake are seconds apart.
+    acq = dict(zip(scenes.scene_id, scenes.acq_time.astype(str)))
+    pass_slot = {}
+    for sid in sorted(acq):
+        pass_slot.setdefault(pass_of(sid), geometry_of(acq[sid]))
+    vs_slot = np.array([pass_slot[p] for p in vs_pass])
+    band = band_of(vs.dist_to_land_km)
+    strong = vs.snr.to_numpy() > MAP_MIN_SNR
+    strata = (("all", np.ones(len(vs), bool)), ("snr<=20", ~strong), ("snr>20", strong))
+    for name, same in (("same_slot", True), ("cross_slot", False)):
+        cv = by_slot(covers, vs_slot, pass_slot, same)
+        c, h = recurrence(vs.longitude, vs.latitude, vs_pass, cv, args.radius_km)
+        cc, ch = recurrence(vs.longitude, vs.latitude, vs_pass, cv, args.radius_km,
+                            query=(clon, clat))
+        rows = []
+        for label, m in strata:
+            for r in recurrence_table(np.where(m, band, -1), c, h,
+                                      np.where(m, cband, -1), cc, ch):
+                rows.append({"stratum": label, **r})
+        report["recurrence"][name] = rows
+    report["recurrence"]["passes_per_slot"] = dict(sorted(
+        {s: sum(1 for v in pass_slot.values() if v == s)
+         for s in set(pass_slot.values())}.items()))
 
     if args.vh:
         report["vh"] = _vh_report(vs, feats, land, dist_km, args.vh_k)
