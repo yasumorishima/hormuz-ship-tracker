@@ -1,55 +1,55 @@
 {
   "version": "v1",
-  "scenes": 17,
-  "passes": 9,
+  "scenes": 74,
+  "passes": 37,
   "bands": [
     {
       "band_km": "0.2-1",
-      "water_km2": 6653,
-      "candidates": 11174,
-      "vessel_sized": 6284,
-      "per_100km2": 94.45,
-      "share_pct": 50.2,
+      "water_km2": 27541,
+      "candidates": 48712,
+      "vessel_sized": 27072,
+      "per_100km2": 98.3,
+      "share_pct": 47.6,
       "snr_p10": 11.3,
-      "snr_median": 14.7,
-      "snr_p90": 32.7,
-      "snr_gt20_pct": 25.2
+      "snr_median": 14.8,
+      "snr_p90": 33.3,
+      "snr_gt20_pct": 26.7
     },
     {
       "band_km": "1-3",
-      "water_km2": 12092,
-      "candidates": 2360,
-      "vessel_sized": 1446,
-      "per_100km2": 11.96,
-      "share_pct": 11.5,
-      "snr_p10": 11.4,
-      "snr_median": 15.4,
-      "snr_p90": 71.9,
-      "snr_gt20_pct": 35.1
+      "water_km2": 50103,
+      "candidates": 11646,
+      "vessel_sized": 7207,
+      "per_100km2": 14.38,
+      "share_pct": 12.7,
+      "snr_p10": 11.2,
+      "snr_median": 14.8,
+      "snr_p90": 74.1,
+      "snr_gt20_pct": 32.4
     },
     {
       "band_km": "3-10",
-      "water_km2": 32199,
-      "candidates": 2334,
-      "vessel_sized": 1602,
-      "per_100km2": 4.98,
-      "share_pct": 12.8,
-      "snr_p10": 11.5,
-      "snr_median": 29.1,
-      "snr_p90": 247.0,
-      "snr_gt20_pct": 54.7
+      "water_km2": 131832,
+      "candidates": 12660,
+      "vessel_sized": 8106,
+      "per_100km2": 6.15,
+      "share_pct": 14.3,
+      "snr_p10": 11.3,
+      "snr_median": 17.8,
+      "snr_p90": 247.9,
+      "snr_gt20_pct": 47.0
     },
     {
       "band_km": "10+",
-      "water_km2": 78033,
-      "candidates": 5558,
-      "vessel_sized": 3187,
-      "per_100km2": 4.08,
+      "water_km2": 319879,
+      "candidates": 25523,
+      "vessel_sized": 14431,
+      "per_100km2": 4.51,
       "share_pct": 25.4,
       "snr_p10": 11.0,
       "snr_median": 13.5,
-      "snr_p90": 195.8,
-      "snr_gt20_pct": 26.7
+      "snr_p90": 149.5,
+      "snr_gt20_pct": 23.1
     }
   ],
   "recurrence": {
@@ -57,33 +57,235 @@
     "rows": [
       {
         "band_km": "0.2-1",
-        "n": 6284,
-        "seen_again_pct": 53.2,
-        "control_n": 3658,
-        "control_seen_again_pct": 21.1
+        "n": 27072,
+        "seen_again_pct": 86.5,
+        "control_n": 15890,
+        "control_seen_again_pct": 49.1
       },
       {
         "band_km": "1-3",
-        "n": 1446,
-        "seen_again_pct": 26.7,
-        "control_n": 1563,
-        "control_seen_again_pct": 12.3
+        "n": 7207,
+        "seen_again_pct": 65.7,
+        "control_n": 7776,
+        "control_seen_again_pct": 38.8
       },
       {
         "band_km": "3-10",
-        "n": 1602,
-        "seen_again_pct": 12.9,
-        "control_n": 1602,
-        "control_seen_again_pct": 2.4
+        "n": 8106,
+        "seen_again_pct": 28.3,
+        "control_n": 8127,
+        "control_seen_again_pct": 10.2
       },
       {
         "band_km": "10+",
-        "n": 3187,
-        "seen_again_pct": 5.5,
-        "control_n": 3176,
-        "control_seen_again_pct": 0.9
+        "n": 14431,
+        "seen_again_pct": 10.7,
+        "control_n": 14427,
+        "control_seen_again_pct": 4.7
       }
-    ]
+    ],
+    "same_slot": [
+      {
+        "stratum": "all",
+        "band_km": "0.2-1",
+        "n": 27072,
+        "seen_again_pct": 77.7,
+        "control_n": 15890,
+        "control_seen_again_pct": 31.0
+      },
+      {
+        "stratum": "all",
+        "band_km": "1-3",
+        "n": 7207,
+        "seen_again_pct": 53.6,
+        "control_n": 7776,
+        "control_seen_again_pct": 21.6
+      },
+      {
+        "stratum": "all",
+        "band_km": "3-10",
+        "n": 8106,
+        "seen_again_pct": 23.7,
+        "control_n": 8125,
+        "control_seen_again_pct": 4.0
+      },
+      {
+        "stratum": "all",
+        "band_km": "10+",
+        "n": 14431,
+        "seen_again_pct": 7.8,
+        "control_n": 14403,
+        "control_seen_again_pct": 2.0
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "0.2-1",
+        "n": 19840,
+        "seen_again_pct": 73.7,
+        "control_n": 11663,
+        "control_seen_again_pct": 31.7
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "1-3",
+        "n": 4875,
+        "seen_again_pct": 51.8,
+        "control_n": 5341,
+        "control_seen_again_pct": 21.3
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "3-10",
+        "n": 4295,
+        "seen_again_pct": 7.1,
+        "control_n": 4307,
+        "control_seen_again_pct": 2.0
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "10+",
+        "n": 11098,
+        "seen_again_pct": 3.7,
+        "control_n": 11071,
+        "control_seen_again_pct": 1.9
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "0.2-1",
+        "n": 7232,
+        "seen_again_pct": 88.8,
+        "control_n": 4227,
+        "control_seen_again_pct": 28.8
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "1-3",
+        "n": 2332,
+        "seen_again_pct": 57.5,
+        "control_n": 2435,
+        "control_seen_again_pct": 22.3
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "3-10",
+        "n": 3811,
+        "seen_again_pct": 42.4,
+        "control_n": 3818,
+        "control_seen_again_pct": 6.3
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "10+",
+        "n": 3333,
+        "seen_again_pct": 21.3,
+        "control_n": 3332,
+        "control_seen_again_pct": 2.2
+      }
+    ],
+    "cross_slot": [
+      {
+        "stratum": "all",
+        "band_km": "0.2-1",
+        "n": 27072,
+        "seen_again_pct": 49.6,
+        "control_n": 15890,
+        "control_seen_again_pct": 34.4
+      },
+      {
+        "stratum": "all",
+        "band_km": "1-3",
+        "n": 7207,
+        "seen_again_pct": 39.8,
+        "control_n": 7776,
+        "control_seen_again_pct": 28.7
+      },
+      {
+        "stratum": "all",
+        "band_km": "3-10",
+        "n": 8106,
+        "seen_again_pct": 8.5,
+        "control_n": 8127,
+        "control_seen_again_pct": 6.7
+      },
+      {
+        "stratum": "all",
+        "band_km": "10+",
+        "n": 14431,
+        "seen_again_pct": 5.5,
+        "control_n": 14427,
+        "control_seen_again_pct": 2.8
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "0.2-1",
+        "n": 19840,
+        "seen_again_pct": 49.6,
+        "control_n": 11663,
+        "control_seen_again_pct": 35.7
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "1-3",
+        "n": 4875,
+        "seen_again_pct": 40.6,
+        "control_n": 5341,
+        "control_seen_again_pct": 30.0
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "3-10",
+        "n": 4295,
+        "seen_again_pct": 3.5,
+        "control_n": 4309,
+        "control_seen_again_pct": 3.5
+      },
+      {
+        "stratum": "snr<=20",
+        "band_km": "10+",
+        "n": 11098,
+        "seen_again_pct": 2.6,
+        "control_n": 11093,
+        "control_seen_again_pct": 2.1
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "0.2-1",
+        "n": 7232,
+        "seen_again_pct": 49.7,
+        "control_n": 4227,
+        "control_seen_again_pct": 30.8
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "1-3",
+        "n": 2332,
+        "seen_again_pct": 38.3,
+        "control_n": 2435,
+        "control_seen_again_pct": 26.0
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "3-10",
+        "n": 3811,
+        "seen_again_pct": 14.0,
+        "control_n": 3818,
+        "control_seen_again_pct": 10.3
+      },
+      {
+        "stratum": "snr>20",
+        "band_km": "10+",
+        "n": 3333,
+        "seen_again_pct": 15.3,
+        "control_n": 3334,
+        "control_seen_again_pct": 5.2
+      }
+    ],
+    "passes_per_slot": {
+      "02:0": 7,
+      "02:1": 10,
+      "14:1": 10,
+      "14:2": 10
+    }
   },
   "vh": {
     "k": 5.0,
@@ -92,98 +294,98 @@
       {
         "band_km": "0.2-1",
         "stratum": "all",
-        "n": 6284,
-        "vh_confirmed_pct": 73.0,
-        "control_pct": 20.2,
-        "real_scatterer_lower_bound_pct": 66.2
+        "n": 27072,
+        "vh_confirmed_pct": 69.3,
+        "control_pct": 19.2,
+        "real_scatterer_lower_bound_pct": 62.0
       },
       {
         "band_km": "0.2-1",
         "stratum": "snr<=20",
-        "n": 4698,
-        "vh_confirmed_pct": 70.2,
-        "control_pct": 20.2,
-        "real_scatterer_lower_bound_pct": 62.7
+        "n": 19840,
+        "vh_confirmed_pct": 64.6,
+        "control_pct": 19.2,
+        "real_scatterer_lower_bound_pct": 56.2
       },
       {
         "band_km": "0.2-1",
         "stratum": "snr>20",
-        "n": 1586,
-        "vh_confirmed_pct": 81.4,
-        "control_pct": 20.2,
-        "real_scatterer_lower_bound_pct": 76.7
+        "n": 7232,
+        "vh_confirmed_pct": 82.2,
+        "control_pct": 19.2,
+        "real_scatterer_lower_bound_pct": 77.9
       },
       {
         "band_km": "1-3",
         "stratum": "all",
-        "n": 1446,
-        "vh_confirmed_pct": 48.7,
+        "n": 7207,
+        "vh_confirmed_pct": 47.6,
         "control_pct": 8.4,
-        "real_scatterer_lower_bound_pct": 44.0
+        "real_scatterer_lower_bound_pct": 42.8
       },
       {
         "band_km": "1-3",
         "stratum": "snr<=20",
-        "n": 939,
-        "vh_confirmed_pct": 31.1,
+        "n": 4875,
+        "vh_confirmed_pct": 30.8,
         "control_pct": 8.4,
-        "real_scatterer_lower_bound_pct": 24.8
+        "real_scatterer_lower_bound_pct": 24.5
       },
       {
         "band_km": "1-3",
         "stratum": "snr>20",
-        "n": 507,
-        "vh_confirmed_pct": 81.3,
+        "n": 2332,
+        "vh_confirmed_pct": 82.5,
         "control_pct": 8.4,
-        "real_scatterer_lower_bound_pct": 79.5
+        "real_scatterer_lower_bound_pct": 81.0
       },
       {
         "band_km": "3-10",
         "stratum": "all",
-        "n": 1602,
-        "vh_confirmed_pct": 56.7,
+        "n": 8106,
+        "vh_confirmed_pct": 48.9,
         "control_pct": 0.6,
-        "real_scatterer_lower_bound_pct": 56.5
+        "real_scatterer_lower_bound_pct": 48.6
       },
       {
         "band_km": "3-10",
         "stratum": "snr<=20",
-        "n": 725,
-        "vh_confirmed_pct": 12.8,
+        "n": 4295,
+        "vh_confirmed_pct": 9.9,
         "control_pct": 0.6,
-        "real_scatterer_lower_bound_pct": 12.3
+        "real_scatterer_lower_bound_pct": 9.3
       },
       {
         "band_km": "3-10",
         "stratum": "snr>20",
-        "n": 877,
-        "vh_confirmed_pct": 93.0,
+        "n": 3811,
+        "vh_confirmed_pct": 92.9,
         "control_pct": 0.6,
-        "real_scatterer_lower_bound_pct": 93.0
+        "real_scatterer_lower_bound_pct": 92.8
       },
       {
         "band_km": "10+",
         "stratum": "all",
-        "n": 3187,
-        "vh_confirmed_pct": 25.8,
-        "control_pct": 0.3,
-        "real_scatterer_lower_bound_pct": 25.5
+        "n": 14431,
+        "vh_confirmed_pct": 22.6,
+        "control_pct": 0.5,
+        "real_scatterer_lower_bound_pct": 22.2
       },
       {
         "band_km": "10+",
         "stratum": "snr<=20",
-        "n": 2335,
-        "vh_confirmed_pct": 3.8,
-        "control_pct": 0.3,
-        "real_scatterer_lower_bound_pct": 3.5
+        "n": 11098,
+        "vh_confirmed_pct": 4.3,
+        "control_pct": 0.5,
+        "real_scatterer_lower_bound_pct": 3.9
       },
       {
         "band_km": "10+",
         "stratum": "snr>20",
-        "n": 852,
-        "vh_confirmed_pct": 85.9,
-        "control_pct": 0.3,
-        "real_scatterer_lower_bound_pct": 85.9
+        "n": 3333,
+        "vh_confirmed_pct": 83.5,
+        "control_pct": 0.5,
+        "real_scatterer_lower_bound_pct": 83.4
       }
     ]
   }
