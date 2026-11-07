@@ -342,23 +342,58 @@ can each be answered from the radar alone.
    detection, every *other* pass whose footprint covers it is asked for a
    detection within 100 m (the slices of one pass are one look), and the same
    is asked 500 m away in the same band for chance. Only detections covered
-   by at least two other passes are scored:
+   by at least two other passes are scored. Over the 74 scenes and 37 passes
+   of 2026-11-07 (all of them were):
 
    | km from land | n | seen again within 100 m | chance |
    |---|---:|---:|---:|
-   | 0.2 – 1 | 6,284 | 53% | 21% |
-   | 1 – 3 | 1,446 | 27% | 12% |
-   | 3 – 10 | 1,602 | 13% | 2.4% |
-   | beyond 10 | 3,187 | 5.5% | 0.9% |
+   | 0.2 – 1 | 27,072 | 87% | 49% |
+   | 1 – 3 | 7,207 | 66% | 39% |
+   | 3 – 10 | 8,106 | 28% | 10% |
+   | beyond 10 | 14,431 | 11% | 4.7% |
 
-   Beyond 10 km at most about 5% are fixed; the rest are gone by the next
-   look, which is what vessels do. Near the shore about a third recur beyond
-   chance — the terrain and the berths. Passes in the same acquisition slot
-   (`sar_survey.geometry_of`) share an incidence angle, so layover recurs
-   within a slot and moves between slots; a near-shore point that recurs only
-   within its slot is the signature of terrain, and one that recurs across
-   slots is a structure. That split is the next thing to measure, once the
-   Hub has more than two passes per slot.
+   With four times the passes the chance level is four times higher, so only
+   the excess over chance means anything. On 2026-09-28 (17 scenes, 9 passes)
+   beyond 10 km read 5.5% against 0.9%, and "at most about 5% fixed" was
+   written from it; with more looks and split by SNR, that does not hold for
+   the strong detections (below).
+
+   **Split by acquisition slot** (`sar_survey.geometry_of`; 7, 10, 10 and 10
+   passes in 02:0x, 02:1x, 14:1x and 14:2x). Passes in one slot share the
+   orbit and the incidence angle, so anything tied to the viewing geometry
+   recurs within a slot and moves between slots; an object on the water
+   recurs in both. Seen again within 100 m, against chance:
+
+   | km from land | SNR | n | same slot | chance | other slots | chance |
+   |---|---|---:|---:|---:|---:|---:|
+   | 3 – 10 | ≤ 20 | 4,295 | 7.1% | 2.0% | 3.5% | 3.5% |
+   | 3 – 10 | > 20 | 3,811 | **42%** | 6.3% | 14% | 10% |
+   | beyond 10 | ≤ 20 | 11,098 | 3.7% | 1.9% | 2.6% | 2.1% |
+   | beyond 10 | > 20 | 3,333 | **21%** | 2.2% | **15%** | 5.2% |
+
+   The weak detections out at sea do not recur beyond chance: they are
+   transient, whatever they are. The strong ones do. At 3–10 km the excess is
+   almost all within the slot (+36 points against +4 across slots) and stays
+   so at a 300 m radius (+33 against +5): something there is tied to the
+   viewing geometry, not to a place on the water. Beyond 10 km both kinds
+   recur, and at 300 m the gap narrows (+23 within, +18 across) — part of
+   what looked slot-bound at 100 m is a tall object whose bright point shifts
+   between ascending and descending views. The recurring strong detections
+   are clustered: beyond 10 km, the ten busiest 5 km cells hold 40% of the
+   slot-bound ones and 59% of the cross-slot ones, the largest off Fujairah
+   (56.6 E, 25.6 N) and west of the strait (55.7–56.0 E, 26.2–26.4 N). An
+   anchorage recurs too, with different ships, so **recurring is not the
+   same as not a ship**. What makes the 3–10 km band slot-bound is not
+   identified. An azimuth ambiguity (a ghost of a bright target about 5 km
+   along track, in the same place for the same geometry) was the first guess;
+   a quick test — is there land 4.5–6.5 km north or south of the detection —
+   found 30% for the slot-bound ones against 23% for those never seen again,
+   which does not settle it.
+
+   Of the map's default layer (3 km or more, SNR over 20; 7,144 detections
+   over the 37 passes), 24% recur only within their slot at 100 m and 15%
+   across slots.
+
 3. **Is a transient real scatterer a vessel?** Not answerable from radar
    alone. What would answer it, in order of cost: AIS where coverage returns
    (a match is a vessel; no match stays unknown); a Sentinel-2 image of the
@@ -366,8 +401,10 @@ can each be answered from the radar alone.
    the radar, so moving ships will have moved); a wake beside the target.
    None of these is implemented.
 
-So, on what is measured: out at sea, the default layer is at least 86% real
-scatterers and at most about 5% fixed ones. That is not the same as "86% are
+So, on what is measured: out at sea, the default layer is mostly real
+scatterers (the VH bound above), and a quarter to a third of it recurs at the
+same place on other passes — anchorages, platforms, and something tied to the
+viewing geometry that is not yet identified. That is not the same as "86% are
 ships", and nothing on the page or in the data says it is.
 
 ### Catching up
