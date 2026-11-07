@@ -58,7 +58,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **定時 workflow は全部自走している**（GitHub API で直近 run を数えた）：collect 直近 100 回・compact 55 回・publish 直近 100 回・
   sar-collect 54 回が**全部 success**。見張りは 165 回中 failure 1 回だけ（10-22T15:29Z・run 39805345967＝API が sar-collect の
   完了 run を一時的に 0 件で返し「no completed scheduled runs to judge」。前後の run は正常・単発なので Issue なし＝仕様どおり）。Issue は 0 件。
-  テストは 138 件 OK（cloud で discover）。
+  テストは 140 件 OK（PR #19 後・cloud で discover）。
 - **AIS は「ほぼゼロ」から「湾岸の港だけ少し」に変わった**：HF `daily/` は 10-06〜11-06 の 30 日分・計 2,715 行
   （10-10 と 11-02 は collect が走ったが 0 隻＝raw も daily も無い）。10-11〜10-22 は 1 日 118〜368 行、10-23 以降は 1〜10 行に戻った。
   74% がドバイ周辺（東経 55°・北緯 25° の 1 度枡）。**海峡の枠（55.8–57.5E・25.8–27.0N）は 30 日で 47 行・36 MMSI だけ**＝海峡はまだ実質未観測。
@@ -91,6 +91,8 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 
 ## ▶▶ 次にやること
 
+0. まず確認：PR #19（11-07 merge）で変えた `docs/DATASET_CARD.md` が、次の `compact.yml` の run で HF の README.md に入り、バイト一致したか
+   （`curl -sL …/resolve/main/README.md | cmp - docs/DATASET_CARD.md`）。
 1. 3–10km の強い検出が**同スロットだけで再出現する正体**を詰める：方位アンビギュイティなら元の明るい物体が衛星の進行方向（ほぼ南北・パスごとの heading）に
    約 5km 先にあり、その SNR は元より大きく下がるはず。パスの heading を STAC から取り、元候補（陸の明点・港・別の強い検出）との相対位置の分布を見る。
 2. 錨地・構造物の切り分け：再出現の集中セル（フジャイラ沖・55.7–56.0E 26.2–26.4N）を Sentinel-2（PC・無料）で同日に見て、静止物（プラットフォーム）か錨泊船かを確かめる。
