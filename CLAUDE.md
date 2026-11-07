@@ -12,7 +12,9 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - merge したら master の run（`tests.yml` と、触った workflow の次回実行）を見るまで「完了」と言わない。
 - **ネットワーク**：必要な外部ホストは `planetarycomputer.microsoft.com`（STAC 検索・SAS 署名・匿名）、
   `sentinel1euwest.blob.core.windows.net`（S1 GRD の COG）、`ai4edataeuwest.blob.core.windows.net`（ESA WorldCover・マスク生成だけ）、
-  `huggingface.co` 系（読み取りは匿名）。届かなければ環境の許可リストの不足としてユーザーに 1 行で伝える。
+  `huggingface.co` 系（読み取りは匿名）。**cloud 環境「クラウド許可1」はネットワーク制限なし（unrestricted）**＝許可リストの話は不要
+  （11-07 実測：STAC・SAS 署名・両 blob の署名付き一覧・HF の API と resolve がすべて 200）。届かないときは環境ではなく、
+  下の「cloud サンドボックス」の穴（HF の Xet 停止・headless Chromium の CDN 403）を先に疑う。
 - **秘密情報は使わない**。`HF_TOKEN` と aisstream のキーは Actions の secrets にだけある。SAR 側は匿名で取れるので、
   smoke も検証も秘密なしで回す（**本番キーをバグ探しに使わない**）。
 - 依存：`pip install -r requirements-test.txt`（SAR の依存も含む・`websockets==15.0.1` と `shapely==2.0.7` は固定のまま緩めない）。
