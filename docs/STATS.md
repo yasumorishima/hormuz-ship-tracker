@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-08 00:33 UTC*
+*Auto-updated: 2026-11-08 10:17 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-06 → 2026-11-07 (1.8 days) |
-| Total positions | 20 |
-| Clean positions | 20 (100%) |
+| Collection period | 2026-11-06 → 2026-11-08 (2.1 days) |
+| Total positions | 21 |
+| Clean positions | 21 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 16 |
-| Avg positions/day | 11 |
+| Avg positions/day | 10 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-11-06 | 7 | 6 |
 | 2026-11-07 | 13 | 11 |
+| 2026-11-08 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -28,6 +29,7 @@ Average positions per hour across all days (clean data only):
 
 ```
   03:00     4  ████████████████████████████████████████
+  05:00     1  ██████████
   10:00     1  ██████████
   16:00     1  ██████████
   18:00     2  ████████████████████
@@ -63,7 +65,7 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| AZIZI | AE | Unknown | 5 | 2026-11-06 | 2026-11-07 |
+| AZIZI | AE | Unknown | 6 | 2026-11-06 | 2026-11-08 |
 | MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | HAM 318 | NL | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | COASTAL RANGER | NL | Unknown | 1 | 2026-11-07 | 2026-11-07 |
