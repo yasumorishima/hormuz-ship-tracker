@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-08 17:54 UTC*
+*Auto-updated: 2026-11-08 22:01 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-06 → 2026-11-08 (2.1 days) |
-| Total positions | 21 |
-| Clean positions | 21 (100%) |
+| Collection period | 2026-11-06 → 2026-11-08 (2.8 days) |
+| Total positions | 25 |
+| Clean positions | 25 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 16 |
-| Avg positions/day | 10 |
+| Unique vessels | 17 |
+| Avg positions/day | 9 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-11-06 | 7 | 6 |
 | 2026-11-07 | 13 | 11 |
-| 2026-11-08 | 1 | 1 |
+| 2026-11-08 | 5 | 4 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -32,8 +32,10 @@ Average positions per hour across all days (clean data only):
   05:00     1  ██████████
   10:00     1  ██████████
   16:00     1  ██████████
+  17:00     1  ██████████
   18:00     2  ████████████████████
   20:00     3  ██████████████████████████████
+  21:00     3  ██████████████████████████████
   23:00     2  ████████████████████
 ```
 
@@ -45,7 +47,7 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| NL | Netherlands | 3 |
+| NL | Netherlands | 4 |
 | AE | UAE | 3 |
 | QA | QA | 1 |
 | PT | PT | 1 |
@@ -66,20 +68,20 @@ No transit events recorded yet.
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
 | AZIZI | AE | Unknown | 6 | 2026-11-06 | 2026-11-08 |
+| AK ROYALTY | -- | Unknown | 3 | 2026-11-07 | 2026-11-08 |
+| THUNDER | -- | Unknown | 2 | 2026-11-07 | 2026-11-08 |
 | MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-06 | 2026-11-06 |
+| GTO 202 | NL | Unknown | 1 | 2026-11-08 | 2026-11-08 |
 | HAM 318 | NL | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | COASTAL RANGER | NL | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | ATLANTIS | PT | Unknown | 1 | 2026-11-07 | 2026-11-07 |
-| AK ROYALTY | -- | Unknown | 1 | 2026-11-07 | 2026-11-07 |
-| THUNDER | -- | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | AARNA | KN | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | KAWAWA 4304 | PA | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | SIDRA AL KHOR | QA | Unknown | 1 | 2026-11-06 | 2026-11-06 |
 | NURAI | AE | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | BEHIKE | AE | Unknown | 1 | 2026-11-07 | 2026-11-07 |
 | AURORA X | MY | Unknown | 1 | 2026-11-07 | 2026-11-07 |
-| JABAL ALI 10 | KM | Cargo | 1 | 2026-11-06 | 2026-11-06 |
 
 ## Top Destinations
 
