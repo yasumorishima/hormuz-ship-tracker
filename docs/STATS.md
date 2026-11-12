@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-12 17:34 UTC*
+*Auto-updated: 2026-11-12 23:36 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-10 → 2026-11-12 (2.4 days) |
-| Total positions | 14 |
-| Clean positions | 14 (100%) |
+| Collection period | 2026-11-10 → 2026-11-12 (2.8 days) |
+| Total positions | 15 |
+| Clean positions | 15 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 12 |
-| Avg positions/day | 6 |
+| Avg positions/day | 5 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-11-10 | 4 | 4 |
 | 2026-11-11 | 6 | 5 |
-| 2026-11-12 | 4 | 4 |
+| 2026-11-12 | 5 | 5 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -33,6 +33,7 @@ Average positions per hour across all days (clean data only):
   09:00     3  ████████████████████████████████████████
   10:00     1  █████████████
   12:00     1  █████████████
+  20:00     1  █████████████
   23:00     3  ████████████████████████████████████████
 ```
 
@@ -60,8 +61,8 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| BEHIKE | AE | Unknown | 3 | 2026-11-11 | 2026-11-12 |
 | GTO 202 | NL | Unknown | 2 | 2026-11-10 | 2026-11-11 |
-| BEHIKE | AE | Unknown | 2 | 2026-11-11 | 2026-11-11 |
 | DUBAI ENTERPRISE | BS | Unknown | 1 | 2026-11-12 | 2026-11-12 |
 | MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-11 | 2026-11-11 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-11-10 | 2026-11-10 |
