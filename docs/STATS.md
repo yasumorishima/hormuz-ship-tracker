@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-14 15:47 UTC*
+*Auto-updated: 2026-11-14 22:21 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-12 → 2026-11-13 (1.5 days) |
-| Total positions | 14 |
-| Clean positions | 14 (100%) |
+| Collection period | 2026-11-12 → 2026-11-14 (2.7 days) |
+| Total positions | 15 |
+| Clean positions | 15 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 10 |
-| Avg positions/day | 9 |
+| Avg positions/day | 6 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,6 +21,7 @@
 |---|---:|---:|
 | 2026-11-12 | 5 | 5 |
 | 2026-11-13 | 9 | 7 |
+| 2026-11-14 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -58,9 +59,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| AL HAIL 1 | AE | Unknown | 3 | 2026-11-12 | 2026-11-14 |
 | HAM 318 | NL | Unknown | 2 | 2026-11-13 | 2026-11-13 |
 | THUNDER | -- | Unknown | 2 | 2026-11-12 | 2026-11-13 |
-| AL HAIL 1 | AE | Unknown | 2 | 2026-11-12 | 2026-11-13 |
 | CODE 8 | AE | Unknown | 2 | 2026-11-13 | 2026-11-13 |
 | DUBAI ENTERPRISE | BS | Unknown | 1 | 2026-11-12 | 2026-11-12 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-13 | 2026-11-13 |
