@@ -1,14 +1,14 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-15 16:19 UTC*
+*Auto-updated: 2026-11-15 22:46 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-13 → 2026-11-15 (2.5 days) |
-| Total positions | 17 |
-| Clean positions | 17 (100%) |
+| Collection period | 2026-11-13 → 2026-11-15 (2.8 days) |
+| Total positions | 18 |
+| Clean positions | 18 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 12 |
 | Avg positions/day | 7 |
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-11-13 | 9 | 7 |
 | 2026-11-14 | 1 | 1 |
-| 2026-11-15 | 7 | 6 |
+| 2026-11-15 | 8 | 7 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -34,6 +34,7 @@ Average positions per hour across all days (clean data only):
   08:00     3  ██████████████████████████████
   14:00     2  ████████████████████
   16:00     2  ████████████████████
+  19:00     1  ██████████
   20:00     1  ██████████
 ```
 
@@ -61,9 +62,9 @@ No transit events recorded yet.
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
 | HAM 318 | NL | Unknown | 3 | 2026-11-13 | 2026-11-15 |
+| CODE 8 | AE | Unknown | 3 | 2026-11-13 | 2026-11-15 |
 | VOLVOX OLYMPIA | IN | Unknown | 2 | 2026-11-15 | 2026-11-15 |
 | AL HAIL 1 | AE | Unknown | 2 | 2026-11-13 | 2026-11-14 |
-| CODE 8 | AE | Unknown | 2 | 2026-11-13 | 2026-11-13 |
 | MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-15 | 2026-11-15 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-13 | 2026-11-13 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-11-13 | 2026-11-13 |
