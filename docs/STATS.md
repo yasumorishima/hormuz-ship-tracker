@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-19 20:32 UTC*
+*Auto-updated: 2026-11-21 10:57 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-17 → 2026-11-17 (0.7 days) |
-| Total positions | 7 |
-| Clean positions | 7 (100%) |
+| Collection period | 2026-11-21 → 2026-11-21 (0.0 days) |
+| Total positions | 3 |
+| Clean positions | 3 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 6 |
-| Avg positions/day | 10 |
+| Unique vessels | 3 |
+| Avg positions/day | 300 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,16 +19,14 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-11-17 | 7 | 6 |
+| 2026-11-21 | 3 | 3 |
 
 ## Hourly Traffic Pattern (UTC)
 
 Average positions per hour across all days (clean data only):
 
 ```
-  03:00     3  ████████████████████████████████████████
-  12:00     2  ██████████████████████████
-  21:00     2  ██████████████████████████
+  04:00     3  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -39,9 +37,8 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| MT | Malta | 1 |
-| MH | Marshall Is. | 1 |
-| AE | UAE | 1 |
+| AE | UAE | 2 |
+| IN | India | 1 |
 
 ## Vessel Types
 
@@ -52,12 +49,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| BOMBAY | MT | Unknown | 2 | 2026-11-17 | 2026-11-17 |
-| MCS ANNEKE 2 | -- | Unknown | 1 | 2026-11-17 | 2026-11-17 |
-| MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-17 | 2026-11-17 |
-| THUNDER | -- | Unknown | 1 | 2026-11-17 | 2026-11-17 |
-| AZIZI | AE | Unknown | 1 | 2026-11-17 | 2026-11-17 |
-| MOONLIGHT | MH | Unknown | 1 | 2026-11-17 | 2026-11-17 |
+| VOLVOX OLYMPIA | IN | Unknown | 1 | 2026-11-21 | 2026-11-21 |
+| CODE 8 | AE | Unknown | 1 | 2026-11-21 | 2026-11-21 |
+| AZIZI | AE | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 
 ## Top Destinations
 
