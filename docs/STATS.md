@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-22 01:16 UTC*
+*Auto-updated: 2026-11-22 11:18 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-21 → 2026-11-21 (0.8 days) |
-| Total positions | 11 |
-| Clean positions | 11 (100%) |
+| Collection period | 2026-11-21 → 2026-11-22 (1.1 days) |
+| Total positions | 12 |
+| Clean positions | 12 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 10 |
-| Avg positions/day | 13 |
+| Avg positions/day | 11 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -20,6 +20,7 @@
 | Date | Positions | Vessels |
 |---|---:|---:|
 | 2026-11-21 | 11 | 10 |
+| 2026-11-22 | 1 | 1 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -27,6 +28,7 @@ Average positions per hour across all days (clean data only):
 
 ```
   04:00     3  ██████████████████████████████
+  06:00     1  ██████████
   12:00     1  ██████████
   19:00     4  ████████████████████████████████████████
   23:00     3  ██████████████████████████████
@@ -54,11 +56,11 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
+| BOMBAY | MT | Unknown | 2 | 2026-11-21 | 2026-11-22 |
 | THUNDER | -- | Unknown | 2 | 2026-11-21 | 2026-11-21 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 | HAM 318 | NL | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 | SEA BULLDOG | NL | Unknown | 1 | 2026-11-21 | 2026-11-21 |
-| BOMBAY | MT | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 | AK ROYALTY | -- | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 | VOLVOX OLYMPIA | IN | Unknown | 1 | 2026-11-21 | 2026-11-21 |
 | AL HAIL 1 | AE | Unknown | 1 | 2026-11-21 | 2026-11-21 |
