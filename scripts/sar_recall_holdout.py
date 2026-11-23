@@ -51,6 +51,7 @@ LEN_BANDS = [("<50 m", 0, 50), ("50-150 m", 50, 150), (">150 m", 150, math.inf)]
 # AIS "not available" values, and a ceiling above which a reported speed is
 # treated as unknown rather than dead-reckoned across a kilometre.
 SOG_NA, COG_NA, SOG_TRUST_KN = 102.3, 360.0, 40.0
+COLOCATED_M = 30.0
 
 
 def pass_key(scene_id: str) -> str:
@@ -93,7 +94,14 @@ def ais_at(ais: pd.DataFrame, when: pd.Timestamp) -> pd.DataFrame:
     east = metres * np.sin(np.radians(cog))
     near["lat"] = near.latitude + north / 111_320.0
     near["lon"] = near.longitude + east / (111_320.0 * np.cos(np.radians(near.latitude)))
-    return near[["mmsi", "lat", "lon", "speed", "length", "gap"]]
+    # Post hoc (not in the plan; see the deviations in the .md): three or more
+    # hulls within 30 m of each other cannot all be where they say. On
+    # 03-19..03-21 323 MMSIs reported one point at 25.5516 N 55.3814 E.
+    lat, lon = near.lat.to_numpy(), near.lon.to_numpy()
+    others = [int((metres_between(lon[i], lat[i], lon, lat) <= COLOCATED_M).sum()) - 1
+              for i in range(len(near))]
+    near["colocated"] = np.array(others) >= 2
+    return near[["mmsi", "lat", "lon", "speed", "length", "gap", "colocated"]]
 
 
 def land_mask(cache: Path) -> np.ndarray:
@@ -202,7 +210,9 @@ def main(argv=None) -> int:
                 "pass": key, "mmsi": int(v.mmsi), "found": False, "found_cut": False,
                 "dist_to_land_km": round(float(dist_m[rc]) / 1000, 2),
                 "speed_kn": None if v.speed >= SOG_NA else float(v.speed),
-                "length_m": None if not v.length or v.length <= 0 else float(v.length),
+                "length_m": (None if pd.isna(v.length) or v.length <= 0
+                             else float(v.length)),
+                "colocated": bool(v.colocated),
                 "report_gap_s": round(float(v.gap), 1),
                 "nearest_vessel_sized_m": math.inf, "nearest_any_candidate_m": math.inf,
                 "scenes": []})
@@ -238,9 +248,19 @@ def main(argv=None) -> int:
                      "sog_trusted_up_to_kn": SOG_TRUST_KN},
         "primary": rate(scored),
         "per_pass": {k: rate(v) for k, v in sorted(by_pass.items())},
+        "post_hoc_excluding_colocated": rate([r for r in scored if not r["colocated"]]),
+        "post_hoc_colocated_only": rate([r for r in scored if r["colocated"]]),
+        "post_hoc_production_cut_excluding_colocated": rate(
+            [r for r in scored if not r["colocated"]
+             and r["dist_to_land_km"] >= MAP_MIN_SHORE_KM], key="found_cut"),
         "chance_arm": {"found": sum(chance.values()), "points": len(chance),
                        "rate": round(sum(chance.values()) / len(chance), 3) if chance else None,
                        "ci95": cp_interval(sum(chance.values()), len(chance))},
+        "post_hoc_chance_arm_excluding_colocated": (lambda c: {
+            "found": sum(c), "points": len(c),
+            "rate": round(sum(c) / len(c), 3) if c else None,
+            "ci95": cp_interval(sum(c), len(c))})(
+            [f for (p, m, _), f in chance.items() if not per_vessel[(p, m)]["colocated"]]),
         "production_cut_3km_snr20": rate([r for r in scored
                                           if r["dist_to_land_km"] >= MAP_MIN_SHORE_KM],
                                          key="found_cut"),
@@ -254,7 +274,7 @@ def main(argv=None) -> int:
                       "unknown": rate([r for r in scored if not r["length_m"]])},
         "not_scored": outside,
         "detections_matched_to_more_than_one_vessel": sum(len(m) > 1 for m in matched.values()),
-        "misses": [{k: r[k] for k in ("pass", "dist_to_land_km", "speed_kn", "length_m",
+        "misses": [{k: r[k] for k in ("pass", "colocated", "dist_to_land_km", "speed_kn", "length_m",
                                       "report_gap_s", "nearest_vessel_sized_m",
                                       "nearest_any_candidate_m")}
                    for r in scored if not r["found"]],
@@ -263,7 +283,12 @@ def main(argv=None) -> int:
     for r in scored:
         r.pop("mmsi")
     Path(args.out).write_text(json.dumps(result, indent=1, default=str) + "\n")
-    print(json.dumps({k: result[k] for k in ("primary", "chance_arm", "production_cut_3km_snr20",
+    print(json.dumps({k: result[k] for k in ("primary", "post_hoc_excluding_colocated",
+                                             "post_hoc_colocated_only",
+                                             "post_hoc_production_cut_excluding_colocated",
+                                             "chance_arm",
+                                             "post_hoc_chance_arm_excluding_colocated",
+                                             "production_cut_3km_snr20",
                                              "per_pass", "by_distance_km", "by_motion",
                                              "by_length", "not_scored", "misses")},
                      indent=1, default=str))
