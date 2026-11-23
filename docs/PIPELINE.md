@@ -406,6 +406,19 @@ can each be answered from the radar alone.
    found 30% for the slot-bound ones against 23% for those never seen again,
    which does not settle it.
 
+   Measured properly on 2026-11-23 (plan committed first; `docs/sar_ambiguity.md`,
+   raw `docs/sar_ambiguity.json`; 12 passes, 1,064 strong 3–10 km detections).
+   The ghosts are real. 4.8% of those detections have a source at least ten
+   times brighter 4.5–6.5 km along the measured azimuth, against 0.4–1.0% in
+   the across-track and off-distance controls. The source distances pile up
+   at 5.0–6.0 km, where λ·R·PRF/2V puts them. 10 km+ is the same at 4.7%.
+
+   They do not explain the slot-bound recurrence: 6.0% of the slot-bound
+   recurring detections have such a source, against 3.7% of the
+   non-recurring ones, and the intervals overlap. At most about one in
+   seventeen of what recurs within a slot is a ghost, so the cause of the
+   rest is still unidentified.
+
    Of the map's default layer (3 km or more, SNR over 20; 7,144 detections
    over the 37 passes), 24% recur only within their slot at 100 m and 15%
    across slots.

@@ -81,3 +81,78 @@ A **source** at D is a box maximum ≥ **10 ×** the detection's own `peak_dn`.
 
 Nothing on the map changes on this result alone. A flag would be the next
 decision (CLAUDE.md "次にやること" 4).
+
+---
+
+## Results (2026-11-23; raw output `docs/sar_ambiguity.json`)
+
+**Deviation, in the data, not in the method.** The Hub had grown since the
+plan's numbers were written: it now holds 94 `ok` scenes in 47 passes
+(09-09 to 11-21), not 74 in 37. Recurrence was computed over all 47 passes. The
+"newest three per slot" are 11-05 to 11-21. Rule and code are unchanged.
+
+The azimuth direction came out at 349.5–349.8° on ascending scenes and
+190.1–190.6° on descending ones, within a degree of the prior in every scene.
+
+The run imaged 24 scenes from 12 passes, giving **1,064 strong detections at
+3–10 km** (501 same-slot recurring, 563 not) and 885 at 10 km+.
+
+### Primary (3–10 km, source ≥ 10 × the detection's peak)
+
+| window | share with a source |
+|---|---:|
+| **along-azimuth, 4.5–6.5 km** | **4.8%** (51; 3.6–6.3%) |
+| across, 4.5–6.5 km | 1.0% (11; 0.5–1.8%) |
+| along, 2.0–4.0 km | 0.4% (4; 0.1–1.0%) |
+| along, 7.0–9.0 km | 0.9% (10; 0.5–1.7%) |
+
+Where the brightest along-azimuth source sits, for the 55 detections with one:
+
+| D, km | count |
+|---|---:|
+| 4.5–5.0 | 3 |
+| 5.0–5.5 | 13 |
+| 5.5–6.0 | 32 |
+| any other bin | 0–2 |
+
+That is the predicted distance, and the peak is sharp. At 5 × and 20 × the
+picture is the same: along 7.1% and 3.1%, every control at 3.1% or below.
+
+### By recurrence class (3–10 km, 10 ×)
+
+| | along 4.5–6.5 | across | along 2–4 | along 7–9 |
+|---|---:|---:|---:|---:|
+| same-slot recurring (501) | **6.0%** (4.1–8.4%) | 1.2% | 0.0% | 1.2% |
+| not recurring (563) | **3.7%** (2.3–5.6%) | 0.9% | 0.7% | 0.7% |
+
+### 10 km + (shown, not tested)
+
+| | along 4.5–6.5 km | across, 4.5–6.5 km |
+|---|---:|---:|
+| all (885) | 4.7% | 0.2% |
+| same-slot recurring (185) | 2.7% | 0.5% |
+| not recurring (700) | 5.3% | 0.1% |
+
+The along-azimuth sources sit at D 5.5–6.0 km (33 of 42) and 4.5–5.0 km (7).
+
+### Verdict under the plan's rule
+
+- **First condition, met.** The along 4.5–6.5 km share is 4.8%, against at
+  most 1.0% in every control. That is more than twice each, and the intervals
+  do not overlap. Azimuth ghosts are really in the table.
+- **Second condition, not met.** Same-slot recurring 6.0% (4.1–8.4%) against
+  non-recurring 3.7% (2.3–5.6%): the intervals overlap.
+- **So, by the rule written in advance: inconclusive as the explanation of
+  same-slot recurrence.**
+
+The sizes say more than the verdict. At most about 6% of the same-slot
+recurring strong detections have a ghost source; the excess to be explained
+is 42% against 6.3% chance. Ghosts are real, and they account for about one
+strong offshore detection in twenty in both bands, but they are not most of
+what recurs within a slot. The remaining same-slot recurrence needs another
+cause.
+
+What this cannot see:
+- a source that is not 10 × brighter (or 5 ×)
+- a source outside the AOI image
+- range ambiguities, which are displaced across track by a different rule
