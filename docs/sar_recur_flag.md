@@ -49,3 +49,14 @@ detection on the Hub. `sar-collect.yml` rebuilds it after any run that wrote
 a scene. The map reads that one file rather than every pass, so its load does
 not grow with the archive. If the file is missing or unreadable, the map
 draws as before and says the flag is unavailable.
+
+## Chance check — result (2026-11-23, 94 `ok` scenes, 47 passes)
+
+- **Real detections:** 886 places seen in two or more passes; **36 flagged**.
+  Those 36 include all 15 of the optical check's places.
+- **Every detection moved 500 m at random:** **1 flagged**, with at most 11
+  passes.
+
+Near zero, so the threshold stands and the flag ships. The one chance place
+is expected: a dense anchorage can still link shifted points from different
+passes within 100 m.

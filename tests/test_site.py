@@ -77,6 +77,25 @@ class PageTest(unittest.TestCase):
         from sar_columns import DETECTOR_VERSION
         self.assertIn(f"const SAR_DET = 'sar/det/{DETECTOR_VERSION}/';", self.js)
 
+    def test_the_recurrence_flag_matches_the_table_the_collector_writes(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        import sar_places
+        self.assertIn(f"const SAR_PLACES = '{sar_places.PLACES_PATH}';", self.js)
+        m = re.search(r"^const SAR_RECUR_M = ([0-9.]+);$", self.js, re.M)
+        self.assertIsNotNone(m, "SAR_RECUR_M is no longer a literal in map.js")
+        self.assertEqual(float(m.group(1)), sar_places.LINK_KM * 1000)
+
+    def test_the_recurrence_flag_never_says_not_a_ship(self):
+        """Anchorages recur too (docs/sar_recur_s2.md): the flag may say
+        "structure or anchorage", and must say the one shown may be a ship."""
+        joined = re.sub(r"'\s*\+\s*'", "", self.js)       # undo 'a ' + 'b' line breaks
+        self.assertIn("structure or an anchorage", joined)
+        self.assertIn("may still be a ship", joined)
+        self.assertIn("may still be a ship", " ".join(self.html.split()))
+        flag = joined[joined.index("recurs in the same place</strong>"):
+                      joined.index("may still be a ship")]
+        self.assertNotIn("not", flag)
+
     def test_no_tile_provider_is_depended_on(self):
         """Every keyless dark tile service either wants a key now or will.
         The coastline this repository already ships cannot expire."""
