@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-23 01:40 UTC*
+*Auto-updated: 2026-11-23 12:31 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-21 → 2026-11-23 (1.9 days) |
-| Total positions | 19 |
-| Clean positions | 19 (100%) |
+| Collection period | 2026-11-21 → 2026-11-23 (2.2 days) |
+| Total positions | 21 |
+| Clean positions | 21 (100%) |
 | Anomalous positions | 0 (0%) |
 | Unique vessels | 12 |
-| Avg positions/day | 10 |
+| Avg positions/day | 9 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -21,7 +21,7 @@
 |---|---:|---:|
 | 2026-11-21 | 11 | 10 |
 | 2026-11-22 | 6 | 5 |
-| 2026-11-23 | 2 | 2 |
+| 2026-11-23 | 4 | 3 |
 
 ## Hourly Traffic Pattern (UTC)
 
@@ -31,6 +31,7 @@ Average positions per hour across all days (clean data only):
   01:00     2  ████████████████████
   04:00     3  ██████████████████████████████
   06:00     1  ██████████
+  09:00     2  ████████████████████
   12:00     1  ██████████
   14:00     2  ████████████████████
   19:00     4  ████████████████████████████████████████
@@ -61,10 +62,10 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| BOMBAY | MT | Unknown | 3 | 2026-11-21 | 2026-11-23 |
+| BOMBAY | MT | Unknown | 4 | 2026-11-21 | 2026-11-23 |
+| SMERALDA | KY | Unknown | 3 | 2026-11-22 | 2026-11-23 |
 | HAM 318 | NL | Unknown | 2 | 2026-11-21 | 2026-11-22 |
 | SEA BULLDOG | NL | Unknown | 2 | 2026-11-21 | 2026-11-22 |
-| SMERALDA | KY | Unknown | 2 | 2026-11-22 | 2026-11-22 |
 | THUNDER | -- | Unknown | 2 | 2026-11-21 | 2026-11-21 |
 | CODE 8 | AE | Unknown | 2 | 2026-11-21 | 2026-11-22 |
 | MCS ROSIE 2 | -- | Unknown | 1 | 2026-11-21 | 2026-11-21 |
