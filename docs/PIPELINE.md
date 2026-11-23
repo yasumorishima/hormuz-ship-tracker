@@ -419,6 +419,17 @@ can each be answered from the radar alone.
    seventeen of what recurs within a slot is a ghost, so the cause of the
    rest is still unidentified.
 
+   What is at the places that recur most was looked at directly on
+   2026-11-23 (`docs/sar_recur_s2.md`). The 15 places seen in the most
+   passes were each checked on 4 cloud-free Sentinel-2 dates, labelled
+   blind, against 15 open-water controls:
+   - 11 show the same small object on every date. They are all one offshore
+     field 13–41 km out at 55.70–56.06 E, 26.17–26.41 N, recurring from three
+     slots.
+   - 3 are anchorages, with different ships on different dates.
+   - 1, at 56.553 E 26.965 N with a mean SNR of 313, shows nothing optical.
+   - Every control is empty water.
+
    Of the map's default layer (3 km or more, SNR over 20; 7,144 detections
    over the 37 passes), 24% recur only within their slot at 100 m and 15%
    across slots.
