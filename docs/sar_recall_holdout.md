@@ -47,6 +47,11 @@ part in choosing anything.
 - Unit: one vessel per pass. A vessel scored in both slices of a pass counts
   once, found if found in either.
 
+Implementation details fixed before running (`scripts/sar_recall_holdout.py`):
+time is `received_at` (UTC); SOG 102.3 / COG ≥ 360 are "not available" and a
+reported SOG above 40 kn is treated as unknown — such a vessel keeps its
+reported position instead of being dead-reckoned.
+
 ## Reported, in this order
 
 1. **Primary**: found / scored over all held-out passes, with an exact
