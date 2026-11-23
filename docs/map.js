@@ -198,6 +198,14 @@ const SAR_MIN_SHORE_KM = 3;
 const SAR_MIN_SNR = 20;
 const SAR_DET = 'sar/det/v1/';
 const SAR_SCENES = 'sar/scenes/v1/';
+// Places strong detections keep returning to (src/sar_places.py; rule in
+// docs/sar_recur_flag.md). A latest-pass detection within SAR_RECUR_M of a
+// flagged place is drawn apart: "a structure or an anchorage" — never "not a
+// ship", because anchorages recur too (docs/sar_recur_s2.md). Held equal to
+// sar_places by tests/test_site.py.
+const SAR_PLACES = 'sar/places/v1/places.parquet';
+const SAR_RECUR_M = 100;
+const SAR_RECUR_COLOUR = '#e9a23b';
 const SAR_SCENE_COLUMNS = ['scene_id', 'acq_time', 'status', 'aoi_covered_frac'];
 const SAR_COLUMNS = ['acq_time', 'platform', 'orbit_state', 'latitude', 'longitude',
                      'dist_to_land_km', 'length_m', 'snr', 'vessel_sized'];
@@ -261,33 +269,83 @@ const SAR_BANDS = [
     test: d => d < 1, colour: '#9a7b52' },
 ];
 
-function drawSar(rows) {
+/** The flagged place within SAR_RECUR_M of a point, or null. A flat scan:
+ * there are a few dozen flagged places and a few hundred detections. */
+function nearestPlace(places, lat, lon) {
+  const kmLat = 110.95;
+  const kmLon = 111.32 * Math.cos(lat * Math.PI / 180);
+  let best = null;
+  let bestM = SAR_RECUR_M;
+  for (const p of places) {
+    const m = 1000 * Math.hypot((p.latitude - lat) * kmLat, (p.longitude - lon) * kmLon);
+    if (m <= bestM) { best = p; bestM = m; }
+  }
+  return best;
+}
+
+function drawSar(rows, places) {
   const layers = SAR_BANDS.map(() => L.layerGroup());
   const counts = SAR_BANDS.map(() => 0);
+  const recurLayer = L.layerGroup();
+  let recur = 0;
   for (const r of rows) {
     if (!r.vessel_sized || r.latitude === null || r.longitude === null) continue;
     const d = Number(r.dist_to_land_km);
     const i = SAR_BANDS.findIndex(b => b.test(d, Number(r.snr)));
     if (i < 0) continue;
-    counts[i] += 1;
-    const dl = [
+    // Only the default layer is flagged: the places are built from it.
+    const place = i === 0 && places ? nearestPlace(places, r.latitude, r.longitude) : null;
+    const rowsDl = [
       ['Seen', `${r.acq_time} (${r.platform}, ${r.orbit_state})`],
       ['Length', `about ${Math.round(Number(r.length_m))} m`],
       ['SNR', Number(r.snr).toFixed(1)],
       ['From shore', `${d.toFixed(1)} km`],
-    ].map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join('');
+    ];
+    if (place) {
+      rowsDl.push(['This spot', `a strong detection in ${place.n_passes} passes, `
+        + `${place.first_seen.slice(0, 10)} to ${place.last_seen.slice(0, 10)}, `
+        + `from ${place.n_slots} viewing geometries`]);
+    }
+    const dl = rowsDl.map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join('');
+    const head = place
+      ? '<strong>Radar detection that recurs in the same place</strong> — '
+        + 'most likely a structure or an anchorage; at an anchorage this one may '
+        + 'still be a ship'
+      : '<strong>Radar detection</strong> — a bright object of vessel size, '
+        + 'not an identified ship';
     L.circleMarker([r.latitude, r.longitude], {
-      radius: 3, color: SAR_BANDS[i].colour, weight: 1.5, fill: false,
-    }).bindPopup('<strong>Radar detection</strong> — a bright object of vessel size, '
-      + `not an identified ship<dl>${dl}</dl>`).addTo(layers[i]);
+      radius: 3, color: place ? SAR_RECUR_COLOUR : SAR_BANDS[i].colour, weight: 1.5, fill: false,
+    }).bindPopup(`${head}<dl>${dl}</dl>`).addTo(place ? recurLayer : layers[i]);
+    if (place) recur += 1; else counts[i] += 1;
   }
   const overlays = {};
   SAR_BANDS.forEach((b, i) => {
     overlays[`<span style="color:${b.colour}">&#9675;</span> ${b.name} (${counts[i]})`] = layers[i];
     if (b.on) layers[i].addTo(map);
+    if (i === 0 && places) {
+      overlays[`<span style="color:${SAR_RECUR_COLOUR}">&#9675;</span> Radar, strong, recurs `
+        + `in the same place: structure or anchorage (${recur})`] = recurLayer;
+      recurLayer.addTo(map);
+    }
   });
   L.control.layers(null, overlays, { collapsed: false, position: 'topright' }).addTo(map);
-  return counts;
+  return { counts, recur };
+}
+
+/** Flagged places, or null when the table is missing or unreadable — the
+ * layer then draws exactly as it did before the flag existed. */
+async function readPlaces(listing) {
+  if (!listing.some(e => e.type === 'file' && e.path === SAR_PLACES)) return null;
+  try {
+    const rows = await readRows(SAR_PLACES, ['longitude', 'latitude', 'n_passes', 'n_slots',
+      'first_seen', 'last_seen', 'recurring']);
+    return rows.filter(p => p.recurring).map(p => ({ ...p,
+      n_passes: Number(p.n_passes), n_slots: Number(p.n_slots),
+      first_seen: String(p.first_seen), last_seen: String(p.last_seen) }));
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
 async function loadSar(listing) {
@@ -295,18 +353,23 @@ async function loadSar(listing) {
   if (!scenes) { saySar('Radar: no processed Sentinel-1 pass over the strait on the Hub yet.'); return; }
   const rows = [];
   for (const sc of scenes) rows.push(...await readRows(`${SAR_DET}${sc.scene_id}.parquet`, SAR_COLUMNS));
-  const counts = drawSar(rows);
+  const places = await readPlaces(listing);
+  const { counts, recur } = drawSar(rows, places);
   const when = scenes.map(sc => String(sc.acq_time)).sort()[0];
   const age = ago(when);
   // Slices of one datatake barely overlap, so the sum is close to the union.
   const seen = Math.min(100, Math.round(
     scenes.reduce((a, sc) => a + Number(sc.aoi_covered_frac), 0) * 100));
+  const recurNote = places
+    ? ` Another <b>${recur}</b> strong ${recur === 1 ? 'one sits' : 'ones sit'} where strong `
+      + 'detections recur pass after pass (orange): a structure or an anchorage.'
+    : ' (The flag for spots that recur pass after pass is not available.)';
   saySar(`Radar: <b>${counts[0]}</b> strong vessel-sized detections ${SAR_MIN_SHORE_KM} km or more `
     + `from shore in the Sentinel-1 pass of <b>${esc(when)}</b>`
     + (age ? ` (${esc(age)})` : '')
     + `, which saw about <b>${esc(seen)}%</b> of the radar box — the rest is unobserved, not empty.`
     + ` One instant, not a track. ${counts[1]} weak ones and ${counts[2] + counts[3]} `
-    + 'nearer the shore are off by default.');
+    + 'nearer the shore are off by default.' + recurNote);
 }
 
 async function main() {

@@ -23,3 +23,6 @@ rasterio>=1.3
 numpy>=1.26
 scipy>=1.11
 shapely==2.0.7
+
+# tests/test_sar_places.py builds the places table from synthetic rows.
+pandas>=2.1

@@ -177,6 +177,22 @@ sar/scenes/v1/<scene_id>.parquet   one row for the scene, written even when
                                    nothing was found
 ```
 
+A third table is derived from those two and rebuilt whole after each run that
+writes a scene:
+
+```
+sar/places/v1/places.parquet       one row per place strong detections
+                                   (SNR > 20, 3 km or more from land) came
+                                   back to in two or more passes
+```
+
+`recurring` is true for a place seen in at least 10 passes from at least two
+acquisition geometries. That is the map's orange flag. Checked against
+Sentinel-2, such places are mostly platforms and sometimes anchorages, so
+`recurring` means "a structure or an anchorage", never "not a ship". The rule
+and the optical check are in the repository: `docs/sar_recur_flag.md` and
+`docs/sar_recur_s2.md`.
+
 These are **not** in the `configs` above, so the dataset viewer and a plain
 `load_dataset` will not show them; read them by path with `hf_hub_download`
 or a glob. Keeping them out of the AIS configs is deliberate — they are a

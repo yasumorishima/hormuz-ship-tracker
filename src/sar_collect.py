@@ -17,6 +17,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import sar_detect
+import sar_places
 import sar_scene
 import sar_store
 from sar_columns import MASK_SOURCE
@@ -124,6 +125,17 @@ def main(argv=None) -> int:
             "scored_water_km2", "sea_median_dn", "n_candidates", "n_vessel_sized",
             "runtime_s", "status")})
         summary["scenes_processed"] += 1
+
+    # The map's "recurs here" flag is built from every detection on the Hub,
+    # so it is rebuilt whenever a scene was written. Its failure is a failed
+    # run: a stale table would quietly flag yesterday's places.
+    if summary["scenes_processed"] and not args.dry_run:
+        try:
+            summary["places"] = sar_places.refresh()
+        except Exception as exc:                      # noqa: BLE001
+            logger.error("places table not rebuilt: %s", exc)
+            summary["failed"].append({"scene_id": "sar_places",
+                                      "error": f"{type(exc).__name__}: {exc}"})
 
     print(json.dumps(summary, indent=2, default=str))
     # Red when anything failed, even if other scenes went through: a run that

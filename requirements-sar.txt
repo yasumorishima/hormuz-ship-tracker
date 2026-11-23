@@ -7,3 +7,6 @@ numpy>=1.26
 scipy>=1.11
 pyarrow>=16.0
 huggingface_hub>=0.25
+# src/sar_places.py groups every detection on the Hub into places for the
+# map's "recurs here" flag, after each run that wrote a scene.
+pandas>=2.1
