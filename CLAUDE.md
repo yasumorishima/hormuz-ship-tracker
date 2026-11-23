@@ -66,7 +66,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **SAR は取りこぼしゼロ**：PC の STAC（09-09 以降）83 枚と HF `sar/scenes/v1/`・`sar/det/v1/` 各 83 枚が**完全一致**。
   09-15T02:14:05Z の欠けも埋まった（PR #13 の「504h・6 枚・古い順」が効いた）。最新は S1D 2026-11-06T14:16Z。
   パスは 37＝取得スロット別に 02:0x 7・02:1x 10・14:1x 10・14:2x 10（全スロット 3 パス以上）。実発火は 09:30〜12:45 UTC。
-- **HF カード**：配信物 README.md は `docs/DATASET_CARD.md` とバイト一致（11-07 確認）。
+- **HF カード**：配信物 README.md は PR #19 版の `docs/DATASET_CARD.md` とバイト一致（11-23 確認）。PR #22 版は次の compact 待ち。
 
 評価値（**11-07・74 シーン（status ok）・37 パス・09-09〜11-06**・`src/sar_survey.py --vh`・生データ `docs/sar_survey.json`・PIPELINE.md が正）：
 
@@ -81,7 +81,9 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
   10km+ SNR>20 は同 21%（2.2%）／他 15%（5.2%）・300m では差が縮む（背の高い物は上り下りで明点がずれる）。
   再出現は数か所に集中（10km+ で上位 10 セル〔5km 角〕に 4–6 割・最大はフジャイラ沖 56.6E 25.6N）＝錨地は船が入れ替わっても再出現する＝**再出現≠船でない**。
   地図の既定（3km+・SNR>20・7,144 件）の 24% は同スロットだけ、15% はスロットを跨いで再出現。
-  3–10km の同スロット偏りの正体は未特定（方位アンビギュイティ〔約 5km 先のゴースト〕説は「南北 4.5–6.5km に陸」で 30% 対 23%＝決め手なし）。
+  3–10km の同スロット偏りの正体は未特定。**方位アンビギュイティは実在するが主因ではない**（11-23・事前登録 `docs/sar_ambiguity.md`・
+  12 パス 24 シーン・強い検出 3–10km 1,064 件）：方位方向 4.5–6.5km に 10 倍以上明るい元がある率 4.8%（対照 0.4–1.0%）・距離は 5.0–6.0km に鋭く集中。
+  ただし同スロット再出現 6.0% 対 非再出現 3.7%＝区間が重なる＝規則どおり「決め手なし」。再出現する強い検出のうちゴーストで説明できるのは高々 6%。
 - **地図の注意書き**に「Some of the strong ones out at sea recur in the same place」を足した（`test_site` で固定）。
 - **地図の SAR 層**：最新パスのみ・既定は「海岸 3km 以上かつ SNR>20」（`MAP_MIN_SHORE_KM`/`MAP_MIN_SNR`＝`sar_columns.py` と
   `map.js` をテストで一致）。弱い検出・1–3km・1km 以内は層として OFF。画面に「not ships」「once every two days」「one instant, not a track」
@@ -95,10 +97,10 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 
 ## ▶▶ 次にやること
 
-0. まず確認：PR #19（11-07 merge）で変えた `docs/DATASET_CARD.md` が、次の `compact.yml` の run で HF の README.md に入り、バイト一致したか
-   （`curl -sL …/resolve/main/README.md | cmp - docs/DATASET_CARD.md`）。
-1. 3–10km の強い検出が**同スロットだけで再出現する正体**を詰める：方位アンビギュイティなら元の明るい物体が衛星の進行方向（ほぼ南北・パスごとの heading）に
-   約 5km 先にあり、その SNR は元より大きく下がるはず。パスの heading を STAC から取り、元候補（陸の明点・港・別の強い検出）との相対位置の分布を見る。
+0. まず確認：PR #22（11-23 merge・held-out recall）で変えた `docs/DATASET_CARD.md` が、次の `compact.yml` の run で HF の README.md に入り、バイト一致したか
+   （`curl -sL …/resolve/main/README.md | cmp - docs/DATASET_CARD.md`）。PR #19 版は 11-23 にバイト一致を確認済み。
+1. 3–10km の強い検出が**同スロットだけで再出現する正体**：方位アンビギュイティは 11-23 に測って主因でないと分かった（高々 6%）。
+   残る候補＝距離アンビギュイティ・入射角依存の海面／地物の明点・同じ軌道からだけ見える構造物の向き。次は 2（Sentinel-2 で現物を見る）を先にやる。
 2. 錨地・構造物の切り分け：再出現の集中セル（フジャイラ沖・55.7–56.0E 26.2–26.4N）を Sentinel-2（PC・無料）で同日に見て、静止物（プラットフォーム）か錨泊船かを確かめる。
 3. 弱い検出（SNR≤20・外洋）の正体：再出現しない一過性。Sentinel-2 照合は移動船だと時刻差で無理。
 4. 地図の SAR 層：再出現フラグ（他スロットで再出現＝固定物の疑い）を出すかは 1・2 次第。今は最新パスのみ。
