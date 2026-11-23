@@ -224,6 +224,18 @@ in the first scene were berthed inside the coast buffer. `K_SIGMA` was chosen
 on these numbers — 8 and 10 both give 24 of 24, 12 loses one, and 10 returns
 a sixth fewer candidates than 8, so 10 it is.
 
+Those 24 are the data `K_SIGMA` was chosen on, so 24/24 is a selection-time
+number, not a test. Measured again on 2026-11-23 on held-out passes off Dubai
+(03-21 to 04-11, both selection passes excluded, plan committed before the
+run — `docs/sar_recall_holdout.md`, raw `docs/sar_recall_holdout.json`):
+**20 of 35, 57% (95% CI 39–74%)**, against 9% for the same matching on
+positions shifted 2 km. Most of the misses are one cluster of AIS positions
+that cannot be real — 323 MMSIs reported the single point 25.5516 N 55.3814 E
+on 03-19 to 03-21 — and leaving out vessels with two others within 30 m
+(a rule chosen after seeing that) gives 20 of 27, 74% (54–89%). Beyond 10 km
+it was 3 of 17; the 3–10 km band had nobody in it; under the map's default
+cut (≥ 3 km, SNR > 20) 3 of 17. Quote the held-out figure, with its interval.
+
 Two things this does **not** measure. It says nothing about precision: the
 archive is a sample of transmitting vessels, not a census, so an unmatched
 detection is not a false alarm — it may be a buoy, a rig, or a ship with its
@@ -325,8 +337,9 @@ The map draws only the newest pass, — the newest one whose scene rows say
 its own status line and its own failure. The status line gives the share of
 the box the pass saw, because the rest is unobserved, not empty. The page says that a circle is not a ship, that a
 pass is one instant about every two days, and that within 1 km terrain and
-hulls are mixed. The AIS 24-of-24 recall was measured off Dubai with the full
-detector, not with the SNR 20 display cut; the cut may hide real small boats,
+hulls are mixed. The AIS recall (held out: 57%, 39–74%; 24/24 only on the
+selection scenes) was measured off Dubai with the full detector, not with the
+SNR 20 display cut — under that cut it was 3 of 17 vessels beyond 3 km; the cut may hide real small boats,
 which is why it is a default and not a filter on the data.
 
 ### Precision in the strait, without AIS

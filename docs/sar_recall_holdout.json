@@ -1,0 +1,518 @@
+{
+ "plan": "docs/sar_recall_holdout.md",
+ "settings": {
+  "box": [
+   54.8,
+   24.9,
+   55.6,
+   25.8
+  ],
+  "period": [
+   "2026-03-14T00:00:00Z",
+   "2026-04-12T00:00:00Z"
+  ],
+  "excluded_passes": [
+   "20260315T14",
+   "20260318T02"
+  ],
+  "k_sigma": 10.0,
+  "coast_buffer_m": 200.0,
+  "match_m": 300.0,
+  "max_report_gap_s": 120,
+  "shift_m": 2000.0,
+  "shift_dirs": [
+   0,
+   45,
+   90,
+   135,
+   180,
+   225,
+   270,
+   315
+  ],
+  "map_cut": {
+   "min_shore_km": 3.0,
+   "min_snr": 20.0
+  },
+  "sog_trusted_up_to_kn": 40.0
+ },
+ "primary": {
+  "found": 20,
+  "scored": 35,
+  "recall": 0.571,
+  "ci95": [
+   0.394,
+   0.737
+  ]
+ },
+ "per_pass": {
+  "20260321T14": {
+   "found": 8,
+   "scored": 21,
+   "recall": 0.381,
+   "ci95": [
+    0.181,
+    0.616
+   ]
+  },
+  "20260327T14": {
+   "found": 9,
+   "scored": 9,
+   "recall": 1.0,
+   "ci95": [
+    0.664,
+    1.0
+   ]
+  },
+  "20260330T02": {
+   "found": 2,
+   "scored": 2,
+   "recall": 1.0,
+   "ci95": [
+    0.158,
+    1.0
+   ]
+  },
+  "20260405T02": {
+   "found": 1,
+   "scored": 1,
+   "recall": 1.0,
+   "ci95": [
+    0.025,
+    1.0
+   ]
+  },
+  "20260411T02": {
+   "found": 0,
+   "scored": 2,
+   "recall": 0.0,
+   "ci95": [
+    0.0,
+    0.842
+   ]
+  }
+ },
+ "post_hoc_excluding_colocated": {
+  "found": 20,
+  "scored": 27,
+  "recall": 0.741,
+  "ci95": [
+   0.537,
+   0.889
+  ]
+ },
+ "post_hoc_colocated_only": {
+  "found": 0,
+  "scored": 8,
+  "recall": 0.0,
+  "ci95": [
+   0.0,
+   0.369
+  ]
+ },
+ "post_hoc_production_cut_excluding_colocated": {
+  "found": 3,
+  "scored": 9,
+  "recall": 0.333,
+  "ci95": [
+   0.075,
+   0.701
+  ]
+ },
+ "chance_arm": {
+  "found": 21,
+  "points": 231,
+  "rate": 0.091,
+  "ci95": [
+   0.057,
+   0.136
+  ]
+ },
+ "post_hoc_chance_arm_excluding_colocated": {
+  "found": 21,
+  "points": 167,
+  "rate": 0.126,
+  "ci95": [
+   0.08,
+   0.186
+  ]
+ },
+ "production_cut_3km_snr20": {
+  "found": 3,
+  "scored": 17,
+  "recall": 0.176,
+  "ci95": [
+   0.038,
+   0.434
+  ]
+ },
+ "by_distance_km": {
+  "0.2-1": {
+   "found": 7,
+   "scored": 8,
+   "recall": 0.875,
+   "ci95": [
+    0.473,
+    0.997
+   ]
+  },
+  "1-3": {
+   "found": 10,
+   "scored": 10,
+   "recall": 1.0,
+   "ci95": [
+    0.692,
+    1.0
+   ]
+  },
+  "3-10": {
+   "found": 0,
+   "scored": 0,
+   "recall": null,
+   "ci95": [
+    NaN,
+    NaN
+   ]
+  },
+  "10-inf": {
+   "found": 3,
+   "scored": 17,
+   "recall": 0.176,
+   "ci95": [
+    0.038,
+    0.434
+   ]
+  }
+ },
+ "by_motion": {
+  "moving >1 kn": {
+   "found": 4,
+   "scored": 5,
+   "recall": 0.8,
+   "ci95": [
+    0.284,
+    0.995
+   ]
+  },
+  "not moving": {
+   "found": 16,
+   "scored": 30,
+   "recall": 0.533,
+   "ci95": [
+    0.343,
+    0.717
+   ]
+  }
+ },
+ "by_length": {
+  "<50 m": {
+   "found": 13,
+   "scored": 16,
+   "recall": 0.812,
+   "ci95": [
+    0.544,
+    0.96
+   ]
+  },
+  "50-150 m": {
+   "found": 3,
+   "scored": 7,
+   "recall": 0.429,
+   "ci95": [
+    0.099,
+    0.816
+   ]
+  },
+  ">150 m": {
+   "found": 4,
+   "scored": 10,
+   "recall": 0.4,
+   "ci95": [
+    0.122,
+    0.738
+   ]
+  },
+  "unknown": {
+   "found": 0,
+   "scored": 2,
+   "recall": 0.0,
+   "ci95": [
+    0.0,
+    0.842
+   ]
+  }
+ },
+ "not_scored": {
+  "buffer_or_land": 9,
+  "no_pixel": 19
+ },
+ "detections_matched_to_more_than_one_vessel": 3,
+ "misses": [
+  {
+   "pass": "20260321T14",
+   "colocated": false,
+   "dist_to_land_km": 0.54,
+   "speed_kn": 0.1,
+   "length_m": 26.0,
+   "report_gap_s": -41.7,
+   "nearest_vessel_sized_m": 304.30107050386124,
+   "nearest_any_candidate_m": 304.30107050386124
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": false,
+   "dist_to_land_km": 13.05,
+   "speed_kn": 0.0,
+   "length_m": 78.0,
+   "report_gap_s": -17.6,
+   "nearest_vessel_sized_m": 1787.025017106606,
+   "nearest_any_candidate_m": 1787.025017106606
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 225.0,
+   "report_gap_s": 14.0,
+   "nearest_vessel_sized_m": 1754.429951122294,
+   "nearest_any_candidate_m": 1754.429951122294
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 330.0,
+   "report_gap_s": -22.1,
+   "nearest_vessel_sized_m": 1754.974597517615,
+   "nearest_any_candidate_m": 1754.974597517615
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": false,
+   "dist_to_land_km": 13.06,
+   "speed_kn": 0.0,
+   "length_m": 32.0,
+   "report_gap_s": 107.8,
+   "nearest_vessel_sized_m": 1800.8127089517493,
+   "nearest_any_candidate_m": 1800.8127089517493
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 171.0,
+   "report_gap_s": 57.5,
+   "nearest_vessel_sized_m": 1754.0947505591384,
+   "nearest_any_candidate_m": 1754.0947505591384
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 228.0,
+   "report_gap_s": -25.1,
+   "nearest_vessel_sized_m": 1754.429951122294,
+   "nearest_any_candidate_m": 1754.429951122294
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": false,
+   "dist_to_land_km": 13.33,
+   "speed_kn": 0.7,
+   "length_m": 79.0,
+   "report_gap_s": 8.2,
+   "nearest_vessel_sized_m": 2620.925622547838,
+   "nearest_any_candidate_m": 2620.925622547838
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 32.0,
+   "report_gap_s": 105.3,
+   "nearest_vessel_sized_m": 1754.2009035832457,
+   "nearest_any_candidate_m": 1754.2009035832457
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": false,
+   "dist_to_land_km": 13.02,
+   "speed_kn": 0.0,
+   "length_m": null,
+   "report_gap_s": -33.4,
+   "nearest_vessel_sized_m": 1784.2985117334797,
+   "nearest_any_candidate_m": 1784.2985117334797
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 70.0,
+   "report_gap_s": 95.0,
+   "nearest_vessel_sized_m": 1754.323780012811,
+   "nearest_any_candidate_m": 1754.323780012811
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 169.0,
+   "report_gap_s": -52.1,
+   "nearest_vessel_sized_m": 1754.2540016471041,
+   "nearest_any_candidate_m": 1754.2540016471041
+  },
+  {
+   "pass": "20260321T14",
+   "colocated": true,
+   "dist_to_land_km": 13.0,
+   "speed_kn": 0.0,
+   "length_m": 148.0,
+   "report_gap_s": 20.6,
+   "nearest_vessel_sized_m": 1754.6757061818273,
+   "nearest_any_candidate_m": 1754.6757061818273
+  },
+  {
+   "pass": "20260411T02",
+   "colocated": false,
+   "dist_to_land_km": 30.96,
+   "speed_kn": null,
+   "length_m": 225.0,
+   "report_gap_s": 48.9,
+   "nearest_vessel_sized_m": 307.7652244625194,
+   "nearest_any_candidate_m": 307.7652244625194
+  },
+  {
+   "pass": "20260411T02",
+   "colocated": false,
+   "dist_to_land_km": 56.59,
+   "speed_kn": 3.0,
+   "length_m": null,
+   "report_gap_s": 41.1,
+   "nearest_vessel_sized_m": 3016.1800888604253,
+   "nearest_any_candidate_m": 3016.1800888604253
+  }
+ ],
+ "scenes": [
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260321T142455_20260321T142520_063727_080315",
+   "acq_time": "2026-03-21T14:25:07.908730Z",
+   "ais_vessels_within_2min": 26,
+   "box_covered_frac": 1.0,
+   "vessel_sized": 721,
+   "candidates": 910,
+   "scored_water_km2": 5324.4
+  },
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260324T021509_20260324T021534_063763_08046C",
+   "acq_time": "2026-03-24T02:15:22.126159Z",
+   "ais_vessels_within_2min": 0,
+   "status": "no AIS"
+  },
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260324T021534_20260324T021557_063763_08046C",
+   "acq_time": "2026-03-24T02:15:46.284865Z",
+   "ais_vessels_within_2min": 0,
+   "status": "no AIS"
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260327T142346_20260327T142415_006951_00E109",
+   "acq_time": "2026-03-27T14:24:01.073661Z",
+   "ais_vessels_within_2min": 12,
+   "box_covered_frac": 0.997,
+   "vessel_sized": 490,
+   "candidates": 677,
+   "scored_water_km2": 5301.3
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260327T142415_20260327T142443_006951_00E109",
+   "acq_time": "2026-03-27T14:24:29.769060Z",
+   "ais_vessels_within_2min": 14,
+   "box_covered_frac": 0.003,
+   "vessel_sized": 1,
+   "candidates": 1,
+   "scored_water_km2": 24.2
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260330T021404_20260330T021434_006987_00E256",
+   "acq_time": "2026-03-30T02:14:19.444642Z",
+   "ais_vessels_within_2min": 2,
+   "box_covered_frac": 0.002,
+   "vessel_sized": 0,
+   "candidates": 0,
+   "scored_water_km2": 18.7
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260330T021434_20260330T021459_006987_00E256",
+   "acq_time": "2026-03-30T02:14:46.590173Z",
+   "ais_vessels_within_2min": 2,
+   "box_covered_frac": 0.998,
+   "vessel_sized": 594,
+   "candidates": 765,
+   "scored_water_km2": 5306.5
+  },
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260402T142455_20260402T142520_063902_08099D",
+   "acq_time": "2026-04-02T14:25:07.858367Z",
+   "ais_vessels_within_2min": 1,
+   "box_covered_frac": 1.0,
+   "vessel_sized": 610,
+   "candidates": 829,
+   "scored_water_km2": 5324.4
+  },
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260405T021509_20260405T021534_063938_080AED",
+   "acq_time": "2026-04-05T02:15:22.130930Z",
+   "ais_vessels_within_2min": 1,
+   "box_covered_frac": 0.092,
+   "vessel_sized": 6,
+   "candidates": 9,
+   "scored_water_km2": 742.4
+  },
+  {
+   "scene_id": "S1A_IW_GRDH_1SDV_20260405T021534_20260405T021557_063938_080AED",
+   "acq_time": "2026-04-05T02:15:46.291080Z",
+   "ais_vessels_within_2min": 1,
+   "box_covered_frac": 0.909,
+   "vessel_sized": 684,
+   "candidates": 939,
+   "scored_water_km2": 4586.7
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260408T142346_20260408T142416_007126_00E6EA",
+   "acq_time": "2026-04-08T14:24:01.615155Z",
+   "ais_vessels_within_2min": 0,
+   "status": "no AIS"
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260408T142416_20260408T142444_007126_00E6EA",
+   "acq_time": "2026-04-08T14:24:30.307591Z",
+   "ais_vessels_within_2min": 0,
+   "status": "no AIS"
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260411T021405_20260411T021434_007162_00E82F",
+   "acq_time": "2026-04-11T02:14:19.926780Z",
+   "ais_vessels_within_2min": 2,
+   "box_covered_frac": 0.002,
+   "vessel_sized": 0,
+   "candidates": 0,
+   "scored_water_km2": 18.5
+  },
+  {
+   "scene_id": "S1C_IW_GRDH_1SDV_20260411T021434_20260411T021459_007162_00E82F",
+   "acq_time": "2026-04-11T02:14:47.072248Z",
+   "ais_vessels_within_2min": 2,
+   "box_covered_frac": 0.998,
+   "vessel_sized": 803,
+   "candidates": 1226,
+   "scored_water_km2": 5306.7
+  }
+ ]
+}
