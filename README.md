@@ -48,9 +48,12 @@ free, needs no account, and the newest scene was available the same day. A 200
 km box is cut out of each 702 MB file by byte range, and vessel-sized bright
 objects are picked out against a local background.
 
-Checked against AIS itself, on two scenes from inside this repository's own
-archive and in the one patch of water where that archive is dense: **24 of the
-24 vessels AIS placed in scored water were found**, all within 300 m. That
+Checked against AIS itself, off Dubai — the one patch of water where this
+repository's own archive is dense — on passes the threshold was not chosen on:
+**20 of 35 vessels AIS placed in scored water were found** within 300 m (57%,
+95% interval 39–74%; 24 of 24 on the two scenes the threshold was tuned on).
+Most of the misses were AIS positions that cannot be real — hundreds of
+vessels reporting one point — and without them it was 20 of 27. That
 measures recall only — an unmatched radar detection may be a buoy, a rig, or a
 ship with its transponder off, and this data cannot tell them apart.
 

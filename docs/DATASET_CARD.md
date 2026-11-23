@@ -188,10 +188,13 @@ They are deliberately **not** joined to the AIS rows and carry no `mmsi`: a
 radar return is a bright object, not an identity. Matching the two by time and
 position is a piece of analysis, not a fact in the data.
 
-What the detections are worth, measured against this dataset's own AIS: on two
-scenes off Dubai — the one patch of water where the archive is dense — 24 of
-the 24 vessels AIS placed in scored water were found within 300 m. That is
-recall and nothing else. The archive samples transmitting vessels, so a
+What the detections are worth, measured against this dataset's own AIS off
+Dubai — the one patch of water where the archive is dense — on passes that
+played no part in choosing the threshold: 20 of the 35 vessels AIS placed in
+scored water had a detection within 300 m (57%, 95% interval 39–74%; 24 of 24
+on the two scenes the threshold was chosen on). Most misses were AIS positions
+that cannot be real — hundreds of MMSIs reporting one point — and without
+them it was 20 of 27. That is recall and nothing else. The archive samples transmitting vessels, so a
 detection with no AIS beside it is **not** a false alarm; it may be a buoy, a
 rig, or a ship with its transponder off. Each row keeps what it was measured
 on (`bg_median_dn`, `bg_mad_dn`, `snr`, `area_px`, `length_m`,

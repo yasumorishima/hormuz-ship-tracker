@@ -56,9 +56,8 @@ CHECKS = [
 ]
 
 
-def worldcover_tiles():
-    body = {"collections": ["esa-worldcover"],
-            "bbox": [AOI_WEST, AOI_SOUTH, AOI_EAST, AOI_NORTH], "limit": 50}
+def worldcover_tiles(bounds=(AOI_WEST, AOI_SOUTH, AOI_EAST, AOI_NORTH)):
+    body = {"collections": ["esa-worldcover"], "bbox": list(bounds), "limit": 50}
     request = urllib.request.Request(
         STAC, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(request, timeout=60) as response:
@@ -76,17 +75,23 @@ def sign(href):
         return json.load(response)["href"]
 
 
-def main():
-    width = round((AOI_EAST - AOI_WEST) / RES)
-    height = round((AOI_NORTH - AOI_SOUTH) / RES)
-    transform = Affine(RES, 0.0, AOI_WEST, 0.0, -RES, AOI_NORTH)
+def build_land(bounds=(AOI_WEST, AOI_SOUTH, AOI_EAST, AOI_NORTH)):
+    """WorldCover over `bounds` at 10 m: (land as uint8, its transform).
+
+    Also used by scripts/sar_recall_holdout.py for a box off Dubai, so the
+    held-out recall is scored on a mask built by exactly these rules.
+    """
+    west, south, east, north = bounds
+    width = round((east - west) / RES)
+    height = round((north - south) / RES)
+    transform = Affine(RES, 0.0, west, 0.0, -RES, north)
     classes = np.zeros((height, width), dtype=np.uint8)
 
     env = rasterio.Env(CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif",
                        GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR",
                        GDAL_HTTP_MAX_RETRY="8", GDAL_HTTP_RETRY_DELAY="2",
                        VSI_CACHE="TRUE")
-    for href in worldcover_tiles():
+    for href in worldcover_tiles(bounds):
         print("  reading", href.rsplit("/", 1)[-1])
         with env, rasterio.open("/vsicurl/" + sign(href)) as src:
             # init_dest_nodata=False leaves what earlier tiles wrote alone, so
@@ -101,6 +106,12 @@ def main():
     land = (~np.isin(classes, WATER_CLASSES)).astype(np.uint8)
     print(f"land {100 * land.mean():.2f}% of the box, "
           f"{int((classes == 0).sum())} pixels of nodata treated as water")
+    return land, transform
+
+
+def main():
+    land, transform = build_land()
+    height, width = land.shape
 
     ok = True
     for name, lon, lat, expect_land in CHECKS:
