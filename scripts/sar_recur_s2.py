@@ -110,6 +110,18 @@ def pick_points(dest):
 
 
 def s2_items(lon, lat):
+    import time
+    import urllib.error
+    for attempt in range(6):
+        try:
+            return _s2_items(lon, lat)
+        except urllib.error.HTTPError as exc:
+            if exc.code != 429 or attempt == 5:
+                raise
+            time.sleep(10 * 2 ** attempt)
+
+
+def _s2_items(lon, lat):
     body = {"collections": ["sentinel-2-l2a"],
             "intersects": {"type": "Point", "coordinates": [lon, lat]},
             "datetime": PERIOD, "limit": 100,
@@ -117,12 +129,36 @@ def s2_items(lon, lat):
     return sar_scene._get_json(sar_scene.STAC_SEARCH, body).get("features", [])
 
 
+_TOKEN = {}
+
+
+def signed(href):
+    """One SAS token per collection, renewed every 30 minutes, with backoff on
+    429: signing every href separately got rate-limited on the first run."""
+    import time
+    import urllib.error
+    import urllib.request
+    now = time.time()
+    if "s2" not in _TOKEN or now - _TOKEN["s2"][1] > 1800:
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen("https://planetarycomputer.microsoft.com/api/"
+                                            "sas/v1/token/sentinel-2-l2a", timeout=30) as r:
+                    _TOKEN["s2"] = (json.load(r)["token"], now)
+                break
+            except urllib.error.HTTPError as exc:
+                if exc.code != 429 or attempt == 5:
+                    raise
+                time.sleep(10 * 2 ** attempt)
+    return href + "?" + _TOKEN["s2"][0]
+
+
 def read_chip(href, lon, lat, size_m, out_px):
     import rasterio
     from rasterio.warp import transform as warp
     from rasterio.windows import from_bounds
     with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR"), \
-            rasterio.open("/vsicurl/" + sar_scene.sign(href)) as src:
+            rasterio.open("/vsicurl/" + signed(href)) as src:
         xs, ys = warp("EPSG:4326", src.crs, [lon], [lat])
         h = size_m / 2
         win = from_bounds(xs[0] - h, ys[0] - h, xs[0] + h, ys[0] + h, src.transform)
