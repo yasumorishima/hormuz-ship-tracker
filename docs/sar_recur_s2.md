@@ -125,18 +125,24 @@ Per site, in order of passes seen:
   and Qeshm (56.23 E, 26.86 N) and off Fujairah (56.42 E, 25.59 N). They recur
   because the anchorage stays while the ships change: **recurring is not "not
   a ship"**, here directly seen.
-- **One site has nothing on any date**: 56.553 E 26.965 N, 10 km from land,
-  mean SNR 313, seen in 24 passes from three slots. No object 10 m optics can
-  see. Not explained; left as is.
+- **One site is "nothing" by the rule, but not by eye.** It is at 56.553 E
+  26.965 N, 10 km from land, with a mean SNR of 313, seen in 24 passes from
+  three slots. On all 4 dates a large ship lay 300–500 m from it, just
+  outside the 300 m box, in a different place each time. By the plan's
+  centre-box rule that is "nothing"; read plainly, it looks like an
+  anchorage whose radar position (the median of 24 passes) falls between
+  the ships. The rule is kept, and the result is reported as 11 / 3 / 1.
 
 ### Limits and deviations
 
-- These are the 15 most-recurring places, which recur **across** slots. They
-  do not answer step 1's question about the 3–10 km detections that recur
-  only within their slot. Only 1 of the 15 is in that band and slot-bound.
+- These are the 15 most-recurring places, and every one of them was seen from
+  two or three slots. They do not answer step 1's question about the 3–10 km
+  detections that recur only within their slot: three of the 15 are in that
+  band, and none of them is slot-bound.
 - One labeller, the same twice; not two people.
 - The chip build first hit a 429 rate limit from Planetary Computer's signing
   endpoint. It was changed to one token per collection with backoff; the
   sampling did not change.
-- In the first pass one control had a ship just outside the 300 m box on every
-  date. By the plan's centre-box rule it was labelled "nothing".
+- The montage behind the "nothing" site, with the ship just outside the box,
+  was taken during labelling to be a control. It was identified as a site
+  only when the key was read.

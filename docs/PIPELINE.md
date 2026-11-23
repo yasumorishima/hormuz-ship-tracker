@@ -427,7 +427,9 @@ can each be answered from the radar alone.
      field 13–41 km out at 55.70–56.06 E, 26.17–26.41 N, recurring from three
      slots.
    - 3 are anchorages, with different ships on different dates.
-   - 1, at 56.553 E 26.965 N with a mean SNR of 313, shows nothing optical.
+   - 1, at 56.553 E 26.965 N with a mean SNR of 313, is empty inside the
+     300 m box, with a large ship 300–500 m away on every date, so it is
+     probably an anchorage too.
    - Every control is empty water.
 
    Of the map's default layer (3 km or more, SNR over 20; 7,144 detections
