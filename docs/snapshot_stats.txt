@@ -1,9 +1,14 @@
 # Hormuz Ship Tracker — Snapshot Stats
-Generated: 2026-11-22 19:35:15 UTC
+Generated: 2026-11-23 01:40:08 UTC
 
-Active vessels (30 min): 0
-Unique vessels (24h): 8
-Total position records: 14
+Active vessels (30 min): 2
+Unique vessels (24h): 6
+Total position records: 19
 Strait transits (24h): IN 0 / OUT 0
 
 ## By vessel type
+  Unknown: 2
+
+## Top vessels by name
+  GALVAS [Unknown] → -- | --
+  BOMBAY [Unknown] → -- | --
