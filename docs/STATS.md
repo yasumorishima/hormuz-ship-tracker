@@ -1,17 +1,17 @@
 # Collection Statistics
 
-*Auto-updated: 2026-11-24 13:39 UTC*
+*Auto-updated: 2026-11-25 00:01 UTC*
 
 ## Overview
 
 | Metric | Value |
 |---|---|
-| Collection period | 2026-11-22 → 2026-11-23 (1.1 days) |
-| Total positions | 10 |
-| Clean positions | 10 (100%) |
+| Collection period | 2026-11-23 → 2026-11-23 (0.3 days) |
+| Total positions | 4 |
+| Clean positions | 4 (100%) |
 | Anomalous positions | 0 (0%) |
-| Unique vessels | 6 |
-| Avg positions/day | 9 |
+| Unique vessels | 3 |
+| Avg positions/day | 12 |
 | Strait of Hormuz transits | 0 |
 | Total gate crossings | 0 |
 
@@ -19,7 +19,6 @@
 
 | Date | Positions | Vessels |
 |---|---:|---:|
-| 2026-11-22 | 6 | 5 |
 | 2026-11-23 | 4 | 3 |
 
 ## Hourly Traffic Pattern (UTC)
@@ -27,11 +26,8 @@
 Average positions per hour across all days (clean data only):
 
 ```
-  01:00     2  ██████████████████████████
-  06:00     1  █████████████
-  09:00     2  ██████████████████████████
-  14:00     2  ██████████████████████████
-  20:00     3  ████████████████████████████████████████
+  01:00     2  ████████████████████████████████████████
+  09:00     2  ████████████████████████████████████████
 ```
 
 ## Gate Crossings by Day
@@ -42,10 +38,8 @@ No transit events recorded yet.
 
 | Flag | Country | Vessels |
 |---|---|---:|
-| NL | Netherlands | 2 |
 | KY | Cayman | 2 |
 | MT | Malta | 1 |
-| AE | UAE | 1 |
 
 ## Vessel Types
 
@@ -56,12 +50,9 @@ No transit events recorded yet.
 
 | Ship Name | Flag | Type | Positions | First Seen | Last Seen |
 |---|---|---|---:|---|---|
-| BOMBAY | MT | Unknown | 3 | 2026-11-22 | 2026-11-23 |
-| SMERALDA | KY | Unknown | 3 | 2026-11-22 | 2026-11-23 |
-| HAM 318 | NL | Unknown | 1 | 2026-11-22 | 2026-11-22 |
-| SEA BULLDOG | NL | Unknown | 1 | 2026-11-22 | 2026-11-22 |
+| BOMBAY | MT | Unknown | 2 | 2026-11-23 | 2026-11-23 |
+| SMERALDA | KY | Unknown | 1 | 2026-11-23 | 2026-11-23 |
 | GALVAS | KY | Unknown | 1 | 2026-11-23 | 2026-11-23 |
-| CODE 8 | AE | Unknown | 1 | 2026-11-22 | 2026-11-22 |
 
 ## Top Destinations
 
