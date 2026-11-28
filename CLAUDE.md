@@ -18,7 +18,8 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **秘密情報は使わない**。`HF_TOKEN` と aisstream のキーは Actions の secrets にだけある。SAR 側は匿名で取れるので、
   smoke も検証も秘密なしで回す（**本番キーをバグ探しに使わない**）。
 - 依存：`pip install -r requirements-test.txt`（SAR の依存も含む・`websockets==15.0.1` と `shapely==2.0.7` は固定のまま緩めない）。
-  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（11-07 時点で 140 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（11-28 時点で 167 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  **検出器を触る PR は `python scripts/sar_diff.py --stored --scenes 4`（差 0 件が条件）と、変更の A/B 差分（予想を先に書く）を付ける**（`docs/sar_diff.md`）。
   `scripts/generate_sar_water_mask.py` はピーク約 4.4GB（コンテナなら回せる。RPi5 では回せなかった）。
 
 ## 構成
@@ -32,6 +33,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 | 陸マスク | `data/sar_water_mask.tif`＝ESA WorldCover v200 10m（**CC BY 4.0**）。生成器 `scripts/generate_sar_water_mask.py` |
 | 地図 | GitHub Pages（master の `/docs`）。サーバーなし。背景は同梱の Natural Earth 陸地（`docs/land_mask.geojson`・`data/` とバイト一致をテストで固定）。SAR 層＝最新パスの `sar/det/v1/` をブラウザが直接読む |
 | 見張り | `schedule-watch.yml`（15 分ごと・`actions: read`/`issues: write`/`contents: read`・secrets なし）＝`src/watch_schedules.py`。定時 workflow の連続失敗を Issue でメールする（下の「見張りの判定規則」） |
+| SAR 差分 | `scripts/sar_diff.py`（手動）＝同じ実シーンで検出器 2 設定（または HF 保存分と今のコード）を突き合わせ、差を指紋（kind・stage〔water/threshold/blob〕・距離帯・SNR・スロット）で束ねる。`sar_detect.detect`＝`measure(stages(...))` に分けて段階を読む |
 | SAR 評価 | `src/sar_survey.py`（手動）＝距離帯の率・パス間の再出現（対照つき）・`--vh` で VH 交差偏波の下限。結果 `docs/sar_survey.json` |
 
 `compact.yml` / `publish.yml` / `sar-collect.yml` は同じ concurrency group `hormuz-hub`。
@@ -66,7 +68,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **SAR は取りこぼしゼロ**：PC の STAC（09-09 以降）83 枚と HF `sar/scenes/v1/`・`sar/det/v1/` 各 83 枚が**完全一致**。
   09-15T02:14:05Z の欠けも埋まった（PR #13 の「504h・6 枚・古い順」が効いた）。最新は S1D 2026-11-06T14:16Z。
   パスは 37＝取得スロット別に 02:0x 7・02:1x 10・14:1x 10・14:2x 10（全スロット 3 パス以上）。実発火は 09:30〜12:45 UTC。
-- **HF カード**：配信物 README.md は PR #19 版の `docs/DATASET_CARD.md` とバイト一致（11-23 確認）。PR #22 版は次の compact 待ち。
+- **HF カード**：配信物 README.md は PR #19 版の `docs/DATASET_CARD.md` とバイト一致（11-23 確認）。PR #22・#25 版も 11-28 にバイト一致を確認（compact run 76 の後）。
 
 評価値（**11-07・74 シーン（status ok）・37 パス・09-09〜11-06**・`src/sar_survey.py --vh`・生データ `docs/sar_survey.json`・PIPELINE.md が正）：
 
@@ -97,8 +99,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 
 ## ▶▶ 次にやること
 
-0. まず確認：PR #22（11-23 merge・held-out recall）で変えた `docs/DATASET_CARD.md` が、次の `compact.yml` の run で HF の README.md に入り、バイト一致したか
-   （`curl -sL …/resolve/main/README.md | cmp - docs/DATASET_CARD.md`）。PR #19 版は 11-23 にバイト一致を確認済み。
+0. （11-28 済）HF の README.md が `docs/DATASET_CARD.md` とバイト一致・HF に `sar/places/v1/places.parquet`（30KB）がある。地図のオレンジ層の目視は未確認。
 1. 3–10km の強い検出が**同スロットだけで再出現する正体**：方位アンビギュイティは 11-23 に測って主因でないと分かった（高々 6%）。
    残る候補＝距離アンビギュイティ・入射角依存の海面／地物の明点・同じ軌道からだけ見える構造物の向き。次は 2（Sentinel-2 で現物を見る）を先にやる。
 2. 錨地・構造物の切り分け（**11-23 済**・`docs/sar_recur_s2.md`）：最多再出現 15 地点を Sentinel-2 の 4 日分で盲検ラベル。
@@ -109,7 +110,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
    `sar/places/v1/places.parquet` を作り（sar-collect が 1 シーン以上書いた run の後に作り直す・失敗は run を赤に）、
    10 パス以上かつ 2 スロット以上を「recurring」。地図は最新パスの強い検出のうち地点から 100m 以内をオレンジで別層に、
    文言は「structure or an anchorage」「may still be a ship」（`test_site` で固定）。偶然（500m ずらし）では 1 地点・実データ 36 地点。
-   **次回 sar-collect の run 後に HF に places.parquet が出来たか、地図にオレンジ層が出るかを確認する**。
+   places.parquet は 11-28 に HF で確認済み。地図のオレンジ層の目視は未確認。
 5. AIS 側は触らない（コスト 0 の待機）。海峡の枠に日々まとまって入るようになったら SAR の precision を AIS で測り直す。今の 30 日 47 行では足りない。
 6. 既知の弱点（未発生）：読めないシーンが 1 枚あると窓（21 日）を出るまで sar-collect が毎日赤。見張りは API の一時的な空返事でも赤になる（10-22 に 1 回・単発なら放置）。
    `sar_survey` の STAC ids 検索は 20 件ずつ（83 件一度で 504・11-07）。
@@ -127,6 +128,8 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
   次の評価は、海峡の枠で precision も測る設計を先に書いてから始める。
 - **測った場所と条件を本番に合わせる**。24/24 は海峡ではなくドバイ沖・2026-03 の 2 シーン・地図の SNR>20 の切りなしで測った。
   本番（海峡・地図の既定層）の数字として引用しない。
+- **一致を報酬にすると、一番安い一致を探される**（Rust 移行の記事・11-25：検証器が「出力が一致すること」だけを褒めたので、エージェントが近道で一致させた）。
+  差分が 0 になったら、どう 0 にしたかを読む。テストの判定を緩めて通していないかも見る。
 - **選んだデータと測ったデータを分ける**。`K_SIGMA=10` は同じ 24 隻で選び、同じ 24 隻で 24/24 と報告していた＝選定時の値。
   11-23 に選定に使っていないパスで測り直したら 20/35（57%）だった（`docs/sar_recall_holdout.md`）。
 - **正解そのものを検証する**。AIS を正解にすると、AIS を出していない船（海峡で一番知りたい対象）が誤検出に数えられる。
@@ -169,6 +172,7 @@ SAR：
   台帳＝ファイルの存在なので誰も穴を探さない。今は 504h・6 枚・古い順（`sar_collect.select`）。STAC は新しい順に返す＝満ページは最古を落とす（警告を出す）。
 - **scene id の部分一致で探さない**：スライスの終了時刻＝次スライスの開始時刻（`…T021405_20260927T021430…` と `…T021430_…`）。
   `"20260927T021430" in id` は 2 枚に当たる。開始時刻は `id[17:32]`、パスは `id[:3]+id[17:25]`。
+- HF の検出表は float32（有効約 7 桁）。保存分と再計算を比べるときは相対の許容が要る（`sar_diff.RTOL`・11-28 に 236 件の偽の差を出した）。
 - 検出器の数字を書くときは**出荷する検出器で測る**（粗い検出器の「533 対 30」を docs に書いた前科）。出荷検出器では外洋で両マスク一致、海岸 1km 以内で差が出る。
 
 cloud サンドボックス：
@@ -181,7 +185,8 @@ cloud サンドボックス：
 AIS・公開：
 - `time.monotonic()` は boot からの秒数。「未記録」の番兵を 0 にしない。
 - 切断後の再接続は 1 秒から倍々・上限 15 秒・窓の残りでクランプ（固定 1 秒はキーが弾かれたとき 1 日 17,000 回の連打になる）。
-  websockets の `open_timeout` 既定 10 秒は窓に縛られない＝`min(10, 残り)` を明示。
+  websockets の `open_timeout` 既定 10 秒は窓に縛られない＝`min(45, 残り)` を明示。上限は 11-28 に 10→45 秒：aisstream の handshake が
+  11.8–23.6 秒（9 回中 6 回・3 回は 30 秒超）に遅くなり、10 秒では毎窓 9 回の timeout・0 行だった（run 356–358・363–364・Issue #26/#27）。
 - `received_at` は ISO の `T` 入り。SQLite の `datetime()` と比べるときは `strftime('%Y-%m-%dT%H:%M:%f', ...)`。
 - 時刻は UTC 明示（`datetime.now(tz=None)` を UTC と刻んでいた前科。CI の smoke はわざと `TZ: Asia/Tokyo` で描画して刺す）。
 - `build_sqlite` は `positions` しか作らない＝`transit_events` を無防備に引かない。

@@ -150,19 +150,17 @@ def shape_of(mask_piece: np.ndarray, pixel_m: tuple[float, float]
     return length, width, angle
 
 
-def detect(image: np.ndarray, land: np.ndarray, transform,
-           pixel_m: tuple[float, float], k_sigma: float = K_SIGMA,
-           coast_buffer_m: float = COAST_BUFFER_M) -> tuple[list[dict], dict]:
-    """Every compact bright object over water, with what it was measured on.
+def stages(image: np.ndarray, land: np.ndarray, pixel_m: tuple[float, float],
+           k_sigma: float = K_SIGMA, coast_buffer_m: float = COAST_BUFFER_M
+           ) -> dict | None:
+    """The detector up to, and including, labelling the bright blobs.
 
-    `pixel_m` is (north-south, east-west) in metres; see
-    `sar_scene.pixel_metres`. Candidates are returned whether or not they pass
-    the shape test, with `vessel_sized` and `reject_reason` saying which.
-    Throwing the rejects away would make a later, looser detector impossible
-    to run from the table.
+    Split out of `detect` so that `sar_diff` can ask *where* two detector
+    settings part ways (water, threshold, blob) with the arrays the shipped
+    detector actually used, rather than with a second copy of them that could
+    drift. Returns None when there is no scored water.
     """
     row_m, col_m = pixel_m
-    cell_km2 = row_m * col_m / 1e6
     valid = image > 0
     if land.any():
         dist_m = ndimage.distance_transform_edt(~land, sampling=(row_m, col_m))
@@ -173,13 +171,44 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
         dist_m = np.full(image.shape, np.inf, dtype=np.float32)
     water = valid & (dist_m > coast_buffer_m)
     if not water.any():
-        return [], {"scored_water_km2": 0.0, "sea_median_dn": float("nan"),
-                    "n_candidates": 0, "n_vessel_sized": 0}
-
+        return None
     img = image.astype(np.float32)
     bg, mad = background(img, water)
     sd = spread(mad)
-    lab, _ = ndimage.label((img > bg + k_sigma * sd) & water)
+    hot = (img > bg + k_sigma * sd) & water
+    lab, _ = ndimage.label(hot)
+    return {"img": img, "dist_m": dist_m, "water": water, "bg": bg, "mad": mad,
+            "sd": sd, "hot": hot, "lab": lab}
+
+
+def detect(image: np.ndarray, land: np.ndarray, transform,
+           pixel_m: tuple[float, float], k_sigma: float = K_SIGMA,
+           coast_buffer_m: float = COAST_BUFFER_M,
+           min_area_px: int = MIN_AREA_PX, max_length_m: float = MAX_LENGTH_M,
+           ) -> tuple[list[dict], dict]:
+    """Every compact bright object over water, with what it was measured on.
+
+    `pixel_m` is (north-south, east-west) in metres; see
+    `sar_scene.pixel_metres`. Candidates are returned whether or not they pass
+    the shape test, with `vessel_sized` and `reject_reason` saying which.
+    Throwing the rejects away would make a later, looser detector impossible
+    to run from the table.
+    """
+    return measure(stages(image, land, pixel_m, k_sigma, coast_buffer_m),
+                   transform, pixel_m, min_area_px, max_length_m)
+
+
+def measure(st: dict | None, transform, pixel_m: tuple[float, float],
+            min_area_px: int = MIN_AREA_PX, max_length_m: float = MAX_LENGTH_M,
+            ) -> tuple[list[dict], dict]:
+    """Rows and scene statistics from the output of `stages`."""
+    row_m, col_m = pixel_m
+    cell_km2 = row_m * col_m / 1e6
+    if st is None:
+        return [], {"scored_water_km2": 0.0, "sea_median_dn": float("nan"),
+                    "n_candidates": 0, "n_vessel_sized": 0}
+    img, dist_m, water = st["img"], st["dist_m"], st["water"]
+    bg, mad, sd, lab = st["bg"], st["mad"], st["sd"], st["lab"]
 
     rows = []
     for i, sl in enumerate(ndimage.find_objects(lab), start=1):
@@ -201,9 +230,9 @@ def detect(image: np.ndarray, land: np.ndarray, transform,
         row_mad = float(mad[sl][piece].mean())
         row_sd = float(sd[sl][piece].mean())
         reason = ""
-        if area < MIN_AREA_PX:
+        if area < min_area_px:
             reason = "too_small"
-        elif length > MAX_LENGTH_M:
+        elif length > max_length_m:
             reason = "too_long"
         rows.append({
             "latitude": lat, "longitude": lon,

@@ -488,4 +488,8 @@ python src/sar_collect.py --redo --max-scenes 40
 
 # one real scene, no credentials, asserting what was measured
 python scripts/sar_smoke.py
+
+# before changing the detector: what the change does, by kind (docs/sar_diff.md)
+python scripts/sar_diff.py --stored --scenes 4      # must be empty
+python scripts/sar_diff.py --b k_sigma=12 --scenes 4
 ```
