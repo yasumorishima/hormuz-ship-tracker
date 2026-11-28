@@ -39,7 +39,14 @@ RECONNECT_BACKOFF_MAX_SEC = 15.0
 # hold a short window past its deadline. Measured: a stalled handshake raises
 # TimeoutError after exactly this long. TimeoutError subclasses OSError, so
 # the existing handler already catches it.
-HANDSHAKE_TIMEOUT_SEC = 10.0
+#
+# The cap was 10 s until 2026-11-28. aisstream's handshake had become slower
+# than that: collect runs 356-358 (11-25/26) and 363-364 (11-27/28) logged
+# "timed out during opening handshake" nine times per window and 0 rows,
+# while from a cloud sandbox the same handshake, tried nine times in a row,
+# completed in 11.8-23.6 s six times and took over 30 s three times. 45 s still leaves a 180 s window
+# three or four attempts, and is still bounded by the window (`remaining`).
+HANDSHAKE_TIMEOUT_SEC = 45.0
 
 
 async def collect_window(api_key: str, seconds: float) -> tuple[list[tuple], dict]:

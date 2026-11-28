@@ -191,6 +191,11 @@ class WindowTest(unittest.IsolatedAsyncioTestCase):
         self.assertLessEqual(summary["reconnects"], 5,
                              f"{summary['reconnects']} retries in 8s is a storm")
 
+    def test_the_handshake_cap_is_longer_than_a_slow_handshake(self):
+        """aisstream's handshake took 11.8-23.6 s on 2026-11-28; a 10 s cap
+        turned every window into nine timeouts and 0 rows."""
+        self.assertGreaterEqual(window_collect.HANDSHAKE_TIMEOUT_SEC, 30.0)
+
     async def test_a_stalled_handshake_does_not_outlive_the_window(self):
         """Accept the TCP connection and never answer it.
 
