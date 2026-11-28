@@ -18,7 +18,8 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 - **秘密情報は使わない**。`HF_TOKEN` と aisstream のキーは Actions の secrets にだけある。SAR 側は匿名で取れるので、
   smoke も検証も秘密なしで回す（**本番キーをバグ探しに使わない**）。
 - 依存：`pip install -r requirements-test.txt`（SAR の依存も含む・`websockets==15.0.1` と `shapely==2.0.7` は固定のまま緩めない）。
-  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（11-07 時点で 140 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  検査は `tests.yml` と同じ `unittest.defaultTestLoader.discover("tests")`（11-28 時点で 165 件・skip 1 件でも赤扱い）＋ `python scripts/sar_smoke.py`（実シーン 1 枚）。
+  **検出器を触る PR は `python scripts/sar_diff.py --stored --scenes 4`（差 0 件が条件）と、変更の A/B 差分（予想を先に書く）を付ける**（`docs/sar_diff.md`）。
   `scripts/generate_sar_water_mask.py` はピーク約 4.4GB（コンテナなら回せる。RPi5 では回せなかった）。
 
 ## 構成
@@ -32,6 +33,7 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
 | 陸マスク | `data/sar_water_mask.tif`＝ESA WorldCover v200 10m（**CC BY 4.0**）。生成器 `scripts/generate_sar_water_mask.py` |
 | 地図 | GitHub Pages（master の `/docs`）。サーバーなし。背景は同梱の Natural Earth 陸地（`docs/land_mask.geojson`・`data/` とバイト一致をテストで固定）。SAR 層＝最新パスの `sar/det/v1/` をブラウザが直接読む |
 | 見張り | `schedule-watch.yml`（15 分ごと・`actions: read`/`issues: write`/`contents: read`・secrets なし）＝`src/watch_schedules.py`。定時 workflow の連続失敗を Issue でメールする（下の「見張りの判定規則」） |
+| SAR 差分 | `scripts/sar_diff.py`（手動）＝同じ実シーンで検出器 2 設定（または HF 保存分と今のコード）を突き合わせ、差を指紋（kind・stage〔water/threshold/blob〕・距離帯・SNR・スロット）で束ねる。`sar_detect.detect`＝`measure(stages(...))` に分けて段階を読む |
 | SAR 評価 | `src/sar_survey.py`（手動）＝距離帯の率・パス間の再出現（対照つき）・`--vh` で VH 交差偏波の下限。結果 `docs/sar_survey.json` |
 
 `compact.yml` / `publish.yml` / `sar-collect.yml` は同じ concurrency group `hormuz-hub`。
@@ -127,6 +129,8 @@ HF dataset `yasumorishima/hormuz-ais` に積んで、GitHub Pages の地図（`d
   次の評価は、海峡の枠で precision も測る設計を先に書いてから始める。
 - **測った場所と条件を本番に合わせる**。24/24 は海峡ではなくドバイ沖・2026-03 の 2 シーン・地図の SNR>20 の切りなしで測った。
   本番（海峡・地図の既定層）の数字として引用しない。
+- **一致を報酬にすると、一番安い一致を探される**（Rust 移行の記事・11-25：検証器が「出力が一致すること」だけを褒めたので、エージェントが近道で一致させた）。
+  差分が 0 になったら、どう 0 にしたかを読む。テストの判定を緩めて通していないかも見る。
 - **選んだデータと測ったデータを分ける**。`K_SIGMA=10` は同じ 24 隻で選び、同じ 24 隻で 24/24 と報告していた＝選定時の値。
   11-23 に選定に使っていないパスで測り直したら 20/35（57%）だった（`docs/sar_recall_holdout.md`）。
 - **正解そのものを検証する**。AIS を正解にすると、AIS を出していない船（海峡で一番知りたい対象）が誤検出に数えられる。
@@ -169,6 +173,7 @@ SAR：
   台帳＝ファイルの存在なので誰も穴を探さない。今は 504h・6 枚・古い順（`sar_collect.select`）。STAC は新しい順に返す＝満ページは最古を落とす（警告を出す）。
 - **scene id の部分一致で探さない**：スライスの終了時刻＝次スライスの開始時刻（`…T021405_20260927T021430…` と `…T021430_…`）。
   `"20260927T021430" in id` は 2 枚に当たる。開始時刻は `id[17:32]`、パスは `id[:3]+id[17:25]`。
+- HF の検出表は float32（有効約 7 桁）。保存分と再計算を比べるときは相対の許容が要る（`sar_diff.RTOL`・11-28 に 236 件の偽の差を出した）。
 - 検出器の数字を書くときは**出荷する検出器で測る**（粗い検出器の「533 対 30」を docs に書いた前科）。出荷検出器では外洋で両マスク一致、海岸 1km 以内で差が出る。
 
 cloud サンドボックス：
